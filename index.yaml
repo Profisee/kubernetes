@@ -9,6 +9,6 @@ entries:
     name: profisee-platform
     type: application
     urls:
-    - https://profisee.github.io/profisee-platform/profisee-platform-0.1.0.tgz
+    - https://profisee.github.io/profisee-platform-0.1.0.tgz
     version: 0.1.0
 generated: "2020-04-08T09:26:52.1144382-04:00"
