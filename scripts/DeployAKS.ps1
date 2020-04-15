@@ -36,6 +36,7 @@ $aksClusterName = "MyAKSCluster"
 $staticIpOutName = "AKSStaticOutIP"
 $staticIpInName = "AKSStaticInIP"
 $sqlServerName = $resourceGroupName + "sql"
+$sqlDatabaseName = "Profisee"
 $sqlUserName = "serveradmin"
 $sqlPassword = "P@ssw0rd33#$"
 $clusterVmSizeForLinux = "Standard_B2s"
@@ -100,7 +101,7 @@ helm install nginx stable/nginx-ingress --values .\nginxValues.yaml --set contro
 
 #install profisee platform
 helm repo add profisee https://profisee.github.io
-helm install profiseeplatform2020r1 profisee/profisee-platform --values .\Values.yaml --set sqlServer.name=$sqlServerFQDN --set sqlServer.userName=$sqlUserName --set sqlServer.password=$sqlPassword --set profiseeRunTime.fileRepository.userName=$fileRepoUserName --set profiseeRunTime.fileRepository.password=$storageAccountKey --set profiseeRunTime.fileRepository.location=$fileRepoPath --set profiseeRunTime.oidc.authority=$azureAuthorityUrl --set profiseeRunTime.oidc.clientId=$azureClientId --set profiseeRunTime.oidc.clientSecret=$azureClientSecret --set profiseeRunTime.adminAccount=$adminAccountForPlatform --set profiseeRunTime.externalDnsUrl=$externalDnsUrl --set profiseeRunTime.externalDnsName=$externalDnsName
+helm install profiseeplatform2020r1 profisee/profisee-platform --values .\Values.yaml --set sqlServer.name=$sqlServerFQDN --set sqlServer.databaseName=$sqlDatabaseName --set sqlServer.userName=$sqlUserName --set sqlServer.password=$sqlPassword --set profiseeRunTime.fileRepository.userName=$fileRepoUserName --set profiseeRunTime.fileRepository.password=$storageAccountKey --set profiseeRunTime.fileRepository.location=$fileRepoPath --set profiseeRunTime.oidc.authority=$azureAuthorityUrl --set profiseeRunTime.oidc.clientId=$azureClientId --set profiseeRunTime.oidc.clientSecret=$azureClientSecret --set profiseeRunTime.adminAccount=$adminAccountForPlatform --set profiseeRunTime.externalDnsUrl=$externalDnsUrl --set profiseeRunTime.externalDnsName=$externalDnsName
 
 #check status and wait for "Pulling" to finish
 #kubectl describe pods
