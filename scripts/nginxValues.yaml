@@ -8,11 +8,11 @@ controller:
   #  loadBalancerIP: 0.0.0.0
   config:
     proxy-buffer-size: "16k"
-    proxy-connect-timeout: "1800s"
-    proxy-send-timeout: "1800s"
-    proxy-read-timeout: "1800s"
+    proxy-connect-timeout: "1800"
+    proxy-send-timeout: "1800"
+    proxy-read-timeout: "1800"
     proxy-next-upstream: "off"
-    proxy-next-upstream-timeout: "1800s"
+    proxy-next-upstream-timeout: "1800"
     proxy-next-upstream-tries: "0"
     proxy-request-buffering: "off"
 defaultBackend: 

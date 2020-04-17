@@ -1,0 +1,3 @@
+
+scripts/DeployAKS.ps1
+scripts/nginxValues.yaml
