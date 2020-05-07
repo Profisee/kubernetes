@@ -1,3 +1,4 @@
 
 scripts/DeployAKS.ps1
 scripts/nginxValues.yaml
+scripts/setup.ps1

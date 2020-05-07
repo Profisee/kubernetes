@@ -4,16 +4,15 @@ controller:
   nodeSelector: 
     beta.kubernetes.io/os: linux
   replicaCount: 1
-  #service: 
-  #  loadBalancerIP: 0.0.0.0
+  service: 
+    loadBalancerIP: 0.0.0.0
   config:
+    proxy-buffering: "off"
     proxy-buffer-size: "16k"
-    proxy-connect-timeout: "1800"
-    proxy-send-timeout: "1800"
-    proxy-read-timeout: "1800"
+    proxy-connect-timeout: "5400"
+    proxy-send-timeout: "5400"
+    proxy-read-timeout: "5400"
     proxy-next-upstream: "off"
-    proxy-next-upstream-timeout: "1800"
-    proxy-next-upstream-tries: "0"
     proxy-request-buffering: "off"
 defaultBackend: 
   nodeSelector: 
