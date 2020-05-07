@@ -6,9 +6,7 @@ is installed and configured.
 
 # Prerequisites:
 
-1)  Azure CLI
-
-2)  AKS preview extension for Azure CLI
+1)  Azure CLI - 2.5 or higher
 
 3)  Chocolatey
 
