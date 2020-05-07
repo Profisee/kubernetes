@@ -1,13 +1,17 @@
 ###############
 #Pre-Reqs     #
 ###############
+#Set execution policy
 #Set-ExecutionPolicy Unrestricted
+
+##Install AZ CLI - Must be 2.5 or higher
 #Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi; Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'; rm .\AzureCLI.msi
-#az aks install-cli
-#add path that was output of previous statement (for kubectl.exe)
-#az extension add --name aks-preview
+
+#Install choco - needed for Helm
 #Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 #choco install kubernetes-helm
+
+#Login to Azure
 #az login
 
 ###############
@@ -130,6 +134,9 @@ if($createAppInAzureAD)
 	$azureClientId = az ad app list --filter "displayname eq '$azureClientName'" --query '[0].appId'
 }
 az ad app update --id $azureClientId --add --reply-Urls $azureAppReplyUrl
+#add a Graph API permission of "Sign in and read user profile"
+az ad app permission add --id $azureClientId --api 00000002-0000-0000-c000-000000000000 --api-permissions 311a71cc-e848-46a1-bdf8-97ff7156d8e6=Scope
+az ad app permission grant --id $azureClientId --api 00000002-0000-0000-c000-000000000000
 
 #install nginx
 helm repo add stable https://kubernetes-charts.storage.googleapis.com/ 
