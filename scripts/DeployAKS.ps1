@@ -24,44 +24,41 @@
 # Run 						   #
 ################################
 ######Variables to change######
-$createResourceGroup = $true
-$resourceGroupName = "MyAKS"
-$resourceGroupLocation = "eastus2"
+$createResourceGroup = $true #Set to false if you want to use an existing resource group (we recommend a new resource group ($true)). 
+$resourceGroupName = "resourcegroupname" #The resource group within which the new AKS cluster will be located. 
+$resourceGroupLocation = "eastus2" #Which Azure data center will this run in, ex: eastus2. Only necessary if creating a new resource group.
 
 ###SQL###
-$createSqlServer = $true
-$sqlServerResourceGroup = $resourceGroupName
-$sqlServerName = $resourceGroupName + "sql"
-$sqlDatabaseName = "Profisee"
-$sqlUserName = "serveradmin"
-$sqlPassword = "P@ssw0rd33#$"
+$createSqlServer = $true #Set this to true if you want to create a new SQL Server. False if you want to use an existing Azure SQL Server.
+$sqlServerResourceGroup = $resourceGroupName #(or specify the resource group of an existing Azure SQL Server)
+$sqlServerName = $resourceGroupName + "sql" #(or specify the Name of an existing Azure SQL Server)
+$sqlDatabaseName = "databasename" #(the database to create and/or use)
+$sqlUserName = "username" #Self-explanatory
+$sqlPassword = "password" #Self-explanatory
 
 ###DNS###
-$createDNSRecord = $true
-$domainNameResourceGroup = "domainRG"
-$domainName = "domain.com"
-$hostName = "aks"
+$createDNSRecord = $true #Set this to true if you are using a DNS Zone in Azure. False if you’re maintaining DNS somewhere else (we’ll have to update that DNS entry manually).
+$domainNameResourceGroup = "resourcegroupname" #This is the resource group of the DNS zone where the DNS record should be created/updated. You can find this in the Azure Portal.
+$domainName = "yourdomain.com" #Typically the root domain of your company/organization. For example, Profisee’s is Profisee.com
+$hostName = "hostname" #Typically equivalent to the environment or machine name. 
 
 ##File Repository###
-$createFileRepository = $true
-$storageAccountName = $resourceGroupName + "files" 
-$storageShareName = "files"
+$createFileRepository = $true #Set this to true if you want to create a new storage account. False if you want to use an existing storage account.
+$storageAccountName = $resourceGroupName + "files" #(or specify an existing one if you’re using an existing storage account)
+$storageShareName = "files" #(or specify an existing one if you’re using an existing storage account)
 
 ###Azure AD App Registration###
-$createAppInAzureAD = $true
-$azureClientName = "My Identity Server"
-$azureClientId = ""
-$azureClientSecret = ""
-
-###VM Sizes###
-$clusterVmSizeForLinux = "Standard_B2s"
-$clusterVmSizeForWindows = "Standard_B4ms"
-
-###AKS Version###
-$kubernetesVersion = "1.17.3"
+$createAppInAzureAD = $true #Set this to true if you haven’t manually registered the application and redirect URI.
+$azureClientName = "clientname" #Required if createAppInAzureAd = true. Unused if false.
+$azureClientId = "" #Required if createAppInAzureAd = false. Unused if true.
+$azureClientSecret = "" #Optional if createAppInAzureAd = true. Unused if false.
 
 ###Profisee platform###
-$adminAccountForPlatform = "MyEmail@domain.com"
+$adminAccountForPlatform = "emailaddress@domain.com" #This should be account of the first super user who will be registered with Profisee, who will be able to logon and add other users.
+
+###AKS Settings###
+$clusterVmSizeForLinux = "Standard_B2s" #This should be fine, but we could change it if we determine we should. Used primarily for networking/load balancing controllers (Linux).
+$clusterVmSizeForWindows = "Standard_B4ms" #We’ll want to ensure the correct size 
 
 ######Variables that dont need to change######
 $aksClusterName = "MyAKSCluster"
@@ -79,7 +76,7 @@ if($createResourceGroup)
 	az group create --name $resourceGroupName --location $resourceGroupLocation
 }
 
-#create aks cluster node pool (linox)
+#create aks cluster node pool (linux)
 az aks create --resource-group $resourceGroupName --name $aksClusterName --node-count 1 --enable-addons monitoring --kubernetes-version $kubernetesVersion --generate-ssh-keys --windows-admin-password P@ssw0rd1234! --windows-admin-username winadmin --vm-set-type VirtualMachineScaleSets --load-balancer-sku standard --network-plugin azure --node-vm-size $clusterVmSizeForLinux
 
 #create static public ip for outbound usage - loadbalancer
