@@ -24,6 +24,7 @@
 # Run 						   #
 ################################
 ######Variables to change######
+$createResourceGroup = $true
 $resourceGroupName = "MyAKS"
 $resourceGroupLocation = "eastus2"
 
@@ -52,25 +53,31 @@ $azureClientName = "My Identity Server"
 $azureClientId = ""
 $azureClientSecret = ""
 
+###VM Sizes###
+$clusterVmSizeForLinux = "Standard_B2s"
+$clusterVmSizeForWindows = "Standard_B4ms"
+
+###AKS Version###
+$kubernetesVersion = "1.17.3"
+
 ###Profisee platform###
 $adminAccountForPlatform = "MyEmail@domain.com"
 
 ######Variables that dont need to change######
 $aksClusterName = "MyAKSCluster"
-$resourceGroupNameForNodes = "MC_" + $resourceGroupName + "_" + $aksClusterName + "_" + $resourceGroupLocation
 $staticIpOutName = "AKSStaticOutIP"
 $staticIpInName = "AKSStaticInIP"
-$clusterVmSizeForLinux = "Standard_B2s"
-$clusterVmSizeForWindows = "Standard_B4ms"
-$kubernetesVersion = "1.17.3"
 
+######DO NOT CHANGE######
 $externalDnsName = $hostName + "." + $domainName
 $externalDnsUrl = "https://" + $externalDnsName
-
-az group delete --name $resourceGroupName --yes
+$resourceGroupNameForNodes = "MC_" + $resourceGroupName + "_" + $aksClusterName + "_" + $resourceGroupLocation
 
 #create resource group
-az group create --name $resourceGroupName --location $resourceGroupLocation
+if($createResourceGroup)
+{
+	az group create --name $resourceGroupName --location $resourceGroupLocation
+}
 
 #create aks cluster node pool (linox)
 az aks create --resource-group $resourceGroupName --name $aksClusterName --node-count 1 --enable-addons monitoring --kubernetes-version $kubernetesVersion --generate-ssh-keys --windows-admin-password P@ssw0rd1234! --windows-admin-username winadmin --vm-set-type VirtualMachineScaleSets --load-balancer-sku standard --network-plugin azure --node-vm-size $clusterVmSizeForLinux
