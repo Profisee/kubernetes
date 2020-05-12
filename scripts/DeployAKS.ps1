@@ -60,6 +60,8 @@ $adminAccountForPlatform = "emailaddress@domain.com" #This should be account of 
 $clusterVmSizeForLinux = "Standard_B2s" #This should be fine, but we could change it if we determine we should. Used primarily for networking/load balancing controllers (Linux).
 $clusterVmSizeForWindows = "Standard_B4ms" #We’ll want to ensure the correct size 
 $kubernetesVersion = "1.17.3"
+$windowsAdminUserName = "winadmin" #Username to create on Windows node VMs.
+$windowsAdminPassword = "Ple@seCh@ngeMe1234!" #Password to create on Windows node VMs.
 
 ######Variables that dont need to change######
 $aksClusterName = "MyAKSCluster"
@@ -78,7 +80,7 @@ if($createResourceGroup)
 }
 
 #create aks cluster node pool (linux)
-az aks create --resource-group $resourceGroupName --name $aksClusterName --node-count 1 --enable-addons monitoring --kubernetes-version $kubernetesVersion --generate-ssh-keys --windows-admin-password P@ssw0rd1234! --windows-admin-username winadmin --vm-set-type VirtualMachineScaleSets --load-balancer-sku standard --network-plugin azure --node-vm-size $clusterVmSizeForLinux
+az aks create --resource-group $resourceGroupName --name $aksClusterName --node-count 1 --enable-addons monitoring --kubernetes-version $kubernetesVersion --generate-ssh-keys --windows-admin-password $windowsAdminPassword --windows-admin-username $windowsAdminUserName --vm-set-type VirtualMachineScaleSets --load-balancer-sku standard --network-plugin azure --node-vm-size $clusterVmSizeForLinux
 
 #create static public ip for outbound usage - loadbalancer
 az network public-ip create --resource-group $resourceGroupNameForNodes --name $staticIpOutName --sku Standard --allocation-method static
@@ -145,12 +147,15 @@ az ad app permission grant --id $azureClientId --api 00000002-0000-0000-c000-000
 
 #install nginx
 helm repo add stable https://kubernetes-charts.storage.googleapis.com/ 
-helm install nginx stable/nginx-ingress --values .\nginxValues.yaml --set controller.service.loadBalancerIP=$publicInIP
-#helm uninstall nginx stable/nginx-ingress
+$command = "helm install nginx stable/nginx-ingress --values .\nginxValues.yaml --set controller.service.loadBalancerIP=$publicInIP"
+write-host $command
+Invoke-Expression $command
 
 #install profisee platform
-helm repo add profisee https://profisee.github.io
-helm install profiseeplatform2020r1 profisee/profisee-platform --values .\Values.yaml --set sqlServer.name=$sqlServerFQDN --set sqlServer.databaseName=$sqlDatabaseName --set sqlServer.userName=$sqlUserName --set sqlServer.password=$sqlPassword --set profiseeRunTime.fileRepository.userName=$fileRepoUserName --set profiseeRunTime.fileRepository.password=$storageAccountKey --set profiseeRunTime.fileRepository.location=$fileRepoPath --set profiseeRunTime.oidc.authority=$azureAuthorityUrl --set profiseeRunTime.oidc.clientId=$azureClientId --set profiseeRunTime.oidc.clientSecret=$azureClientSecret --set profiseeRunTime.adminAccount=$adminAccountForPlatform --set profiseeRunTime.externalDnsUrl=$externalDnsUrl --set profiseeRunTime.externalDnsName=$externalDnsName
+helm repo add profisee https://profisee.github.io/kubernetes
+$command = "helm install profiseeplatform2020r1 profisee/profisee-platform --values .\Values.yaml --set sqlServer.name=$sqlServerFQDN --set sqlServer.databaseName=$sqlDatabaseName --set sqlServer.userName=$sqlUserName --set sqlServer.password=$sqlPassword --set profiseeRunTime.fileRepository.userName=$fileRepoUserName --set profiseeRunTime.fileRepository.password=$storageAccountKey --set profiseeRunTime.fileRepository.location=$fileRepoPath --set profiseeRunTime.oidc.authority=$azureAuthorityUrl --set profiseeRunTime.oidc.clientId=$azureClientId --set profiseeRunTime.oidc.clientSecret=$azureClientSecret --set profiseeRunTime.adminAccount=$adminAccountForPlatform --set profiseeRunTime.externalDnsUrl=$externalDnsUrl --set profiseeRunTime.externalDnsName=$externalDnsName"
+write-host $command
+Invoke-Expression $command
 
 #check status and wait for "Pulling" to finish
 #kubectl describe pod profisee-0
