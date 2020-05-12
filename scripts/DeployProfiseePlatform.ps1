@@ -14,16 +14,11 @@
 #Login to Azure
 #az login
 
-###############
-#Pre-Run      #
-###############
-#set variables in ps1
-#set values for certs in Values.yaml
-
 ################################
 # Run 						   #
 ################################
 ######Variables to change######
+###Resource group###
 $createResourceGroup = $true #Set to false if you want to use an existing resource group (we recommend a new resource group ($true)). 
 $resourceGroupName = "resourcegroupname" #The resource group within which the new AKS cluster will be located. 
 $resourceGroupLocation = "eastus2" #Which Azure data center will this run in, ex: eastus2. Only necessary if creating a new resource group.
