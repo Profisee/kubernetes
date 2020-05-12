@@ -142,13 +142,13 @@ az ad app permission grant --id $azureClientId --api 00000002-0000-0000-c000-000
 
 #install nginx
 helm repo add stable https://kubernetes-charts.storage.googleapis.com/ 
-$command = "helm install nginx stable/nginx-ingress --values .\nginxValues.yaml --set controller.service.loadBalancerIP=$publicInIP"
+$command = "helm install nginx stable/nginx-ingress --values .\nginxSettings.yaml --set controller.service.loadBalancerIP=$publicInIP"
 write-host $command
 Invoke-Expression $command
 
 #install profisee platform
 helm repo add profisee https://profisee.github.io/kubernetes
-$command = "helm install profiseeplatform2020r1 profisee/profisee-platform --values .\Values.yaml --set sqlServer.name=$sqlServerFQDN --set sqlServer.databaseName=$sqlDatabaseName --set sqlServer.userName=$sqlUserName --set sqlServer.password=$sqlPassword --set profiseeRunTime.fileRepository.userName=$fileRepoUserName --set profiseeRunTime.fileRepository.password=$storageAccountKey --set profiseeRunTime.fileRepository.location=$fileRepoPath --set profiseeRunTime.oidc.authority=$azureAuthorityUrl --set profiseeRunTime.oidc.clientId=$azureClientId --set profiseeRunTime.oidc.clientSecret=$azureClientSecret --set profiseeRunTime.adminAccount=$adminAccountForPlatform --set profiseeRunTime.externalDnsUrl=$externalDnsUrl --set profiseeRunTime.externalDnsName=$externalDnsName"
+$command = "helm install profiseeplatform2020r1 profisee/profisee-platform --values .\Settings.yaml --set sqlServer.name=$sqlServerFQDN --set sqlServer.databaseName=$sqlDatabaseName --set sqlServer.userName=$sqlUserName --set sqlServer.password=$sqlPassword --set profiseeRunTime.fileRepository.userName=$fileRepoUserName --set profiseeRunTime.fileRepository.password=$storageAccountKey --set profiseeRunTime.fileRepository.location=$fileRepoPath --set profiseeRunTime.oidc.authority=$azureAuthorityUrl --set profiseeRunTime.oidc.clientId=$azureClientId --set profiseeRunTime.oidc.clientSecret=$azureClientSecret --set profiseeRunTime.adminAccount=$adminAccountForPlatform --set profiseeRunTime.externalDnsUrl=$externalDnsUrl --set profiseeRunTime.externalDnsName=$externalDnsName"
 write-host $command
 Invoke-Expression $command
 

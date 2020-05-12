@@ -1,8 +1,5 @@
 
-scripts/DeployAKS.ps1
 scripts/nginxValues.yaml
-scripts/setup.ps1
-scripts/DeployAKSChuck.ps1
-scripts/app.config
 scripts/ValuesChuck.yaml
-scripts/ValuesChuckTemp.yaml
+scripts/DeployProfiseePlatformChuck.ps1
+scripts/SettingsChuck.yaml
