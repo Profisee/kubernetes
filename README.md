@@ -6,7 +6,12 @@ is installed and configured.
 
 # Prerequisites:
 
-1. Software
+1. License
+	- Profisee license associated with the dns for the environment
+	
+	- Token for access to the profisee container
+	
+2. Software
 	
 	- Azure CLI - 2.5 or higher
 
@@ -14,7 +19,7 @@ is installed and configured.
 
 	- Kubernetes-Helm
 
-2. Permissions
+3. Permissions
 	
 	- We’ll need an Azure AD account that has the following permissions:
 	
@@ -24,7 +29,7 @@ is installed and configured.
 		
 		- Edit DNS Zones (unless you are using an external DNS registry somewhere other than Azure)
 		
-3. Certificates
+4. Certificates
 
 	- Https certificate and its private key: This could be a wildcard certificate such as *.Company.com, or you could create an explicit certificate for this specific deployment, which will need to match the DNS entry we’ll be create. For example: profisee2020beta.company.com
 
