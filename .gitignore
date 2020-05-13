@@ -3,3 +3,4 @@ scripts/nginxValues.yaml
 scripts/ValuesChuck.yaml
 scripts/DeployProfiseePlatformChuck.ps1
 scripts/SettingsChuck.yaml
+scripts/installProfiseePlatform.txt
