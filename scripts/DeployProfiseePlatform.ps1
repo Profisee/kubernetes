@@ -54,7 +54,7 @@ $adminAccountForPlatform = "emailaddress@domain.com" #This should be account of 
 ###AKS Settings###
 $clusterVmSizeForLinux = "Standard_B2s" #This should be fine, but we could change it if we determine we should. Used primarily for networking/load balancing controllers (Linux).
 $clusterVmSizeForWindows = "Standard_B4ms" #We’ll want to ensure the correct size 
-$kubernetesVersion = "1.17.3"
+$kubernetesVersion = "1.18.2"
 $windowsAdminUserName = "winadmin" #Username to create on Windows node VMs.
 $windowsAdminPassword = "Ple@seCh@ngeMe1234!" #Password to create on Windows node VMs.
 
