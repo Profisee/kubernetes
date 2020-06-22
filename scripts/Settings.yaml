@@ -32,7 +32,7 @@ clusterNode:
 image:
     registry: "profisee.azurecr.io"
     repository: "profisee2020r1"
-    tag: "latest"
+    tag: "GA"
     auth: |
         {
            "auths":{
