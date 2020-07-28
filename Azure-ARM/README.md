@@ -2,7 +2,7 @@
 
 This ARM template deploys Profisee platform into a new Azure Kubernetes service cluster.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FProfisee%2Fazure-arm%2Fmaster%2Fazuredeploy.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FProfisee%2Fkubernetes%2Fmaster%2FAzure-ARM%2Fazuredeploy.json)
 
 ## Prerequisites
 
