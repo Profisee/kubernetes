@@ -12,7 +12,7 @@ chmod 700 get_helm.sh;
 #install nginx
 helm repo add stable https://kubernetes-charts.storage.googleapis.com/;
 #get profisee nginx settings
-curl -fsSL -o nginxSettings.yaml https://raw.githubusercontent.com/Profisee/kubernetes/Azure-Powershell/master/scripts/nginxSettings.yaml;
+curl -fsSL -o nginxSettings.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/Azure-ARM/nginxSettings.yaml;
 helm uninstall nginx
 helm install nginx stable/nginx-ingress --values nginxSettings.yaml --set controller.service.loadBalancerIP=$publicInIP;
 
@@ -49,7 +49,7 @@ fi
 
 #install profisee platform
 #set profisee helm chart settings
-curl -fsSL -o Settings.yaml https://raw.githubusercontent.com/profisee/Azure-ARM/master/Settings.yaml
+curl -fsSL -o Settings.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/Azure-ARM/Settings.yaml;
 auth="$(echo -n "$ACRUSER:$ACRUSERPASSWORD" | base64)"
 sed -i -e 's/$ACRUSER/'"$ACRUSER"'/g' Settings.yaml
 sed -i -e 's/$ACRPASSWORD/'"$ACRUSERPASSWORD"'/g' Settings.yaml
