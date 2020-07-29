@@ -1,6 +1,6 @@
 # **<span class="underline">Profisee Kubernetes</span>**
 
-This repository contains al lthe ways to deploy the Profisee platform into kubernetes.
+This repository contains all the ways to deploy the Profisee platform to Kubernetes.
 
 ## Azure-ARM
 
