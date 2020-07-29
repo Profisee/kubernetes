@@ -28,7 +28,7 @@ if [ "$CONFIGUREHTTPS" = "Yes" ]; then
 	printf '%s\n' "$TLSCERT" | sed 's/- /-\n/g; s/ -/\n-/g' | sed '/CERTIFICATE/! s/ /\n/g' >> a.cert;
 	sed -e 's/^/    /' a.cert > tls.cert;
 else    
-    echo '' > tls.cert;
+    echo '    NA' > tls.cert;
 fi
 rm a.cert
 
@@ -37,7 +37,7 @@ if [ "$CONFIGUREHTTPS" = "Yes" ]; then
     printf '%s\n' "$TLSKEY" | sed 's/- /-\n/g; s/ -/\n-/g' | sed '/PRIVATE/! s/ /\n/g' >> a.key;
 	sed -e 's/^/    /' a.key > tls.key;
 else
-	echo '' > tls.key;	    
+	echo '    NA' > tls.key;	    
 fi
 rm a.key
 
