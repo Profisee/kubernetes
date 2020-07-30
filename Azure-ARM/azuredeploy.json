@@ -23,7 +23,7 @@
         "ProfiseeLicense": {
             "type": "String",
             "metadata": {
-                "description": "Profisee plaform license string supplied by Profisee support."
+                "description": "Profisee plaform license string supplied by Profisee support. https://support.profisee.com"
             }
         },
         "ProfiseeACRUserName": {
