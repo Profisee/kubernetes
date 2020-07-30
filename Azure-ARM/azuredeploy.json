@@ -875,7 +875,7 @@
                 "No"
             ],
             "metadata": {
-                "description": "If No then you have to update the dns record yourself.  Use the IP adress that is output from the InstallProfiseePlatform deploymnet step"
+                "description": "If Yes then your dns zone must be in Azure.  If No then you have to update the dns record yourself.  Use the IP adress that is output from the InstallProfiseePlatform deploymnet step"
             }
         },
         "DNSHostName": {
