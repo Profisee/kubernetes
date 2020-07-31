@@ -918,7 +918,7 @@
                 "No"
             ],
             "metadata": {
-                "description": "If No then you have to update the dns record yourself.  Use the IP adress that is output from the InstallProfiseePlatform deploymnet step"
+                "description": "If Yes then your dns zone must be in Azure.  If No then you have to update the dns record yourself.  Use the IP adress that is output from the InstallProfiseePlatform deploymnet step"
             }
         },
         "DNSHostName": {
@@ -950,21 +950,21 @@
                 "No"
             ],
             "metadata": {
-                "description": "If No then you web traffic is not secure and only works over http."
+                "description": "If Yes, then you must supply the certificate informtion.  If No then you web traffic is not secure and only works over http."
             }
         }, 
         "HttpsCertificate": {
             "defaultValue": "",
             "type": "String",
             "metadata": {
-                "description": "Required if using Https."
+                "description": "Required if using Https.  Paste the text from TLS certificate. Starts with    -----BEGIN CERTIFICATE-----"
             }
         },
         "HttpsCertificatePrivateKey": {
             "defaultValue": "",
             "type": "String",
             "metadata": {
-                "description": "Required if using Https."
+                "description": "Required if using Https.  Paste the text from private key for your TLS certificate. Starts with    -----BEGIN PRIVATE KEY-----"
             }
         }
     },
