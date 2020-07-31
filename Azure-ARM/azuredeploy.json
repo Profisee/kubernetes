@@ -23,7 +23,7 @@
         "ProfiseeLicense": {
             "type": "String",
             "metadata": {
-                "description": "Profisee plaform license string supplied by Profisee support. https://support.profisee.com"
+                "description": "Profisee plaform license string supplied by Profisee support."
             }
         },
         "ProfiseeACRUserName": {
@@ -64,6 +64,7 @@
             }
         },
          "ManagedIdentityResourceGroup": {
+            "defaultValue": "[resourceGroup().name]",
             "type": "String",
             "metadata": {
                 "description": "Resource group the managed identiy was created in."
@@ -782,6 +783,48 @@
                 "description": "Version of kubernetes to use."
             }
         },
+        "KubernetesVnetName": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "Name of an existing VNET that will contain this AKS deployment.  Leave blank to create a new one with defaults"
+            }
+        },
+        "KubernetesVnetResourceGroup": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "Name of the existing VNET resource group.  Leave blank if not using an existing VNet."
+            }
+        },
+        "KubernetesSubnetName": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "Subnet name that will contain the App Service Environment in the existing VNet.  Leave blank if not using an existing VNet."
+            }
+        },
+        "KubernetesServiceCidr": {
+            "type": "string",
+            "defaultValue": "10.0.0.0/16",
+            "metadata": {
+                "description": "A CIDR notation IP range from which to assign service cluster IPs."
+            }
+        },
+        "KubernetesDNSServiceIP": {
+            "type": "string",
+            "defaultValue": "10.0.0.10",
+            "metadata": {
+                "description": "Containers DNS server IP address."
+            }
+        },
+        "KubernetesDockerBridgeCidr": {
+            "type": "string",
+            "defaultValue": "172.17.0.1/16",
+            "metadata": {
+                "description": "A CIDR notation IP for Docker bridge."
+            }
+        },
         "SQLServerCreateNew": {
             "defaultValue": "Yes",
             "type": "String",
@@ -797,7 +840,7 @@
             "defaultValue": "mysqlservername",
             "type": "String",
             "metadata": {
-                "description": "Enter a unique name.  Name must be lower case and be an available sqlserver name in azure.  SqlServerNames are globally unique in Azure"
+                "description": "Enter a unique sql server name.  Can contain only lowercase letters, numbers, and '-', but can't start or end with '-' or have more than 63 characters and be an available sqlserver name in azure.  SQL Server names are globally unique in Azure"
             }
         },        
         "SQLServerUser": {
@@ -805,20 +848,20 @@
             "type": "string",
             "minLength": 1,
             "metadata": {
-                "description": "Administrator SQL login name to create with the new sql server or to use to connect to existing sql server."
+                "description": "Administrator SQL login name to create with the new sql server or to use to connect to existing sql server.  Your login name must not contain a SQL Identifier or a typical system name (like admin, administrator, sa, root, dbmanager, loginmanager, etc.) or a built-in database user or role (like dbo, guest, public, etc.).  Your login name must not include non-alphanumeric characters.  Your login name must not start with numbers or symbols"
             }
         },
         "SQLServerPassword": {
             "type": "securestring",
             "metadata": {
-                "description": "Password for sql server user."
+                "description": "Password for sql server user.  The password does not contain the account name of the user and must be at least eight characters long and be no more than 128 characters in length.  The password contains characters from three of the following four categories: Latin uppercase letters (A through Z).  Latin lowercase letters (a through z).  Base 10 digits (0 through 9).  Non-alphanumeric characters such as: exclamation point (!), dollar sign ($), number sign (#), or percent (%)."
             }
         },
         "SQLServerDatabaseName": {
             "defaultValue": "Profisee",
             "type": "String",
             "metadata": {
-                "description": "Name of database to create and/or use."
+                "description": "Name of database to create and/or use.  Name should not match special pattern and has a length of at most 128.  Should not contain reserved words.  No database with the same name exists in the server"
             }
         },
         "StorageAccountCreateNew": {
@@ -836,14 +879,14 @@
             "defaultValue": "mystorageaccountname",
             "type": "String",
             "metadata": {
-                "description": "Enter a unique name.  Name must be lowe case and be an available storage account name in azure.  Storage account names are globally unique in Azure"
+                "description": "Enter a unique name.  Can contain only lowercase letters and numbers. Name must be between 3 and 24 characters.  Storage account names are globally unique in Azure"
             }
         }, 
-         "StorageAccountPassword": {
+         "StorageAccountAccessKey": {
             "defaultValue":"",
             "type": "securestring",
             "metadata": {
-                "description": "Password for existing storage account."
+                "description": "Access key for existing storage account if creating one.  If not creating one, not required and will be ignored.  Can contain only lowercase letters and numbers. Name must be between 3 and 24 characters."
             }
         },
         "StorageAccountType": {
@@ -864,7 +907,7 @@
             "defaultValue": "files",
             "type": "String",
             "metadata": {
-                "description": "Name of file share in the storage account to create and/or use."
+                "description": "Name of file share in the storage account to create and/or use.   Can contain only lowercase letters, numbers, and hyphens, and must begin and end with a letter or a number. The name cannot contain two consecutive hyphens."
             }
         },
         "DNSUpdate": {
@@ -875,7 +918,7 @@
                 "No"
             ],
             "metadata": {
-                "description": "If Yes then your dns zone must be in Azure.  If No then you have to update the dns record yourself.  Use the IP adress that is output from the InstallProfiseePlatform deploymnet step"
+                "description": "If No then you have to update the dns record yourself.  Use the IP adress that is output from the InstallProfiseePlatform deploymnet step"
             }
         },
         "DNSHostName": {
@@ -907,27 +950,27 @@
                 "No"
             ],
             "metadata": {
-                "description": "If Yes, then you must supply the certificate informtion.  If No then you web traffic is not secure and only works over http."
+                "description": "If No then you web traffic is not secure and only works over http."
             }
         }, 
         "HttpsCertificate": {
             "defaultValue": "",
             "type": "String",
             "metadata": {
-                "description": "Required if using Https.  Paste the text from TLS certificate. Starts with    -----BEGIN CERTIFICATE-----"
+                "description": "Required if using Https."
             }
         },
         "HttpsCertificatePrivateKey": {
             "defaultValue": "",
             "type": "String",
             "metadata": {
-                "description": "Required if using Https.  Paste the text from private key for your TLS certificate. Starts with    -----BEGIN PRIVATE KEY-----"
+                "description": "Required if using Https."
             }
         }
     },
     "variables": 
     {
-        
+        "vnetSubnetId": "[if(equals(parameters('KubernetesVnetName'),''),'',resourceId(parameters('KubernetesVnetResourceGroup'),'Microsoft.Network/virtualNetworks/subnets',parameters('KubernetesVnetName'),parameters('KubernetesSubnetName')))]"
     },
     "resources": [
         {
@@ -954,7 +997,8 @@
                         "enableNodePublicIP": false,
                         "nodeLabels": {},
                         "mode": "System",
-                        "osType": "Linux"
+                        "osType": "Linux",
+                        "vnetSubnetID": "[variables('vnetSubnetID')]"
                     },
                     {
                         "name": "npwin1",
@@ -966,7 +1010,8 @@
                         "orchestratorVersion": "[parameters('KubernetesVersion')]",
                         "enableNodePublicIP": false,
                         "mode": "User",
-                        "osType": "Windows"
+                        "osType": "Windows",
+                        "vnetSubnetID": "[variables('vnetSubnetID')]"
                     }
                 ],
                 "linuxProfile": {
@@ -988,10 +1033,10 @@
                 "networkProfile": {
                     "networkPlugin": "azure",
                     "loadBalancerSku": "Standard",
-                    "serviceCidr": "10.0.0.0/16",
-                    "dnsServiceIP": "10.0.0.10",
-                    "dockerBridgeCidr": "172.17.0.1/16",
-                    "outboundType": "loadBalancer"
+                    "outboundType": "loadBalancer",
+                    "serviceCidr": "[parameters('KubernetesServiceCidr')]",
+                    "dnsServiceIP": "[parameters('KubernetesDNSServiceIP')]",
+                    "dockerBridgeCidr": "[parameters('KubernetesDockerBridgeCidr')]"
                 }
             },
             "identity": {
@@ -1216,7 +1261,7 @@
                 ,
                 {
                     "name": "FILEREPOPASSWORD",
-                    "value": "[parameters('StorageAccountPassword')]"
+                    "value": "[parameters('StorageAccountAccessKey')]"
                 }
 
             ],
