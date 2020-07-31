@@ -74,7 +74,7 @@
             "defaultValue": "MyAKSCluster",
             "type": "String",
             "metadata": {
-                "description": "Name of the kubernetes cluster to create."
+                "description": "Name of the kubernetes cluster to create.  The name can contain only letters, numbers, underscores and hyphens. The name must start and end with letter or number. The name must be unique in the current resource group"
             }
         },
         "KubernetesLinuxVMSize": {
