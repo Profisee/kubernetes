@@ -970,7 +970,7 @@
     },
     "variables": 
     {
-        "vnetSubnetId": "[if(equals(parameters('KubernetesVnetName'),''),'',resourceId(parameters('KubernetesVnetResourceGroup'),'Microsoft.Network/virtualNetworks/subnets',parameters('KubernetesVnetName'),parameters('KubernetesSubnetName')))]"
+        "vnetId":"[resourceId(parameters('KubernetesVnetResourceGroup'),'Microsoft.Network/virtualNetworks/subnets',parameters('KubernetesVnetName'),parameters('KubernetesSubnetName'))]"
     },
     "resources": [
         {
@@ -998,7 +998,7 @@
                         "nodeLabels": {},
                         "mode": "System",
                         "osType": "Linux",
-                        "vnetSubnetID": "[variables('vnetSubnetID')]"
+                        "vnetSubnetID": "[if(not(empty(parameters('KubernetesVnetName'))),variables('vnetId'),json('null'))]"
                     },
                     {
                         "name": "npwin1",
@@ -1011,7 +1011,7 @@
                         "enableNodePublicIP": false,
                         "mode": "User",
                         "osType": "Windows",
-                        "vnetSubnetID": "[variables('vnetSubnetID')]"
+                        "vnetSubnetID": "[if(not(empty(parameters('KubernetesVnetName'))),variables('vnetId'),json('null'))]"
                     }
                 ],
                 "linuxProfile": {
