@@ -1056,7 +1056,7 @@
                 "osDiskSizeGB": 100,
                 "maxPods": 30,
                 "type": "VirtualMachineScaleSets",
-                "orchestratorVersion": "1.18.2",
+                "orchestratorVersion": "[parameters('KubernetesVersion')]",
                 "enableNodePublicIP": false,
                 "nodeLabels": {},
                 "mode": "System",
@@ -1076,7 +1076,7 @@
                 "osDiskSizeGB": 100,
                 "maxPods": 30,
                 "type": "VirtualMachineScaleSets",
-                "orchestratorVersion": "1.18.2",
+                "orchestratorVersion": "[parameters('KubernetesVersion')]",
                 "enableNodePublicIP": false,
                 "mode": "User",
                 "osType": "Windows"
