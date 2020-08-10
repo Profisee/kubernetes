@@ -39,7 +39,7 @@ is installed and configured.
 
 Clone the following GitHub repository to your local machine:
 
-  - <https://github.com/Profisee/kubernetes/aks-powershell>
+  - <https://github.com/Profisee/kubernetes/tree/master/Azure-Powershell>
 
 ## B - Certificates & Auth
 
