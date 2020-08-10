@@ -770,14 +770,17 @@
             }
         },
         "KubernetesVersion": {
-            "defaultValue": "1.18.2",
+            "defaultValue": "1.18.6",
             "type": "String",
             "allowedValues": [
+                "1.18.6",
                 "1.18.4",
-                "1.18.2",
-                "1.18.1",
+                "1.17.9",
                 "1.17.7",
-                "1.16.10"
+                "1.16.13",
+                "1.16.10",
+                "1.15.12",
+                "1.15.11"
             ],
             "metadata": {
                 "description": "Version of kubernetes to use."
@@ -886,7 +889,7 @@
             "defaultValue":"",
             "type": "securestring",
             "metadata": {
-                "description": "Access key for existing storage account if creating one.  If not creating one, not required and will be ignored.  Can contain only lowercase letters and numbers. Name must be between 3 and 24 characters."
+                "description": "Access key for existing storage account if not creating one.  If creating one, not required and will be ignored.  Can contain only lowercase letters and numbers. Name must be between 3 and 24 characters."
             }
         },
         "StorageAccountType": {
