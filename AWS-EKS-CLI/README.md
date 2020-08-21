@@ -8,24 +8,24 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS cls
 
 ###Create cluster.yaml
 
-apiVersion: eksctl.io/v1alpha5
-kind: ClusterConfig
+      apiVersion: eksctl.io/v1alpha5
+      kind: ClusterConfig
 
-metadata:
-  name: MyCluster
-  region: us-east-1
-  version: '1.17'  
-managedNodeGroups:
-  - name: linux-ng
-    instanceType: t2.large
-    minSize: 1
+      metadata:
+        name: MyCluster
+        region: us-east-1
+        version: '1.17'  
+      managedNodeGroups:
+        - name: linux-ng
+          instanceType: t2.large
+          minSize: 1
 
-nodeGroups:
-  - name: windows-ng
-    instanceType: m5.xlarge
-    minSize: 1
-    volumeSize: 100
-    amiFamily: WindowsServer2019FullContainer
+      nodeGroups:
+        - name: windows-ng
+          instanceType: m5.xlarge
+          minSize: 1
+          volumeSize: 100
+          amiFamily: WindowsServer2019FullContainer
 
 #setup ami
 aws configure
