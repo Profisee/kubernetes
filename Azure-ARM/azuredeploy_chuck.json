@@ -1,0 +1,1347 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "ProfiseeVersion": {
+            "defaultValue": "2020R1.1",
+            "type": "String",
+            "allowedValues": [
+                "2020R1.0",
+				"2020R1.1",
+                "2020R2.Preview"
+            ],
+            "metadata": {
+                "description": "Version of the Profisee platform to use."
+            }
+        },
+        "ProfiseeAdminUserAccount": {
+            "defaultValue": "chuck.thompson@profisee.com",
+            "type": "String",
+            "metadata": {
+                "description": "Name of the account of the first super user who will be registered in the Profisee platform, who will be able to logon and add other users."
+            }
+        },
+        "ProfiseeLicense": {
+            "defaultValue": "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",
+            "type": "String",
+            "metadata": {
+                "description": "Profisee plaform license string supplied by Profisee support."
+            }
+        },
+        "ProfiseeACRUserName": {
+            "defaultValue": "ProfiseeInternal",
+            "type": "String",
+            "metadata": {
+                "description": "User name supplied by Profisee support."
+            }
+        },
+        "ProfiseeACRPassword": {
+            "defaultValue": "vB4LOcNXlQK3lirjgfaerHFrE12=IQRy",
+            "type": "String",
+            "metadata": {
+                "description": "User password supplied by Profisee support."
+            }
+        }, 
+        "ActiveDirectoryCreateApp": {
+            "defaultValue": "Yes",
+            "type": "String",
+            "allowedValues": [
+                "Yes",
+                "No"
+            ],
+            "metadata": {
+                "description": "The Active Directory App Registration will be created and configured.  If No, then you must supply an existing clientid and register the reply url manually.  example - https://profisee.company.com/profisee/auth/signin-microsoft"
+            }
+        },
+        "ActiveDirectoryClientId": {
+            "defaultValue": "",
+            "type": "String",
+            "metadata": {
+                "description": "ClientId of existing Azure Active Directory App Registration which will be used by the profisee platform for authentication."
+            }
+        },
+         "ManagedIdentityName": {
+             "defaultValue": "ProfiseePlatformDeployment",
+            "type": "String",
+            "metadata": {
+                "description": "Existing user assigned Managed Identity with contributer access at the subscription level or contributor access to the resoure group this is deployed to and the resource group the domain is in if updating dns.  If Active Directory Create Application is Yes, then it must also have Application Developer role in order to create and configure the azure active directory application."
+            }
+        },
+         "ManagedIdentityResourceGroup": {
+            "defaultValue": "Profisee",
+            "type": "String",
+            "metadata": {
+                "description": "Resource group the managed identiy was created in."
+            }
+        },
+        "KubernetesClusterName": {
+            "defaultValue": "MyAKSCluster",
+            "type": "String",
+            "metadata": {
+                "description": "Name of the kubernetes cluster to create.  The name can contain only letters, numbers, underscores and hyphens. The name must start and end with letter or number. The name must be unique in the current resource group"
+            }
+        },
+        "KubernetesLinuxVMSize": {
+            "defaultValue": "Standard_D2_v3",
+            "type": "String",
+            "allowedValues": [
+                "Basic_A0",
+                "Basic_A1",
+                "Basic_A2",
+                "Basic_A3",
+                "Basic_A4",
+                "Standard_A0",
+                "Standard_A1",
+                "Standard_A1_v2",
+                "Standard_A10",
+                "Standard_A11",
+                "Standard_A2",
+                "Standard_A2_v2",
+                "Standard_A2m_v2",
+                "Standard_A3",
+                "Standard_A4",
+                "Standard_A4_v2",
+                "Standard_A4m_v2",
+                "Standard_A5",
+                "Standard_A6",
+                "Standard_A7",
+                "Standard_A8",
+                "Standard_A8_v2",
+                "Standard_A8m_v2",
+                "Standard_A9",
+                "Standard_B12ms",
+                "Standard_B16ms",
+                "Standard_B1ls",
+                "Standard_B1ms",
+                "Standard_B1s",
+                "Standard_B20ms",
+                "Standard_B2ms",
+                "Standard_B2s",
+                "Standard_B4ms",
+                "Standard_B8ms",
+                "Standard_D1",
+                "Standard_D1_v2",
+                "Standard_D11",
+                "Standard_D11_v2",
+                "Standard_D11_v2_Promo",
+                "Standard_D12",
+                "Standard_D12_v2",
+                "Standard_D12_v2_Promo",
+                "Standard_D13",
+                "Standard_D13_v2",
+                "Standard_D13_v2_Promo",
+                "Standard_D14",
+                "Standard_D14_v2",
+                "Standard_D14_v2_Promo",
+                "Standard_D15_v2",
+                "Standard_D16_v3",
+                "Standard_D16_v4",
+                "Standard_D16a_v4",
+                "Standard_D16as_v4",
+                "Standard_D16d_v4",
+                "Standard_D16ds_v4",
+                "Standard_D16s_v3",
+                "Standard_D16s_v4",
+                "Standard_D2",
+                "Standard_D2_v2",
+                "Standard_D2_v2_Promo",
+                "Standard_D2_v3",
+                "Standard_D2_v4",
+                "Standard_D2a_v4",
+                "Standard_D2as_v4",
+                "Standard_D2d_v4",
+                "Standard_D2ds_v4",
+                "Standard_D2s_v3",
+                "Standard_D2s_v4",
+                "Standard_D3",
+                "Standard_D3_v2",
+                "Standard_D3_v2_Promo",
+                "Standard_D32_v3",
+                "Standard_D32_v4",
+                "Standard_D32a_v4",
+                "Standard_D32as_v4",
+                "Standard_D32d_v4",
+                "Standard_D32ds_v4",
+                "Standard_D32s_v3",
+                "Standard_D32s_v4",
+                "Standard_D4",
+                "Standard_D4_v2",
+                "Standard_D4_v2_Promo",
+                "Standard_D4_v3",
+                "Standard_D4_v4",
+                "Standard_D48_v3",
+                "Standard_D48_v4",
+                "Standard_D48a_v4",
+                "Standard_D48as_v4",
+                "Standard_D48d_v4",
+                "Standard_D48ds_v4",
+                "Standard_D48s_v3",
+                "Standard_D48s_v4",
+                "Standard_D4a_v4",
+                "Standard_D4as_v4",
+                "Standard_D4d_v4",
+                "Standard_D4ds_v4",
+                "Standard_D4s_v3",
+                "Standard_D4s_v4",
+                "Standard_D5_v2",
+                "Standard_D5_v2_Promo",
+                "Standard_D64_v3",
+                "Standard_D64_v4",
+                "Standard_D64a_v4",
+                "Standard_D64as_v4",
+                "Standard_D64d_v4",
+                "Standard_D64ds_v4",
+                "Standard_D64s_v3",
+                "Standard_D64s_v4",
+                "Standard_D8_v3",
+                "Standard_D8_v4",
+                "Standard_D8a_v4",
+                "Standard_D8as_v4",
+                "Standard_D8d_v4",
+                "Standard_D8ds_v4",
+                "Standard_D8s_v3",
+                "Standard_D8s_v4",
+                "Standard_D96a_v4",
+                "Standard_D96as_v4",
+                "Standard_DC1s_v2",
+                "Standard_DC2s",
+                "Standard_DC2s_v2",
+                "Standard_DC4s",
+                "Standard_DC4s_v2",
+                "Standard_DC8_v2",
+                "Standard_DS1",
+                "Standard_DS1_v2",
+                "Standard_DS11",
+                "Standard_DS11_v2",
+                "Standard_DS11_v2_Promo",
+                "Standard_DS11-1_v2",
+                "Standard_DS12",
+                "Standard_DS12_v2",
+                "Standard_DS12_v2_Promo",
+                "Standard_DS12-1_v2",
+                "Standard_DS12-2_v2",
+                "Standard_DS13",
+                "Standard_DS13_v2",
+                "Standard_DS13_v2_Promo",
+                "Standard_DS13-2_v2",
+                "Standard_DS13-4_v2",
+                "Standard_DS14",
+                "Standard_DS14_v2",
+                "Standard_DS14_v2_Promo",
+                "Standard_DS14-4_v2",
+                "Standard_DS14-8_v2",
+                "Standard_DS15_v2",
+                "Standard_DS2",
+                "Standard_DS2_v2",
+                "Standard_DS2_v2_Promo",
+                "Standard_DS3",
+                "Standard_DS3_v2",
+                "Standard_DS3_v2_Promo",
+                "Standard_DS4",
+                "Standard_DS4_v2",
+                "Standard_DS4_v2_Promo",
+                "Standard_DS5_v2",
+                "Standard_DS5_v2_Promo",
+                "Standard_E16_v3",
+                "Standard_E16_v4",
+                "Standard_E16-4ds_v4",
+                "Standard_E16-4s_v3",
+                "Standard_E16-4s_v4",
+                "Standard_E16-8ds_v4",
+                "Standard_E16-8s_v3",
+                "Standard_E16-8s_v4",
+                "Standard_E16a_v4",
+                "Standard_E16as_v4",
+                "Standard_E16d_v4",
+                "Standard_E16ds_v4",
+                "Standard_E16s_v3",
+                "Standard_E16s_v4",
+                "Standard_E2_v3",
+                "Standard_E2_v4",
+                "Standard_E20_v3",
+                "Standard_E20_v4",
+                "Standard_E20a_v4",
+                "Standard_E20as_v4",
+                "Standard_E20d_v4",
+                "Standard_E20ds_v4",
+                "Standard_E20s_v3",
+                "Standard_E20s_v4",
+                "Standard_E2a_v4",
+                "Standard_E2as_v4",
+                "Standard_E2d_v4",
+                "Standard_E2ds_v4",
+                "Standard_E2s_v3",
+                "Standard_E2s_v4",
+                "Standard_E32_v3",
+                "Standard_E32_v4",
+                "Standard_E32-16ds_v4",
+                "Standard_E32-16s_v3",
+                "Standard_E32-16s_v4",
+                "Standard_E32-8ds_v4",
+                "Standard_E32-8s_v3",
+                "Standard_E32-8s_v4",
+                "Standard_E32a_v4",
+                "Standard_E32as_v4",
+                "Standard_E32d_v4",
+                "Standard_E32ds_v4",
+                "Standard_E32s_v3",
+                "Standard_E32s_v4",
+                "Standard_E4_v3",
+                "Standard_E4_v4",
+                "Standard_E4-2ds_v4",
+                "Standard_E4-2s_v3",
+                "Standard_E4-2s_v4",
+                "Standard_E48_v3",
+                "Standard_E48_v4",
+                "Standard_E48a_v4",
+                "Standard_E48as_v4",
+                "Standard_E48d_v4",
+                "Standard_E48ds_v4",
+                "Standard_E48s_v3",
+                "Standard_E48s_v4",
+                "Standard_E4a_v4",
+                "Standard_E4as_v4",
+                "Standard_E4d_v4",
+                "Standard_E4ds_v4",
+                "Standard_E4s_v3",
+                "Standard_E4s_v4",
+                "Standard_E64_v3",
+                "Standard_E64_v4",
+                "Standard_E64-16ds_v4",
+                "Standard_E64-16s_v3",
+                "Standard_E64-16s_v4",
+                "Standard_E64-32ds_v4",
+                "Standard_E64-32s_v3",
+                "Standard_E64-32s_v4",
+                "Standard_E64a_v4",
+                "Standard_E64as_v4",
+                "Standard_E64d_v4",
+                "Standard_E64ds_v4",
+                "Standard_E64i_v3",
+                "Standard_E64is_v3",
+                "Standard_E64s_v3",
+                "Standard_E64s_v4",
+                "Standard_E8_v3",
+                "Standard_E8_v4",
+                "Standard_E8-2ds_v4",
+                "Standard_E8-2s_v3",
+                "Standard_E8-2s_v4",
+                "Standard_E8-4ds_v4",
+                "Standard_E8-4s_v3",
+                "Standard_E8-4s_v4",
+                "Standard_E8a_v4",
+                "Standard_E8as_v4",
+                "Standard_E8d_v4",
+                "Standard_E8ds_v4",
+                "Standard_E8s_v3",
+                "Standard_E8s_v4",
+                "Standard_E96a_v4",
+                "Standard_E96as_v4",
+                "Standard_F1",
+                "Standard_F16",
+                "Standard_F16s",
+                "Standard_F16s_v2",
+                "Standard_F1s",
+                "Standard_F2",
+                "Standard_F2s",
+                "Standard_F2s_v2",
+                "Standard_F32s_v2",
+                "Standard_F4",
+                "Standard_F48s_v2",
+                "Standard_F4s",
+                "Standard_F4s_v2",
+                "Standard_F64s_v2",
+                "Standard_F72s_v2",
+                "Standard_F8",
+                "Standard_F8s",
+                "Standard_F8s_v2",
+                "Standard_H16",
+                "Standard_H16_Promo",
+                "Standard_H16m",
+                "Standard_H16m_Promo",
+                "Standard_H16mr",
+                "Standard_H16mr_Promo",
+                "Standard_H16r",
+                "Standard_H16r_Promo",
+                "Standard_H8",
+                "Standard_H8_Promo",
+                "Standard_H8m",
+                "Standard_H8m_Promo",
+                "Standard_HB120rs_v2",
+                "Standard_HB60rs",
+                "Standard_HC44rs",
+                "Standard_L16s_v2",
+                "Standard_L32s_v2",
+                "Standard_L48s_v2",
+                "Standard_L64s_v2",
+                "Standard_L80s_v2",
+                "Standard_L8s_v2",
+                "Standard_M128",
+                "Standard_M128-32ms",
+                "Standard_M128-64ms",
+                "Standard_M128m",
+                "Standard_M128ms",
+                "Standard_M128s",
+                "Standard_M16-4ms",
+                "Standard_M16-8ms",
+                "Standard_M16ms",
+                "Standard_M208ms_v2",
+                "Standard_M208s_v2",
+                "Standard_M32-16ms",
+                "Standard_M32-8ms",
+                "Standard_M32ls",
+                "Standard_M32ms",
+                "Standard_M32ts",
+                "Standard_M416-208ms_v2",
+                "Standard_M416-208s_v2",
+                "Standard_M416ms_v2",
+                "Standard_M416s_v2",
+                "Standard_M64",
+                "Standard_M64-16ms",
+                "Standard_M64-32ms",
+                "Standard_M64ls",
+                "Standard_M64m",
+                "Standard_M64ms",
+                "Standard_M64s",
+                "Standard_M8-2ms",
+                "Standard_M8-4ms",
+                "Standard_M8ms",
+                "Standard_NC12",
+                "Standard_NC12_Promo",
+                "Standard_NC12s_v2",
+                "Standard_NC12s_v3",
+                "Standard_NC24",
+                "Standard_NC24_Promo",
+                "Standard_NC24r",
+                "Standard_NC24r_Promo",
+                "Standard_NC24rs_v2",
+                "Standard_NC24rs_v3",
+                "Standard_NC24s_v2",
+                "Standard_NC24s_v3",
+                "Standard_NC6",
+                "Standard_NC6_Promo",
+                "Standard_NC6s_v2",
+                "Standard_NC6s_v3",
+                "Standard_ND12s",
+                "Standard_ND24rs",
+                "Standard_ND24s",
+                "Standard_ND40rs_v2",
+                "Standard_ND40s_v3",
+                "Standard_ND6s",
+                "Standard_NP10s",
+                "Standard_NP20s",
+                "Standard_NP40s",
+                "Standard_NV12",
+                "Standard_NV12_Promo",
+                "Standard_NV12s_v2",
+                "Standard_NV12s_v3",
+                "Standard_NV16as_v4",
+                "Standard_NV24",
+                "Standard_NV24_Promo",
+                "Standard_NV24s_v2",
+                "Standard_NV24s_v3",
+                "Standard_NV32as_v4",
+                "Standard_NV48s_v3",
+                "Standard_NV4as_v4",
+                "Standard_NV6",
+                "Standard_NV6_Promo",
+                "Standard_NV6s_v2",
+                "Standard_NV8as_v4",
+                "Standard_PB6s"
+            ],
+            "metadata": {
+                "description": "Size of the VM to use for the linux node(s) in the kubernetes cluster."
+            }
+        },
+        "KubernetesWindowsVMSize": {
+            "defaultValue": "Standard_D4_v3",
+            "type": "String",
+            "allowedValues": [
+                "Basic_A0",
+                "Basic_A1",
+                "Basic_A2",
+                "Basic_A3",
+                "Basic_A4",
+                "Standard_A0",
+                "Standard_A1",
+                "Standard_A1_v2",
+                "Standard_A10",
+                "Standard_A11",
+                "Standard_A2",
+                "Standard_A2_v2",
+                "Standard_A2m_v2",
+                "Standard_A3",
+                "Standard_A4",
+                "Standard_A4_v2",
+                "Standard_A4m_v2",
+                "Standard_A5",
+                "Standard_A6",
+                "Standard_A7",
+                "Standard_A8",
+                "Standard_A8_v2",
+                "Standard_A8m_v2",
+                "Standard_A9",
+                "Standard_B12ms",
+                "Standard_B16ms",
+                "Standard_B1ls",
+                "Standard_B1ms",
+                "Standard_B1s",
+                "Standard_B20ms",
+                "Standard_B2ms",
+                "Standard_B2s",
+                "Standard_B4ms",
+                "Standard_B8ms",
+                "Standard_D1",
+                "Standard_D1_v2",
+                "Standard_D11",
+                "Standard_D11_v2",
+                "Standard_D11_v2_Promo",
+                "Standard_D12",
+                "Standard_D12_v2",
+                "Standard_D12_v2_Promo",
+                "Standard_D13",
+                "Standard_D13_v2",
+                "Standard_D13_v2_Promo",
+                "Standard_D14",
+                "Standard_D14_v2",
+                "Standard_D14_v2_Promo",
+                "Standard_D15_v2",
+                "Standard_D16_v3",
+                "Standard_D16_v4",
+                "Standard_D16a_v4",
+                "Standard_D16as_v4",
+                "Standard_D16d_v4",
+                "Standard_D16ds_v4",
+                "Standard_D16s_v3",
+                "Standard_D16s_v4",
+                "Standard_D2",
+                "Standard_D2_v2",
+                "Standard_D2_v2_Promo",
+                "Standard_D2_v3",
+                "Standard_D2_v4",
+                "Standard_D2a_v4",
+                "Standard_D2as_v4",
+                "Standard_D2d_v4",
+                "Standard_D2ds_v4",
+                "Standard_D2s_v3",
+                "Standard_D2s_v4",
+                "Standard_D3",
+                "Standard_D3_v2",
+                "Standard_D3_v2_Promo",
+                "Standard_D32_v3",
+                "Standard_D32_v4",
+                "Standard_D32a_v4",
+                "Standard_D32as_v4",
+                "Standard_D32d_v4",
+                "Standard_D32ds_v4",
+                "Standard_D32s_v3",
+                "Standard_D32s_v4",
+                "Standard_D4",
+                "Standard_D4_v2",
+                "Standard_D4_v2_Promo",
+                "Standard_D4_v3",
+                "Standard_D4_v4",
+                "Standard_D48_v3",
+                "Standard_D48_v4",
+                "Standard_D48a_v4",
+                "Standard_D48as_v4",
+                "Standard_D48d_v4",
+                "Standard_D48ds_v4",
+                "Standard_D48s_v3",
+                "Standard_D48s_v4",
+                "Standard_D4a_v4",
+                "Standard_D4as_v4",
+                "Standard_D4d_v4",
+                "Standard_D4ds_v4",
+                "Standard_D4s_v3",
+                "Standard_D4s_v4",
+                "Standard_D5_v2",
+                "Standard_D5_v2_Promo",
+                "Standard_D64_v3",
+                "Standard_D64_v4",
+                "Standard_D64a_v4",
+                "Standard_D64as_v4",
+                "Standard_D64d_v4",
+                "Standard_D64ds_v4",
+                "Standard_D64s_v3",
+                "Standard_D64s_v4",
+                "Standard_D8_v3",
+                "Standard_D8_v4",
+                "Standard_D8a_v4",
+                "Standard_D8as_v4",
+                "Standard_D8d_v4",
+                "Standard_D8ds_v4",
+                "Standard_D8s_v3",
+                "Standard_D8s_v4",
+                "Standard_D96a_v4",
+                "Standard_D96as_v4",
+                "Standard_DC1s_v2",
+                "Standard_DC2s",
+                "Standard_DC2s_v2",
+                "Standard_DC4s",
+                "Standard_DC4s_v2",
+                "Standard_DC8_v2",
+                "Standard_DS1",
+                "Standard_DS1_v2",
+                "Standard_DS11",
+                "Standard_DS11_v2",
+                "Standard_DS11_v2_Promo",
+                "Standard_DS11-1_v2",
+                "Standard_DS12",
+                "Standard_DS12_v2",
+                "Standard_DS12_v2_Promo",
+                "Standard_DS12-1_v2",
+                "Standard_DS12-2_v2",
+                "Standard_DS13",
+                "Standard_DS13_v2",
+                "Standard_DS13_v2_Promo",
+                "Standard_DS13-2_v2",
+                "Standard_DS13-4_v2",
+                "Standard_DS14",
+                "Standard_DS14_v2",
+                "Standard_DS14_v2_Promo",
+                "Standard_DS14-4_v2",
+                "Standard_DS14-8_v2",
+                "Standard_DS15_v2",
+                "Standard_DS2",
+                "Standard_DS2_v2",
+                "Standard_DS2_v2_Promo",
+                "Standard_DS3",
+                "Standard_DS3_v2",
+                "Standard_DS3_v2_Promo",
+                "Standard_DS4",
+                "Standard_DS4_v2",
+                "Standard_DS4_v2_Promo",
+                "Standard_DS5_v2",
+                "Standard_DS5_v2_Promo",
+                "Standard_E16_v3",
+                "Standard_E16_v4",
+                "Standard_E16-4ds_v4",
+                "Standard_E16-4s_v3",
+                "Standard_E16-4s_v4",
+                "Standard_E16-8ds_v4",
+                "Standard_E16-8s_v3",
+                "Standard_E16-8s_v4",
+                "Standard_E16a_v4",
+                "Standard_E16as_v4",
+                "Standard_E16d_v4",
+                "Standard_E16ds_v4",
+                "Standard_E16s_v3",
+                "Standard_E16s_v4",
+                "Standard_E2_v3",
+                "Standard_E2_v4",
+                "Standard_E20_v3",
+                "Standard_E20_v4",
+                "Standard_E20a_v4",
+                "Standard_E20as_v4",
+                "Standard_E20d_v4",
+                "Standard_E20ds_v4",
+                "Standard_E20s_v3",
+                "Standard_E20s_v4",
+                "Standard_E2a_v4",
+                "Standard_E2as_v4",
+                "Standard_E2d_v4",
+                "Standard_E2ds_v4",
+                "Standard_E2s_v3",
+                "Standard_E2s_v4",
+                "Standard_E32_v3",
+                "Standard_E32_v4",
+                "Standard_E32-16ds_v4",
+                "Standard_E32-16s_v3",
+                "Standard_E32-16s_v4",
+                "Standard_E32-8ds_v4",
+                "Standard_E32-8s_v3",
+                "Standard_E32-8s_v4",
+                "Standard_E32a_v4",
+                "Standard_E32as_v4",
+                "Standard_E32d_v4",
+                "Standard_E32ds_v4",
+                "Standard_E32s_v3",
+                "Standard_E32s_v4",
+                "Standard_E4_v3",
+                "Standard_E4_v4",
+                "Standard_E4-2ds_v4",
+                "Standard_E4-2s_v3",
+                "Standard_E4-2s_v4",
+                "Standard_E48_v3",
+                "Standard_E48_v4",
+                "Standard_E48a_v4",
+                "Standard_E48as_v4",
+                "Standard_E48d_v4",
+                "Standard_E48ds_v4",
+                "Standard_E48s_v3",
+                "Standard_E48s_v4",
+                "Standard_E4a_v4",
+                "Standard_E4as_v4",
+                "Standard_E4d_v4",
+                "Standard_E4ds_v4",
+                "Standard_E4s_v3",
+                "Standard_E4s_v4",
+                "Standard_E64_v3",
+                "Standard_E64_v4",
+                "Standard_E64-16ds_v4",
+                "Standard_E64-16s_v3",
+                "Standard_E64-16s_v4",
+                "Standard_E64-32ds_v4",
+                "Standard_E64-32s_v3",
+                "Standard_E64-32s_v4",
+                "Standard_E64a_v4",
+                "Standard_E64as_v4",
+                "Standard_E64d_v4",
+                "Standard_E64ds_v4",
+                "Standard_E64i_v3",
+                "Standard_E64is_v3",
+                "Standard_E64s_v3",
+                "Standard_E64s_v4",
+                "Standard_E8_v3",
+                "Standard_E8_v4",
+                "Standard_E8-2ds_v4",
+                "Standard_E8-2s_v3",
+                "Standard_E8-2s_v4",
+                "Standard_E8-4ds_v4",
+                "Standard_E8-4s_v3",
+                "Standard_E8-4s_v4",
+                "Standard_E8a_v4",
+                "Standard_E8as_v4",
+                "Standard_E8d_v4",
+                "Standard_E8ds_v4",
+                "Standard_E8s_v3",
+                "Standard_E8s_v4",
+                "Standard_E96a_v4",
+                "Standard_E96as_v4",
+                "Standard_F1",
+                "Standard_F16",
+                "Standard_F16s",
+                "Standard_F16s_v2",
+                "Standard_F1s",
+                "Standard_F2",
+                "Standard_F2s",
+                "Standard_F2s_v2",
+                "Standard_F32s_v2",
+                "Standard_F4",
+                "Standard_F48s_v2",
+                "Standard_F4s",
+                "Standard_F4s_v2",
+                "Standard_F64s_v2",
+                "Standard_F72s_v2",
+                "Standard_F8",
+                "Standard_F8s",
+                "Standard_F8s_v2",
+                "Standard_H16",
+                "Standard_H16_Promo",
+                "Standard_H16m",
+                "Standard_H16m_Promo",
+                "Standard_H16mr",
+                "Standard_H16mr_Promo",
+                "Standard_H16r",
+                "Standard_H16r_Promo",
+                "Standard_H8",
+                "Standard_H8_Promo",
+                "Standard_H8m",
+                "Standard_H8m_Promo",
+                "Standard_HB120rs_v2",
+                "Standard_HB60rs",
+                "Standard_HC44rs",
+                "Standard_L16s_v2",
+                "Standard_L32s_v2",
+                "Standard_L48s_v2",
+                "Standard_L64s_v2",
+                "Standard_L80s_v2",
+                "Standard_L8s_v2",
+                "Standard_M128",
+                "Standard_M128-32ms",
+                "Standard_M128-64ms",
+                "Standard_M128m",
+                "Standard_M128ms",
+                "Standard_M128s",
+                "Standard_M16-4ms",
+                "Standard_M16-8ms",
+                "Standard_M16ms",
+                "Standard_M208ms_v2",
+                "Standard_M208s_v2",
+                "Standard_M32-16ms",
+                "Standard_M32-8ms",
+                "Standard_M32ls",
+                "Standard_M32ms",
+                "Standard_M32ts",
+                "Standard_M416-208ms_v2",
+                "Standard_M416-208s_v2",
+                "Standard_M416ms_v2",
+                "Standard_M416s_v2",
+                "Standard_M64",
+                "Standard_M64-16ms",
+                "Standard_M64-32ms",
+                "Standard_M64ls",
+                "Standard_M64m",
+                "Standard_M64ms",
+                "Standard_M64s",
+                "Standard_M8-2ms",
+                "Standard_M8-4ms",
+                "Standard_M8ms",
+                "Standard_NC12",
+                "Standard_NC12_Promo",
+                "Standard_NC12s_v2",
+                "Standard_NC12s_v3",
+                "Standard_NC24",
+                "Standard_NC24_Promo",
+                "Standard_NC24r",
+                "Standard_NC24r_Promo",
+                "Standard_NC24rs_v2",
+                "Standard_NC24rs_v3",
+                "Standard_NC24s_v2",
+                "Standard_NC24s_v3",
+                "Standard_NC6",
+                "Standard_NC6_Promo",
+                "Standard_NC6s_v2",
+                "Standard_NC6s_v3",
+                "Standard_ND12s",
+                "Standard_ND24rs",
+                "Standard_ND24s",
+                "Standard_ND40rs_v2",
+                "Standard_ND40s_v3",
+                "Standard_ND6s",
+                "Standard_NP10s",
+                "Standard_NP20s",
+                "Standard_NP40s",
+                "Standard_NV12",
+                "Standard_NV12_Promo",
+                "Standard_NV12s_v2",
+                "Standard_NV12s_v3",
+                "Standard_NV16as_v4",
+                "Standard_NV24",
+                "Standard_NV24_Promo",
+                "Standard_NV24s_v2",
+                "Standard_NV24s_v3",
+                "Standard_NV32as_v4",
+                "Standard_NV48s_v3",
+                "Standard_NV4as_v4",
+                "Standard_NV6",
+                "Standard_NV6_Promo",
+                "Standard_NV6s_v2",
+                "Standard_NV8as_v4",
+                "Standard_PB6s"
+            ],
+            "metadata": {
+                "description": "Size of the VM to use for the Windows node(s) in the kubernetes cluster."
+            }
+        },
+        "KubernetesVersion": {
+            "defaultValue": "",
+            "type": "String",            
+            "metadata": {
+                "description": "Version of kubernetes to use. Leave blank to use the default version from Microsoft."
+            }
+        },
+        "KubernetesVnetName": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "Name of an existing VNET that will contain this AKS deployment.  Leave blank to create a new one with defaults"
+            }
+        },
+        "KubernetesVnetResourceGroup": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "Name of the existing VNET resource group.  Leave blank if not using an existing VNet."
+            }
+        },
+        "KubernetesSubnetName": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "Subnet name that will contain the App Service Environment in the existing VNet.  Leave blank if not using an existing VNet."
+            }
+        },
+        "KubernetesServiceCidr": {
+            "type": "string",
+            "defaultValue": "10.0.0.0/16",
+            "metadata": {
+                "description": "A CIDR notation IP range from which to assign service cluster IPs."
+            }
+        },
+        "KubernetesDNSServiceIP": {
+            "type": "string",
+            "defaultValue": "10.0.0.10",
+            "metadata": {
+                "description": "Containers DNS server IP address."
+            }
+        },
+        "KubernetesDockerBridgeCidr": {
+            "type": "string",
+            "defaultValue": "172.17.0.1/16",
+            "metadata": {
+                "description": "A CIDR notation IP for Docker bridge."
+            }
+        },
+        "SQLServerCreateNew": {
+            "defaultValue": "Yes",
+            "type": "String",
+            "allowedValues": [
+                "Yes",
+                "No"
+            ],
+            "metadata": {
+                "description": "If you select No, you must enter the FQDN of an existing sql server accessable by this azure subscription"
+            }
+        },
+        "SQLServerName": {
+            "defaultValue": "chuckakssql",
+            "type": "String",
+            "metadata": {
+                "description": "Enter a unique sql server name.  Can contain only lowercase letters, numbers, and '-', but can't start or end with '-' or have more than 63 characters and be an available sqlserver name in azure.  SQL Server names are globally unique in Azure"
+            }
+        },        
+        "SQLServerUser": {
+            "defaultValue":"sqladmin",
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+                "description": "Administrator SQL login name to create with the new sql server or to use to connect to existing sql server.  Your login name must not contain a SQL Identifier or a typical system name (like admin, administrator, sa, root, dbmanager, loginmanager, etc.) or a built-in database user or role (like dbo, guest, public, etc.).  Your login name must not include non-alphanumeric characters.  Your login name must not start with numbers or symbols"
+            }
+        },
+        "SQLServerPassword": {
+            "defaultValue": "!Profisee123!",
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for sql server user.  The password does not contain the account name of the user and must be at least eight characters long and be no more than 128 characters in length.  The password contains characters from three of the following four categories: Latin uppercase letters (A through Z).  Latin lowercase letters (a through z).  Base 10 digits (0 through 9).  Non-alphanumeric characters such as: exclamation point (!), dollar sign ($), number sign (#), or percent (%)."
+            }
+        },
+        "SQLServerDatabaseName": {
+            "defaultValue": "Profisee",
+            "type": "String",
+            "metadata": {
+                "description": "Name of database to create and/or use.  Name should not match special pattern and has a length of at most 128.  Should not contain reserved words.  No database with the same name exists in the server"
+            }
+        },
+        "StorageAccountCreateNew": {
+            "defaultValue": "Yes",
+            "type": "String",
+            "allowedValues": [
+                "Yes",
+                "No"
+            ],
+            "metadata": {
+                "description": "If you select No, you must enter the information for an existing storage account including password.  If you choose Yes, password is not required and will be ignored."
+            }
+        },
+        "StorageAccountName": {
+            "defaultValue": "chuckaksstorage",
+            "type": "String",
+            "metadata": {
+                "description": "Enter a unique name.  Can contain only lowercase letters and numbers. Name must be between 3 and 24 characters.  Storage account names are globally unique in Azure"
+            }
+        }, 
+         "StorageAccountAccessKey": {
+            "defaultValue":"",
+            "type": "securestring",
+            "metadata": {
+                "description": "Access key for existing storage account if not creating one.  If creating one, not required and will be ignored.  Can contain only lowercase letters and numbers. Name must be between 3 and 24 characters."
+            }
+        },
+        "StorageAccountType": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+                "Standard_LRS",
+                "Standard_ZRS",
+                "Standard_GRS",
+                "Standard_RAGRS",
+                "Premium_LRS"
+            ],
+            "metadata": {
+                "description": "Storage Account type"
+            }
+        },
+         "StorageAccountFileShareName": {
+            "defaultValue": "files",
+            "type": "String",
+            "metadata": {
+                "description": "Name of file share in the storage account to create and/or use.   Can contain only lowercase letters, numbers, and hyphens, and must begin and end with a letter or a number. The name cannot contain two consecutive hyphens."
+            }
+        },
+        "DNSUpdate": {
+            "defaultValue": "Yes",
+            "type": "String",
+            "allowedValues": [
+                "Yes",
+                "No"
+            ],
+            "metadata": {
+                "description": "If Yes then your dns zone must be in Azure.  If No then you have to update the dns record yourself.  Use the IP adress that is output from the InstallProfiseePlatform deploymnet step"
+            }
+        },
+        "DNSHostName": {
+            "defaultValue": "chuck",
+            "type": "String",
+            "metadata": {
+                "description": "Host name to use/create.  Required if updating DNS."
+            }
+        },
+        "DNSDomainName": {
+            "defaultValue": "dev.profisee.com",
+            "type": "String",
+            "metadata": {
+                "description": "Domain name name to use.  Required if updating DNS."
+            }
+        },
+        "DNSDomainResourceGroup": {
+            "defaultValue": "Profisee",
+            "type": "String",
+            "metadata": {
+                "description": "Resource group that the DNS zone (Domain name) is in.  Required if updating DNS."
+            }
+        },   
+        "HttpsConfigure": {
+            "defaultValue": "Yes",
+            "type": "String",
+            "allowedValues": [
+                "Yes",
+                "No"
+            ],
+            "metadata": {
+                "description": "If Yes, then you must supply the certificate informtion.  If No then you web traffic is not secure and only works over http."
+            }
+        }, 
+        "HttpsCertificate": {
+            "defaultValue": "-----BEGIN CERTIFICATE----- MIIG+DCCBeCgAwIBAgIRAIDezVfPBWEAO6WpprQCnakwDQYJKoZIhvcNAQELBQAw gZUxCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAO BgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28gTGltaXRlZDE9MDsGA1UE AxM0U2VjdGlnbyBSU0EgT3JnYW5pemF0aW9uIFZhbGlkYXRpb24gU2VjdXJlIFNl cnZlciBDQTAeFw0yMDA4MjAwMDAwMDBaFw0yMTA5MjEwMDAwMDBaMIGzMQswCQYD VQQGEwJVUzEOMAwGA1UEERMFMzAwMjIxEDAOBgNVBAgTB0dlb3JnaWExEzARBgNV BAcTCkFscGhhcmV0dGExJjAkBgNVBAkTHTM2NTUgQnJvb2tzaWRlIFBrd3ksIFN0 ZS4gMTc1MR0wGwYDVQQKExRQcm9maXNlZSBHcm91cCwgSW5jLjELMAkGA1UECxMC SVQxGTAXBgNVBAMTEGRldi5wcm9maXNlZS5jb20wggEiMA0GCSqGSIb3DQEBAQUA A4IBDwAwggEKAoIBAQC7DyhhlC3KLpc/cPJWatp4ugfqRLKV+wqfD9PENgninh1x 28he6eF5gCthzPeu0ifduCFVrtDrFscKmYpHj63Bxk6rj3TpULDihe6VZ9zVikCn tWoBqD7Tc6XxDXrk8Ni8Eq8hxeq/QaVemH4quP0i2GTzbEbEP46tIDvqpfFf/2PH 8XXE4uOQAl/rIxpKNAoO79p8Y8s66FNS0KaVWBif4pOiLzuEYYrEPs5QfBUO2eFc zxXMx2xTaQpJtmES16u6boAGL6r6bkJpk49KjQKzO61w6HkS8Nr/pCIXWq2jUI0L NQFYanrN4vYOpgj5b0YA8LsmB69/bJARxRZCJpTdAgMBAAGjggMhMIIDHTAfBgNV HSMEGDAWgBQX2dYlJ2f5McJJQ9kwNkSMbKlP6zAdBgNVHQ4EFgQUr7+PHIsLtcvH pbVSqwmMcm3QRbQwDgYDVR0PAQH/BAQDAgWgMAwGA1UdEwEB/wQCMAAwHQYDVR0l BBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMEoGA1UdIARDMEEwNQYMKwYBBAGyMQEC AQMEMCUwIwYIKwYBBQUHAgEWF2h0dHBzOi8vc2VjdGlnby5jb20vQ1BTMAgGBmeB DAECAjBaBgNVHR8EUzBRME+gTaBLhklodHRwOi8vY3JsLnNlY3RpZ28uY29tL1Nl Y3RpZ29SU0FPcmdhbml6YXRpb25WYWxpZGF0aW9uU2VjdXJlU2VydmVyQ0EuY3Js MIGKBggrBgEFBQcBAQR+MHwwVQYIKwYBBQUHMAKGSWh0dHA6Ly9jcnQuc2VjdGln by5jb20vU2VjdGlnb1JTQU9yZ2FuaXphdGlvblZhbGlkYXRpb25TZWN1cmVTZXJ2 ZXJDQS5jcnQwIwYIKwYBBQUHMAGGF2h0dHA6Ly9vY3NwLnNlY3RpZ28uY29tMIIB BAYKKwYBBAHWeQIEAgSB9QSB8gDwAHcAfT7y+I//iFVoJMLAyp5SiXkrxQ54CX8u apdomX4i8NcAAAF0DXYZTQAABAMASDBGAiEA35iZMDEO+cvaikwIdWC3Y2CBOL7w hTHLKsCXsYHBJqYCIQDc6vEqD7uG+vT3zNVt9YQw0JCD9IJ5LloxCVY7ZNGBRwB1 AJQgvB6O1Y1siHMfgosiLA3R2k1ebE+UPWHbTi9YTaLCAAABdA12GXIAAAQDAEYw RAIgTXryFPz+RUXJuos7nVW4SaoIJsc7cCLebs+Ck/i9mwsCIDVVy+DpreQAlZJj Ji5C0wIyzfjwBpTnSf8gJ4/Tf/uhMGEGA1UdEQRaMFiCEGRldi5wcm9maXNlZS5j b22CEiouZGV2LnByb2Zpc2VlLmNvbYIXKi5wcmVzYWxlcy5wcm9maXNlZS5jb22C Fyouc2VydmljZXMucHJvZmlzZWUuY29tMA0GCSqGSIb3DQEBCwUAA4IBAQAW9yXK ODbK5g/d7PJZ7Ucs6NTeMd07Cx/3H7L3F+oXTZUtSGsU0V/Of4oqqeSPcBY4CoMa Dx2RaTpxde4jWyJB51aYRWR2x1KvNBoF4dfxRnxRAqoXG9CvDqCDT5LR3p3bkd0I LTnPR9T1WdCgh1iOMIQfEKVVS4Smv7EgiRV/kgi0wObk2rUOl9kD5lL8AZY3q0kL lWwc2Y1rL68BfZKS3keXNxvapkMIsFHoS9Ravg3eXr3UG7TtUIXKxJiY6+RksFam Kj3TlJqtT+sQHy1a8a31upYBHMSUoarBVtrTVyc32tCgn6ytc2S9FlgfIjg8sG67 T3Oi9xoeE8wozcKk -----END CERTIFICATE-----",
+            "type": "String",
+            "metadata": {
+                "description": "Required if using Https.  Paste the text from TLS certificate. Starts with    -----BEGIN CERTIFICATE-----"
+            }
+        },
+        "HttpsCertificatePrivateKey": {
+            "defaultValue": "-----BEGIN RSA PRIVATE KEY----- MIIEogIBAAKCAQEAuw8oYZQtyi6XP3DyVmraeLoH6kSylfsKnw/TxDYJ4p4dcdvI XunheYArYcz3rtIn3bghVa7Q6xbHCpmKR4+twcZOq4906VCw4oXulWfc1YpAp7Vq Aag+03Ol8Q165PDYvBKvIcXqv0GlXph+Krj9Ithk82xGxD+OrSA76qXxX/9jx/F1 xOLjkAJf6yMaSjQKDu/afGPLOuhTUtCmlVgYn+KToi87hGGKxD7OUHwVDtnhXM8V zMdsU2kKSbZhEterum6ABi+q+m5CaZOPSo0CszutcOh5EvDa/6QiF1qto1CNCzUB WGp6zeL2DqYI+W9GAPC7Jgevf2yQEcUWQiaU3QIDAQABAoIBACpijB4WHwz/oxZF L6gMpK2zy1zWDZglzrmNcsi0DOfcN2RH7l4xRP2MoOfTc3DZnh5jXSxGxQBrxBR/ B2HhKLguSL+fbRh7x+S//7g7VULOhYlqthcjif7MJtbYnNbYyudMnYG70I3fIEsv pvDjwzncyf0NNPi9RQUt912bFbcQKlh+vYbabuGwb924wZD6t3i0pCEpCKzcrQFs 9ZC/wNAU3XOFg5sRall58b4U1bwKNUjf/oPyadbBFRv6pjaYsXJo1H1CcA4i0KiB GogxDhK9g+l+ZzzIe/HQbH2/1j7bg7EhZEBc3MicasqkScrLw+KoNtZwW350RcE2 om2OwfECgYEA37Le4XS3wSLaM9fXc6LmwOWecViFeUbH3IHMFXjvOZw029s/XwQt c/VKCyU5YAQAdGSpBsEfwVRm+AmRXOUV9BHUxqMKbGwcLchZLJaBIL8Ny6ZS5o4q u2sj9O68KL+yFnBst2/f3STclWqCvJ1lyAdOZgQqdsAqRksU4WGiR+0CgYEA1hHj 82qt0mmDkMw+6RO051r07t1mWIGhRBD/ezwmgdjf4SdK5m79V7iCfNLJcuSSAY3I CYnfwoZiv2JfiC9PUzHMo1USIQ3IL8SETY3dM9k7i72xQlFnzHSWr4ulHheEk9t3 n59QvI26LU0mrIygDH6BMb3Xp45nAAWqYauPArECgYB2+0LFFDmwhoMc1A8KuHiX 3Qn7K6RCrz0asgcE3MARGl6bGfCI70XlyW/Koc/0m+xJ/EhTCWGEiQoDn8Mrb8XP fbR4uruOk6ohR9D2gE7KRhRmX170tmVQLlp/qoN2ARAOE1of72dYzoRtDKvg+q7q R8iRRmH3q5pQrRq8DhwsuQKBgGinxnGyrdg4jYG02OzKHZ8d8LD2vJp4hYbpaH2v IoRIqutAcnXFvUWtht3Pj30EEf2Ae1NufF51pME8Lsg9mOJrbkhLxtkyC7SOtr/T o1k90sa2rnplogFq3mBkPQ1BIifHG+yFzsrf3y1Wkpm5BmYVUsQms8/O5rw0COBH J1uBAoGAPo7GmK+hwphPXIkljLwphSHBfF028v9/TJMDlhUMR5E5bFsHAnfrA/HQ vkztA3qZ2+O5pplWewhSsg62U5xjVQPHeqi8f1OLhnbHkCnVct1qIpBg2QwJmoiJ 7tXBDayWnRpY5AMGIJXFFntPKQkEVtxvA4+iOSu4jJO3gKTtNGA= -----END RSA PRIVATE KEY-----",
+            "type": "String",
+            "metadata": {
+                "description": "Required if using Https.  Paste the text from private key for your TLS certificate. Starts with    -----BEGIN PRIVATE KEY-----"
+            }
+        }
+    },
+    "variables": 
+    {
+        "vnetId":"[resourceId(parameters('KubernetesVnetResourceGroup'),'Microsoft.Network/virtualNetworks/subnets',parameters('KubernetesVnetName'),parameters('KubernetesSubnetName'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ContainerService/managedClusters",
+            "apiVersion": "2020-03-01",
+            "name": "[parameters('KubernetesClusterName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Basic",
+                "tier": "Free"
+            },
+            "properties": {
+                "kubernetesVersion": "[parameters('KubernetesVersion')]",
+                "dnsPrefix": "profisee",
+                "agentPoolProfiles": [
+                    {
+                        "name": "nplinux1",
+                        "count": 1,
+                        "vmSize": "[parameters('KubernetesLinuxVMSize')]",
+                        "osDiskSizeGB": 100,
+                        "maxPods": 30,
+                        "type": "VirtualMachineScaleSets",
+                        "orchestratorVersion": "[parameters('KubernetesVersion')]",
+                        "enableNodePublicIP": false,
+                        "nodeLabels": {},
+                        "mode": "System",
+                        "osType": "Linux",
+                        "vnetSubnetID": "[if(not(empty(parameters('KubernetesVnetName'))),variables('vnetId'),json('null'))]"
+                    },
+                    {
+                        "name": "npwin1",
+                        "count": 1,
+                        "vmSize": "[parameters('KubernetesWindowsVMSize')]",
+                        "osDiskSizeGB": 100,
+                        "maxPods": 30,
+                        "type": "VirtualMachineScaleSets",
+                        "orchestratorVersion": "[parameters('KubernetesVersion')]",
+                        "enableNodePublicIP": false,
+                        "mode": "User",
+                        "osType": "Windows",
+                        "vnetSubnetID": "[if(not(empty(parameters('KubernetesVnetName'))),variables('vnetId'),json('null'))]"
+                    }
+                ],
+                "linuxProfile": {
+                    "adminUsername": "azureuser",
+                    "ssh": {
+                        "publicKeys": [
+                            {
+                                "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDOJtY73a8o8/+lSlrEycIchV77zZJeXHZT1+Lvhf97yrmPIU5hiVDLm3z8gD8sxi5VSQ7K3KvTbI7ssNUruXCVSWziDl2jTxOVfGo9faneP1dXGDnU7sRvRHHZ+9xwzh4zGdX4eMWZf1Szh8868f7KBn93mZJZt4Z3uQKJJZuDIveAeYMNQrOi1KGwRPNIOpK3Mu/TzDPo0q51mOYM7KoB0HsZmgWVVMY7vFnwWZGnBOS3QJEZKd369mFgDZ42h3p3gDkcMN76naApSnfCqTZMJ9jr1w0wSNw21IKMFCHph2t5kOPMNQCTq3uA4tbkWHMHyxrXgqBOKHgmVXNFF2BT"
+                            }
+                        ]
+                    }
+                },
+                "windowsProfile": {
+                    "adminUsername": "winadmin",
+                    "adminPassword": "Ple@seCh@ngeMe1234!"
+                },                
+                "nodeResourceGroup": "[concat('MC_',resourceGroup().name,'_', parameters('KubernetesClusterName'), '_',resourceGroup().location)]",
+                "enableRBAC": true,
+                "networkProfile": {
+                    "networkPlugin": "azure",
+                    "loadBalancerSku": "Standard",
+                    "outboundType": "loadBalancer",
+                    "serviceCidr": "[parameters('KubernetesServiceCidr')]",
+                    "dnsServiceIP": "[parameters('KubernetesDNSServiceIP')]",
+                    "dockerBridgeCidr": "[parameters('KubernetesDockerBridgeCidr')]"
+                }
+            },
+            "identity": {
+                "type": "SystemAssigned"
+            }
+        },
+        {
+            "type": "Microsoft.ContainerService/managedClusters/agentPools",
+            "apiVersion": "2020-03-01",
+            "name": "[concat(parameters('KubernetesClusterName'), '/nplinux1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', parameters('KubernetesClusterName'))]"
+            ],
+            "properties": {
+                "count": 1,
+                "vmSize": "[parameters('KubernetesLinuxVMSize')]",
+                "osDiskSizeGB": 100,
+                "maxPods": 30,
+                "type": "VirtualMachineScaleSets",
+                "orchestratorVersion": "[parameters('KubernetesVersion')]",
+                "enableNodePublicIP": false,
+                "nodeLabels": {},
+                "mode": "System",
+                "osType": "Linux"
+            }
+        },
+        {
+            "type": "Microsoft.ContainerService/managedClusters/agentPools",
+            "apiVersion": "2020-03-01",
+            "name": "[concat(parameters('KubernetesClusterName'), '/npwin1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', parameters('KubernetesClusterName'))]"
+            ],
+            "properties": {
+                "count": 1,
+                "vmSize": "[parameters('KubernetesWindowsVMSize')]",
+                "osDiskSizeGB": 100,
+                "maxPods": 30,
+                "type": "VirtualMachineScaleSets",
+                "orchestratorVersion": "[parameters('KubernetesVersion')]",
+                "enableNodePublicIP": false,
+                "mode": "User",
+                "osType": "Windows"
+            }
+        },
+        {
+            "condition": "[equals(tolower(parameters('SQLServerCreateNew')),tolower('Yes'))]",
+            "name": "[tolower(parameters('SQLServerName'))]",
+            "type": "Microsoft.Sql/servers",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2019-06-01-preview",
+            "dependsOn": [],
+            "tags": {
+                "displayName": "SQLServer"
+            },
+            "properties": {
+                "administratorLogin": "[parameters('SQLServerUser')]",
+                "administratorLoginPassword": "[parameters('SQLServerPassword')]"
+            },
+            "resources": [
+                {
+                    "condition": "[equals(tolower(parameters('SQLServerCreateNew')),tolower('Yes'))]",
+                    "name": "AllowAllWindowsAzureIps",
+                    "type": "firewallrules",
+                    "location": "[resourceGroup().location]",
+                    "apiVersion": "2014-04-01",
+                    "dependsOn": [
+                        "[concat('Microsoft.Sql/servers/', tolower(parameters('SQLServerName')))]"
+                    ],
+                    "properties": {
+                        "startIpAddress": "0.0.0.0",
+                        "endIpAddress": "0.0.0.0"
+                    }
+                }
+            ]
+        },
+        {
+            "condition": "[equals(tolower(parameters('StorageAccountCreateNew')),tolower('Yes'))]",
+            "name": "[tolower(parameters('StorageAccountName'))]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2015-06-15",
+            "dependsOn": [],
+            "tags": {
+                "displayName": "[parameters('StorageAccountName')]"
+            },
+            "properties": {
+                "accountType": "[parameters('StorageAccountType')]"
+            }
+        },
+        {
+            "condition": "[equals(tolower(parameters('StorageAccountCreateNew')),tolower('Yes'))]",
+            "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(tolower(parameters('StorageAccountName')), '/default/', tolower(parameters('StorageAccountFileShareName')))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', tolower(parameters('StorageAccountName')))]"
+            ]
+        },          
+        {
+        "type": "Microsoft.Resources/deploymentScripts",
+        "apiVersion": "2019-10-01-preview",
+        "name": "InstallProfiseePlatform",
+        "location": "[resourceGroup().location]",
+        "kind": "AzureCLI",
+         "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', parameters('KubernetesClusterName'))]"
+            ],
+        "identity": {
+            "type": "userAssigned",
+            "userAssignedIdentities": {
+                "[concat('/subscriptions/',subscription().subscriptionId,'/resourcegroups/',parameters('ManagedIdentityResourceGroup'),'/providers/Microsoft.ManagedIdentity/userAssignedIdentities/',parameters('ManagedIdentityName'))]":{}
+            }
+        },
+        "properties": {
+            "forceUpdateTag": "[guid(resourceGroup().id)]",
+            "azCliVersion": "2.0.80",
+            "timeout": "PT1H",
+            "cleanupPreference": "OnExpiration",
+            "retentionInterval": "P30D",
+            "environmentVariables": [
+                {
+                    "name": "RESOURCEGROUPNAME",
+                    "value": "[resourceGroup().name]"
+                },
+                {
+                    "name": "CLUSTERNAME",
+                    "value": "[parameters('KubernetesClusterName')]"
+                },
+                {
+                    "name": "SQLNAME",
+                    "value": "[if(equals(parameters('SQLServerCreateNew'),'Yes'), concat(parameters('SQLServerName'),'.database.windows.net'),parameters('SQLServerName'))]"
+                },
+                {
+                    "name": "SQLUSERNAME",
+                    "value": "[parameters('SQLServerUser')]"
+                },
+                {
+                    "name": "SQLUSERPASSWORD",
+                    "value": "[parameters('SQLServerPassword')]"
+                },
+                {
+                    "name": "SQLDBNAME",
+                    "value": "[parameters('SQLServerDatabaseName')]"
+                },
+                {
+                    "name": "STORAGEACCOUNTNAME",
+                    "value": "[parameters('StorageAccountName')]"
+                },
+                {
+                    "name": "STORAGEACCOUNTFILESHARENAME",
+                    "value": "[parameters('StorageAccountFileShareName')]"
+                },
+                {
+                    "name": "ADMINACCOUNTNAME",
+                    "value": "[parameters('ProfiseeAdminUserAccount')]"
+                },
+                {
+                    "name": "DNSHOSTNAME",
+                    "value": "[parameters('DNSHostName')]"
+                },
+                {
+                    "name": "DNSDOMAINNAME",
+                    "value": "[parameters('DNSDomainName')]"
+                },
+                {
+                    "name": "DOMAINNAMERESOURCEGROUP",
+                    "value": "[parameters('DNSDomainResourceGroup')]"
+                },
+                {
+                    "name": "UPDATEDNS",
+                    "value": "[parameters('DNSUpdate')]"
+                },
+                {
+                    "name": "EXTERNALDNSNAME",
+                    "value": "[concat(parameters('DNSHostName'),'.',parameters('DNSDomainName'))]"
+                },
+                {
+                    "name": "EXTERNALDNSURL",
+                    "value": "[if(equals(parameters('HttpsConfigure'),'Yes'), concat('https://',parameters('DNSHostName'),'.',parameters('DNSDomainName')),concat('http://',parameters('DNSHostName'),'.',parameters('DNSDomainName')))]"
+                },                
+                {
+                    "name": "OIDCURL",
+                    "value": "[concat('https://login.microsoftonline.com/',subscription().tenantId)]"
+                },
+                {
+                    "name": "LICENSEDATA",
+                    "value": "[parameters('ProfiseeLicense')]"
+                },
+                {
+                    "name": "ACRUSER",
+                    "value": "[parameters('ProfiseeACRUserName')]"
+                },
+                {
+                    "name": "ACRUSERPASSWORD",
+                    "value": "[parameters('ProfiseeACRPassword')]"
+                },
+                {
+                    "name": "TLSCERT",
+                    "value": "[parameters('HttpsCertificate')]"
+                },
+                {
+                    "name": "TLSKEY",
+                    "value": "[parameters('HttpsCertificatePrivateKey')]"
+                },
+                {
+                    "name": "PROFISEEVERSION",
+                    "value": "[parameters('ProfiseeVersion')]"
+                },
+                {
+                    "name": "UPDATEAAD",
+                    "value": "[parameters('ActiveDirectoryCreateApp')]"
+                },
+                {
+                    "name": "CLIENTID",
+                    "value": "[parameters('ActiveDirectoryClientId')]"
+                },
+                {
+                    "name": "CONFIGUREHTTPS",
+                    "value": "[parameters('HttpsConfigure')]"
+                }
+                ,
+                {
+                    "name": "FILEREPOPASSWORD",
+                    "value": "[parameters('StorageAccountAccessKey')]"
+                }
+
+            ],
+            "primaryScriptUri": "https://raw.githubusercontent.com/Profisee/kubernetes/master/Azure-ARM/deployprofisee.sh"            
+        }
+        },
+        {
+            "apiVersion": "2018-02-01",
+            "name": "pid-498552cf-87f5-55b7-a69b-5364df5c1994",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": []
+                }
+            }
+        }       
+        
+    ],
+    "outputs": 
+    {
+    "InstallProfiseePlatformOutputs": {
+      "value": "[reference('InstallProfiseePlatform').outputs]",
+      "type": "object"
+    },
+    "KubernetesClusterFQDN": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', parameters('KubernetesClusterName'))).FQDN]"
+        }
+  }
+}
