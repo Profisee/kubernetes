@@ -7,6 +7,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS cls
 ###Pre reqs
 
 ###Create cluster.yaml
+
 apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 
