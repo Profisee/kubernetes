@@ -87,7 +87,7 @@ FILEREPOURL="\\\\\\\\\\\\\\\\${STORAGEACCOUNTNAME}.file.core.windows.net\\\\\\\\
 
 IFS='.' read -r -a repostring <<< "$PROFISEEVERSION"
 
-ACRREPONAME="profisee${repostring[0]}";
+ACRREPONAME="profisee${repostring[0],,}"; #lowercase is the ,,
 ACRREPOLABEL="${repostring[1]}"
 
 #set values in Settings.yaml
