@@ -3,11 +3,12 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "ProfiseeVersion": {
-            "defaultValue": "2020 R1",
+            "defaultValue": "2020R1.1",
             "type": "String",
             "allowedValues": [
-                "2020 R1",
-                "2020 R2 Preview"
+                "2020R1.0",
+				"2020R1.1",
+                "2020R2.Preview"
             ],
             "metadata": {
                 "description": "Version of the Profisee platform to use."

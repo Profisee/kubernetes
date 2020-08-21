@@ -81,13 +81,14 @@ fi
 FILEREPOUSERNAME="Azure\\\\\\\\${STORAGEACCOUNTNAME}"
 FILEREPOURL="\\\\\\\\\\\\\\\\${STORAGEACCOUNTNAME}.file.core.windows.net\\\\\\\\${STORAGEACCOUNTFILESHARENAME}"
 
-if [ "$PROFISEEVERSION" = "2020 R1" ]; then
-    ACRREPONAME='profisee2020r1';
-	ACRREPOLABEL='GA';
-else
-    ACRREPONAME='profisee2020r2';
-	ACRREPOLABEL='latest';
-fi
+#PROFISEEVERSION looks like this 2020R1.0
+#The repo is Profisee + everything to the left of the .
+#The label is everything to the right of the .
+
+IFS='.' read -r -a repostring <<< "$PROFISEEVERSION"
+
+ACRREPONAME="${repostring[0]}";
+ACRREPOLABEL="${repostring[1]}"
 
 #set values in Settings.yaml
 sed -i -e 's/$SQLNAME/'"$SQLNAME"'/g' Settings.yaml
@@ -106,6 +107,10 @@ sed -i -e 's/$EXTERNALDNSNAME/'"$EXTERNALDNSNAME"'/g' Settings.yaml
 sed -i -e 's~$LICENSEDATA~'"$LICENSEDATA"'~g' Settings.yaml
 sed -i -e 's/$ACRREPONAME/'"$ACRREPONAME"'/g' Settings.yaml
 sed -i -e 's/$ACRREPOLABEL/'"$ACRREPOLABEL"'/g' Settings.yaml
+
+#Add settings.yaml as a secret so its always available after the deployment
+kubectl delete secret profisee-settings
+kubectl create secret generic profisee-settings --from-file=.\Settings.yaml
 
 helm repo add profisee https://profisee.github.io/kubernetes
 helm uninstall profiseeplatform2020r1
