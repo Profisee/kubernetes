@@ -24,8 +24,8 @@ profiseeRunTime:
         emailClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
 clusterNode:
     limits:
-      cpu: 1
-      memory: 4000M
+      cpu: 1000
+      memory: 10T
     requests:
       cpu: 1
       memory: 1000M        
