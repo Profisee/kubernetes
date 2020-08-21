@@ -39,7 +39,7 @@ if [ "$CONFIGUREHTTPS" = "Yes" ]; then
 else
 	echo '    NA' > tls.key;	    
 fi
-rm a.key
+#rm a.key
 
 #set dns
 if [ "$UPDATEDNS" = "Yes" ]; then
