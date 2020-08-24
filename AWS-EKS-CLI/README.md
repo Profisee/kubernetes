@@ -27,36 +27,36 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS cls
           volumeSize: 100
           amiFamily: WindowsServer2019FullContainer
 
-#setup ami
-aws configure
-AWS Access Key ID [None]: XXXX
-AWS Secret Access Key [None]: XXXX
-Default region name [None]: us-east-1
-Default output format [None]: json
+###setup ami
+      aws configure
+      AWS Access Key ID [None]: XXXX
+      AWS Secret Access Key [None]: XXXX
+      Default region name [None]: us-east-1
+      Default output format [None]: json
 
-#Create the cluster
-eksctl create cluster -f cluster.yaml --install-vpc-controllers --timeout 30m --verbose=4
+###Create the cluster
+      eksctl create cluster -f cluster.yaml --install-vpc-controllers --timeout 30m --verbose=4
 
-#connect kubectl
-aws eks --region us-east-1 update-kubeconfig --name ChuckCluster
+###Connect kubectl
+      aws eks --region us-east-1 update-kubeconfig --name ChuckCluster
 
-#Install nginx
-helm repo add stable https://kubernetes-charts.storage.googleapis.com/;
-#get the nginx settings for aws, note its different than azure/google
-curl -fsSL -o nginxSettings.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/AWS-EKS-CLI/nginxSettingsAWS.yaml;
-helm install nginx stable/nginx-ingress --values nginxSettingsNLB.yaml
+###Install nginx
+      helm repo add stable https://kubernetes-charts.storage.googleapis.com/;
+      #get the nginx settings for aws, note its different than azure/google
+      curl -fsSL -o nginxSettings.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/AWS-EKS-CLI/nginxSettingsAWS.yaml;
+      helm install nginx stable/nginx-ingress --values nginxSettingsNLB.yaml
 
-#get ip
-kubectl get services nginx-nginx-ingress-controller
+###get ip
+      kubectl get services nginx-nginx-ingress-controller
 
-#note the external-ip and you need to create a cname record in dns to point to it (xxxxxx.elb.us-east-1.amazonaws.com)
+###note the external-ip and you need to create a cname record in dns to point to it (xxxxxx.elb.us-east-1.amazonaws.com)
 
-#Get the Settings.yaml template
-curl -fsSL -o Settings.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/AWS-EKS-CLI/Settings.yaml;
-#Update all the values
+###Get the Settings.yaml template
+      curl -fsSL -o Settings.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/AWS-EKS-CLI/Settings.yaml;
+###Update all the values
 
-#Install Profisee
-helm repo add profisee https://profisee.github.io/kubernetes
-helm uninstall profiseeplatform2020r1
-helm install profiseeplatform2020r1 profisee/profisee-platform --values Settings.yaml
+###Install Profisee
+      helm repo add profisee https://profisee.github.io/kubernetes
+      helm uninstall profiseeplatform2020r1
+      helm install profiseeplatform2020r1 profisee/profisee-platform --values Settings.yaml
 
