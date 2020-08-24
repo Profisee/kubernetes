@@ -4,15 +4,21 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS cls
 
 ## Prerequisites
 
-1.  SQL Server
+1.  License
+    - Profisee license associated with the dns for the environment
+    - Token for access to the profisee container
+
+2.  Https certificate including the private key
+
+3.  SQL Server
     - An AWS RDS instance needs t obe created ahead of time.  Follow trhese instructions https://aws.amazon.com/getting-started/hands-on/create-microsoft-sql-db/
     - Make sure the SQL Server is accessable by the EKS cluster
 
-2.  File Share
+4.  File Share
     - Create storage gateway (file) - https://docs.aws.amazon.com/storagegateway/latest/userguide/create-gateway-file.html
     - Create file share (SMB) - https://docs.aws.amazon.com/storagegateway/latest/userguide/CreatingAnSMBFileShare.html
     
-3.  Credentials
+5.  Credentials
     - Setup IAM - https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-creds
     - aws configure
       AWS Access Key ID [None]: XXXX
