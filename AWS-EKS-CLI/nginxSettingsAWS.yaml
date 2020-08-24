@@ -7,6 +7,18 @@ controller:
   config:    
     real-ip-header: "proxy_protocol"    
     use-forwarded-headers: "true"  
+    proxy-buffering: "off"
+    proxy-buffer-size: "16k"
+    proxy-connect-timeout: "5400"
+    proxy-send-timeout: "5400"
+    proxy-read-timeout: "5400"
+    proxy-next-upstream: "off"
+    proxy-request-buffering: "off"    
+    client-header-buffer-size: "64k"
+    http2-max-field-size: "16k"
+    http2-max-header-size: "128k"
+    large-client-header-buffers: "8 64k"
+    client_body_buffer_size: "64k"
   metrics:    
     enabled: "true"  
   service:    
