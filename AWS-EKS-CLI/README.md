@@ -15,7 +15,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS cls
     - Make sure the SQL Server is accessable by the EKS cluster
 
 4.  File Share
-    - Create storage gateway (file) - https://docs.aws.amazon.com/storagegateway/latest/userguide/create-gateway-file.html
+    - Create storage gateway (File via EC2) - https://docs.aws.amazon.com/storagegateway/latest/userguide/create-gateway-file.html
     - Create file share (SMB) - https://docs.aws.amazon.com/storagegateway/latest/userguide/CreatingAnSMBFileShare.html
     
 5.  Credentials
