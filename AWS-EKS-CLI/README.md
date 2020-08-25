@@ -1,6 +1,6 @@
 # Deploy Profisee platform on to EKS (AWS Elastic Kubernetes services)
 
-This explains the process to deploy the Profisee platform onto a new AWS EKS clsuter
+This explains the process to deploy the Profisee platform onto a new AWS EKS cluster
 
 ## Prerequisites
 
@@ -62,8 +62,8 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS cls
 
             helm repo add stable https://kubernetes-charts.storage.googleapis.com/;
             #get the nginx settings for aws, note its different than azure/google
-            curl -fsSL -o nginxSettings.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/AWS-EKS-CLI/nginxSettingsAWS.yaml;
-            helm install nginx stable/nginx-ingress --values nginxSettingsNLB.yaml
+            curl -fsSL -o nginxSettingsAWS.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/AWS-EKS-CLI/nginxSettingsAWS.yaml;
+            helm install nginx stable/nginx-ingress --values nginxSettingsAWS.yaml
     
 3.  Get nginx IP
     
