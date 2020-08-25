@@ -20,11 +20,12 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS cls
     
 5.  Credentials
     - Setup IAM - https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-creds
-    - aws configure
-      AWS Access Key ID [None]: XXXX
-      AWS Secret Access Key [None]: XXXX
-      Default region name [None]: us-east-1
-      Default output format [None]: json
+    
+		    aws configure
+		    AWS Access Key ID [None]: XXXX
+		    AWS Secret Access Key [None]: XXXX
+		    Default region name [None]: us-east-1
+		    Default output format [None]: json
       
 
 ## Deployment steps
