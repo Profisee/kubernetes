@@ -49,7 +49,7 @@ This explains the process to deploy the Profisee platform onto a new GCP Kuberne
     - Fetch the Settings.yaml template
       
             curl -fsSL -o Settings.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/GCP-CLI/Settings.yaml;
-    -Update all the values
+    - Update the values
     
 		sqlServer: 
 		    name: "Sql server fully qualified domain name"
