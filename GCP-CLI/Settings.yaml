@@ -1,0 +1,56 @@
+sqlServer: 
+    name: "$SQLNAME"
+    databaseName: "$SQLDBNAME"
+    userName: "$SQLUSERNAME"
+    password: "$SQLUSERPASSWORD"
+profiseeRunTime:
+    adminAccount: "$ADMINACCOUNTNAME"
+    fileRepository:
+        userName: "$FILEREPOUSERNAME"
+        password: "$FILEREPOPASSWORD"
+        logonType: "NewCredentials"
+        location: "$FILEREPOURL"
+    externalDnsUrl: ""
+    externalDnsName: "$EXTERNALDNSNAME"
+    oidc:
+        name: "Azure Active Directory"
+        authority: "$OIDCURL"
+        clientId: "$CLIENTID"
+        clientSecret: "$OIDCCLIENTSECRET"
+        usernameClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+        userIdClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+        firstNameClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
+        lastNameClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
+        emailClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+clusterNode:
+    limits:
+      cpu: 1000
+      memory: 10T
+    requests:
+      cpu: 1
+      memory: 1000M        
+image:
+    registry: "profisee.azurecr.io"
+    repository: "$ACRREPONAME"
+    tag: "$ACRREPOLABEL"
+    auth: |
+        {
+           "auths":{
+              "profisee.azurecr.io":{
+                 "username":"$ACRUSER",
+                 "password":"$ACRPASSWORD",
+                 "email":"$ACREMAIL",
+                 "auth":"$ACRAUTH"
+              }
+           }
+        }
+licenseFileData: $LICENSEDATA
+
+oidcFileData: |
+    {      
+    }
+tlsCert: |
+    $TLSCERT
+tlsKey: |
+    $TLSKEY  
+    
