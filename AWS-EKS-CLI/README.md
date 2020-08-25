@@ -1,4 +1,4 @@
-# Deploy Profisee platform on to EKS (AWS Elastic Kubernetes services)
+# Deploy Profisee platform on to AWS Elastic Kubernetes services (EKS)
 
 This explains the process to deploy the Profisee platform onto a new AWS EKS cluster
 
