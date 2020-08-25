@@ -51,65 +51,65 @@ This explains the process to deploy the Profisee platform onto a new GCP Kuberne
             curl -fsSL -o Settings.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/GCP-CLI/Settings.yaml;
     - Update the values
     
-		sqlServer: 
-		    name: "Sql server fully qualified domain name"
-		    databaseName: "Database name"
-		    userName: "Sql username"
-		    password: "Sql password"
-		profiseeRunTime:
-		    adminAccount: "Email/account of the first super user who will be registered with Profisee, who will be able to logon and add other users."
-		    fileRepository:
-			userName: "File repository username"
-			password: "File repository password/access key"
-			logonType: "NewCredentials"
-			location: "File repository unc path eg: \\\\google.ip.address\\profisee"
-		    externalDnsUrl: ""
-		    externalDnsName: "web url to profisee endpoint eg: eks.mycompany.com"
-		    oidc:
-			name: "Authority name eg: Google"
-			authority: "Authority url  eg: https://accounts.google.comt"
-			clientId: "Authority client id eg" acbdefghijklmnop"
-			clientSecret: "thisisasecret"
-			usernameClaim: "Authority username claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
-			userIdClaim: "Authority userid claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
-			firstNameClaim: "Authority first name claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
-			lastNameClaim: "Authority last name claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
-			emailClaim: "Authority email claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
-		clusterNode:
-		    limits:
-		      cpu: 1000
-		      memory: 10T
-		    requests:
-		      cpu: 1
-		      memory: 1000M        
-		image:
-		    registry: "profisee.azurecr.io"
-		    repository: "profisee2020r1"
-		    tag: "1"
-		    auth: |
-			{
-			   "auths":{
-			      "profisee.azurecr.io":{
-				 "username":"Username supplied by Profisee support",
-				 "password":"Password supplied by Profisee support",
-				 "email":"support@profisee.com",
-				 "auth":"Token supplied by Profisee support"
-			      }
-			   }
-			}
-		licenseFileData: License string provided by Profisee support
+			sqlServer: 
+			    name: "Sql server fully qualified domain name"
+			    databaseName: "Database name"
+			    userName: "Sql username"
+			    password: "Sql password"
+			profiseeRunTime:
+			    adminAccount: "Email/account of the first super user who will be registered with Profisee, who will be able to logon and add other users."
+			    fileRepository:
+				userName: "File repository username"
+				password: "File repository password/access key"
+				logonType: "NewCredentials"
+				location: "File repository unc path eg: \\\\google.ip.address\\profisee"
+			    externalDnsUrl: ""
+			    externalDnsName: "web url to profisee endpoint eg: eks.mycompany.com"
+			    oidc:
+				name: "Authority name eg: Google"
+				authority: "Authority url  eg: https://accounts.google.comt"
+				clientId: "Authority client id eg" acbdefghijklmnop"
+				clientSecret: "thisisasecret"
+				usernameClaim: "Authority username claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+				userIdClaim: "Authority userid claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+				firstNameClaim: "Authority first name claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
+				lastNameClaim: "Authority last name claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
+				emailClaim: "Authority email claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+			clusterNode:
+			    limits:
+			      cpu: 1000
+			      memory: 10T
+			    requests:
+			      cpu: 1
+			      memory: 1000M        
+			image:
+			    registry: "profisee.azurecr.io"
+			    repository: "profisee2020r1"
+			    tag: "1"
+			    auth: |
+				{
+				   "auths":{
+				      "profisee.azurecr.io":{
+					 "username":"Username supplied by Profisee support",
+					 "password":"Password supplied by Profisee support",
+					 "email":"support@profisee.com",
+					 "auth":"Token supplied by Profisee support"
+				      }
+				   }
+				}
+			licenseFileData: License string provided by Profisee support
 
-		oidcFileData: |
-		    {      
-		    }
-		tlsCert: |
-		    -----BEGIN CERTIFICATE-----
-		    Add certificate string with opening and closing tags like this
-		    -----END CERTIFICATE-----
-		tlsKey: |
-		    -----BEGIN PRIVATE KEY-----
-		    Add certificate key string with opening and closing tags like this
-		    -----END PRIVATE KEY-----
+			oidcFileData: |
+			    {      
+			    }
+			tlsCert: |
+			    -----BEGIN CERTIFICATE-----
+			    Add certificate string with opening and closing tags like this
+			    -----END CERTIFICATE-----
+			tlsKey: |
+			    -----BEGIN PRIVATE KEY-----
+			    Add certificate key string with opening and closing tags like this
+			    -----END PRIVATE KEY-----
 
 5.  Install Profisee
 
