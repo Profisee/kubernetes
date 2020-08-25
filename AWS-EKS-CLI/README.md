@@ -75,7 +75,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS cls
             curl -fsSL -o Settings.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/AWS-EKS-CLI/Settings.yaml;
     -Update all the values
     
-		    sqlServer: 
+		sqlServer: 
 		    name: "Sql server fully qualified domain name"
 		    databaseName: "Database name"
 		    userName: "Sql username"
