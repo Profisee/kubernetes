@@ -29,7 +29,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS cls
 
 ## Deployment steps
 
-1.  Make cluster.yaml
+1.  Make cluster.yaml change the instance type to fit your needs.  https://aws.amazon.com/ec2/pricing/on-demand/
 
             apiVersion: eksctl.io/v1alpha5
             kind: ClusterConfig
