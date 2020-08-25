@@ -50,10 +50,12 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS cls
                 amiFamily: WindowsServer2019FullContainer
     
 2.  Create the EKS Clusterr
-    - eksctl create cluster -f cluster.yaml --install-vpc-controllers --timeout 30m
+    
+        eksctl create cluster -f cluster.yaml --install-vpc-controllers --timeout 30m
 
 3.  Configure kubectl
-    - aws eks --region us-east-1 update-kubeconfig --name ChuckCluster
+    
+        aws eks --region us-east-1 update-kubeconfig --name ChuckCluster
 
 3.  Install nginx
 
@@ -63,11 +65,12 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS cls
             helm install nginx stable/nginx-ingress --values nginxSettingsNLB.yaml
     
 3.  Get nginx IP
-    - kubectl get services nginx-nginx-ingress-controller
-    - Note the external-ip and you need to create a cname record in dns to point to it (xxxxxx.elb.us-east-1.amazonaws.com)
+    
+        kubectl get services nginx-nginx-ingress-controller
+        #Note the external-ip and you need to create a cname record in dns to point to it (xxxxxx.elb.us-east-1.amazonaws.com)
 
 4.  Create Profsiee Settings.yaml
-    - Fet the Settings.yaml template
+    - Fetch the Settings.yaml template
       
             curl -fsSL -o Settings.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/AWS-EKS-CLI/Settings.yaml;
     -Update all the values
@@ -79,5 +82,17 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS cls
             helm install profiseeplatform2020r1 profisee/profisee-platform --values Settings.yaml
             
 6.  Verify
-    -Comming soon
+    - Look at cluster
+	
+            kubectl get all
+	- Check pod status to make sure its finished downloading
+	
+            kubectl describe pod profisee-0
+	- Connect to container
+	        
+            kubectl exec -it profisee-0 powershell
+	- After connected look at config manager log
+	
+            Get-Content C:\Profisee\Configuration\LogFiles\SystemLog.log
+
 
