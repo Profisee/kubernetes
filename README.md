@@ -13,3 +13,7 @@ Home for all the templates to deploy Profisee Platform to AKS via ARM templates.
 ## Azure-Powershell
 
 Home for all the scripts needed to deploy Profisee Platform to AKS via Azure Powershell.
+
+## GCP-CLI
+
+Home for all the scripts needed to deploy Profisee Platform to Google Cloud Platform (GCP) Kubernetes via the gcp cli.
