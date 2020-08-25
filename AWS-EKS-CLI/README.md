@@ -28,7 +28,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS cls
 		    Default output format [None]: json
       
 
-## Deployment steps
+## Deployment
 
 1.  Make cluster.yaml change the instance type to fit your needs.  https://aws.amazon.com/ec2/pricing/on-demand/
 
