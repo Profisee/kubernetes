@@ -14,6 +14,11 @@ controller:
     proxy-read-timeout: "5400"
     proxy-next-upstream: "off"
     proxy-request-buffering: "off"
+    client-header-buffer-size: "64k"
+    http2-max-field-size: "16k"
+    http2-max-header-size: "128k"
+    large-client-header-buffers: "8 64k"
+    client_body_buffer_size: "64k"
 defaultBackend: 
   nodeSelector: 
     beta.kubernetes.io/os: linux
