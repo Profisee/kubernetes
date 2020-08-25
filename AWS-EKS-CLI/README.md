@@ -142,18 +142,19 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS cls
             helm uninstall profiseeplatform2020r1
             helm install profiseeplatform2020r1 profisee/profisee-platform --values Settings.yaml
             
-6.  Verify
-    - Look at cluster
+# Verify:
+
+1.  The initial deploy will have to download the container which takes about 10 minutes.  Verify its finished downloading the container:
+
+	kubectl describe pod profisee-0 #check status and wait for "Pulling" to finish
+
+1.  Container can be accessed with the following command:
+    
+        kubectl exec -it profisee-0 powershell
+
+2.  System logs can be accessed with the following command:
+    
+        Get-Content C:\Profisee\Configuration\LogFiles\SystemLog.log
 	
-            kubectl get all
-	- Check pod status to make sure its finished downloading
-	
-            kubectl describe pod profisee-0
-	- Connect to container
-	        
-            kubectl exec -it profisee-0 powershell
-	- After connected look at config manager log
-	
-            Get-Content C:\Profisee\Configuration\LogFiles\SystemLog.log
 
 
