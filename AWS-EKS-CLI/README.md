@@ -146,7 +146,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS cls
 
 1.  The initial deploy will have to download the container which takes about 10 minutes.  Verify its finished downloading the container:
 
-	kubectl describe pod profisee-0 #check status and wait for "Pulling" to finish
+		kubectl describe pod profisee-0 #check status and wait for "Pulling" to finish
 
 1.  Container can be accessed with the following command:
     
