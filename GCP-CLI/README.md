@@ -32,8 +32,10 @@ This explains the process to deploy the Profisee platform onto a new GCP Kuberne
 	
 
 3.  Add windows node pool
+	- VM sizing https://cloud.google.com/compute/vm-instance-pricing
     
-        gcloud container node-pools create windows-pool --cluster=mycluster --image-type=WINDOWS_LTSC --no-enable-autoupgrade --machine-type=n1-standard-2 --region us-east1-b
+        	gcloud container node-pools create windows-pool --cluster=mycluster --image-type=WINDOWS_LTSC --no-enable-autoupgrade --machine-type=n1-standard-2 --region us-east1-b
+	
 	- To save costs you can use the --preemptible flag https://cloud.google.com/blog/products/containers-kubernetes/cutting-costs-with-google-kubernetes-engine-using-the-cluster-autoscaler-and-preemptible-vms
 
 3.  Install nginx
