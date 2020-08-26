@@ -43,7 +43,7 @@ This explains the process to deploy the Profisee platform onto a new GCP Kuberne
             helm repo add stable https://kubernetes-charts.storage.googleapis.com/;
             #get the nginx settings for gcp
             curl -fsSL -o nginxSettingsGCP.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/GCP-CLI/nginxSettingsGCP.yaml;
-            helm install nginx stable/nginx-ingress --values nginxSettingsGCP.yaml
+            helm install nginx stable/nginx-ingress --values nginxSettingsGCP.yaml --set controller.service.loadBalancerIP=$junk
     
 3.  Get nginx IP and update DNS
     
