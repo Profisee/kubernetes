@@ -27,11 +27,11 @@ This explains the process to deploy the Profisee platform onto a new GCP Kuberne
     
 2.  Create the main cluster
     
-        gcloud container clusters create MyClusterName--cluster-version=1.16 --enable-ip-alias --num-nodes=3 --region us-east1-b
+        gcloud container clusters create mycluster --cluster-version=1.16 --enable-ip-alias --num-nodes=3 --region us-east1-b
 
 3.  Add windows node pool
     
-        gcloud container node-pools create windows-pool --cluster=profiseecluster --image-type=WINDOWS_LTSC --no-enable-autoupgrade --machine-type=n1-standard-2 --region us-east1-b
+        gcloud container node-pools create windows-pool --cluster=mycluster --image-type=WINDOWS_LTSC --no-enable-autoupgrade --machine-type=n1-standard-2 --region us-east1-b
 
 3.  Install nginx
 
