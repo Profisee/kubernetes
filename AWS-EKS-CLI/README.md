@@ -36,6 +36,9 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 		- Inbound rules
 		- Edit inbound rules
 		- Add MSSQL for outbound IP of cluster
+		- To get outbound ip of cluster Deployment step #5 needs to be complete
+			- Connect to container - kubectl exec -it profisee-0 powershell
+			- get oubound ip - Invoke-RestMethod http://ipinfo.io/json | Select -exp ip
 
 4.  File Share
     - Create storage gateway (File via EC2) - https://docs.aws.amazon.com/storagegateway/latest/userguide/create-gateway-file.html
