@@ -230,5 +230,8 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
     
         Get-Content C:\Profisee\Configuration\LogFiles\SystemLog.log
 	
+3.  Goto Profisee Platform web portal
+	- http(s)://FQDNThatPointsToClusterIP/Profisee
+	
 
 
