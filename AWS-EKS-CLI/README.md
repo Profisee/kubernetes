@@ -142,7 +142,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
         kubectl get services nginx-nginx-ingress-controller
         #Note the external-ip and you need to create a cname record in dns to point to it (xxxxxx.elb.<region>.amazonaws.com)
 
-4.  Create Profsiee Settings.yaml
+4.  Create Profisee Settings.yaml
     - Fetch the Settings.yaml template
       
             curl -fsSL -o Settings.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/AWS-EKS-CLI/Settings.yaml;
@@ -208,7 +208,9 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 			    Add certificate key string with opening and closing tags like this
 			    -----END PRIVATE KEY-----
 
-5.  Install Profisee
+5.  Configue Authentication provider
+	- Register redirect url http(s)://FQDNThatPointsToClusterIP/Profisee/auth/signin-microsoft
+6.  Install Profisee
 
             helm repo add profisee https://profisee.github.io/kubernetes
             helm uninstall profiseeplatform2020r1
