@@ -25,7 +25,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 	- Size - Choose what you need
 	- Storage - Defaults should be fine, probably no need for autoscaling
 	- Connectivity
-		- Public access yes (simpler to debug)
+		- Public access yes (simpler to debug) - Change to fit your security needs when ready
 	- Defaults for rest
 	- Wait for database to be available
     - Make sure the SQL Server is accessable by the EKS cluster
