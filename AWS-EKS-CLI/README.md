@@ -165,7 +165,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 
 3.  Configure kubectl
     
-        aws eks --region us-east-1 update-kubeconfig --name ChuckCluster
+        aws eks --region us-east-1 update-kubeconfig --name MyCluster
 
 3.  Install nginx for AWS
 
