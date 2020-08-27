@@ -43,8 +43,8 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 4.  File Share
     - Create storage gateway (File via EC2) - https://docs.aws.amazon.com/storagegateway/latest/userguide/create-gateway-file.html
     - Create file share (SMB) - https://docs.aws.amazon.com/storagegateway/latest/userguide/CreatingAnSMBFileShare.html
-    
-    		- Goto https://console.aws.amazon.com/storagegatewa
+      		
+		- Goto https://console.aws.amazon.com/storagegateway
 		- Click create gwateway
 		- File gateway
 		- EC2 - Launch intance
