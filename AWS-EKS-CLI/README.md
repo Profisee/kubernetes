@@ -27,6 +27,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 	- Connectivity
 		- Public access yes (simpler to debug)
 	- Defaults for rest
+	- Wait for database to be available
     - Make sure the SQL Server is accessable by the EKS cluster
 
 4.  File Share
