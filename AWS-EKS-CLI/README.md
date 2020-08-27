@@ -58,12 +58,13 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
     
         aws eks --region us-east-1 update-kubeconfig --name ChuckCluster
 
-3.  Install nginx
+3.  Install nginx for AWS
 
             helm repo add stable https://kubernetes-charts.storage.googleapis.com/;
-            #get the nginx settings for aws, note its different than azure/google
-            curl -fsSL -o nginxSettingsAWS.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/AWS-EKS-CLI/nginxSettingsAWS.yaml;
+            curl -o nginxSettingsAWS.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/AWS-EKS-CLI/nginxSettingsAWS.yaml;
             helm install nginx stable/nginx-ingress --values nginxSettingsAWS.yaml
+	    
+	- Wait for the load balancer to be provisioned.  goto aws ec2/load balancing console and wait for the state to go from provisioning to active (3ish minutes)
     
 3.  Get nginx IP
     
