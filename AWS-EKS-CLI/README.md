@@ -16,8 +16,8 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 			-----BEGIN CERTIFICATE-----
 			XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 			-----END CERTIFICATE-----
-	
-	-Key
+			
+	- Key
 	
 			-----BEGIN PRIVATE KEY-----
 			XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -28,6 +28,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 			-----BEGIN RSA PRIVATE KEY-----
 			XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 			-----END RSA PRIVATE KEY-----
+			
 3.  SQL Server
     - AWS RDS instance - https://aws.amazon.com/getting-started/hands-on/create-microsoft-sql-db/
     	
