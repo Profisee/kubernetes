@@ -69,7 +69,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 3.  Get nginx IP
     
         kubectl get services nginx-nginx-ingress-controller
-        #Note the external-ip and you need to create a cname record in dns to point to it (xxxxxx.elb.us-east-1.amazonaws.com)
+        #Note the external-ip and you need to create a cname record in dns to point to it (xxxxxx.elb.<region>.amazonaws.com)
 
 4.  Create Profsiee Settings.yaml
     - Fetch the Settings.yaml template
