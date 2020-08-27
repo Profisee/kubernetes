@@ -31,6 +31,11 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 		- Wait for database to be available
     	
 	- Make sure the SQL Server is accessable by the EKS cluster
+		- Click on sql instance
+		- Click on VPC security group
+		- Inbound rules
+		- Edit inbound rules
+		- Add MSSQL for outbound IP of cluster
 
 4.  File Share
     - Create storage gateway (File via EC2) - https://docs.aws.amazon.com/storagegateway/latest/userguide/create-gateway-file.html
