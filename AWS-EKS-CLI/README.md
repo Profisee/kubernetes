@@ -34,6 +34,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 
 4.  File Share
     - Create storage gateway (File via EC2) - https://docs.aws.amazon.com/storagegateway/latest/userguide/create-gateway-file.html
+    - Create file share (SMB) - https://docs.aws.amazon.com/storagegateway/latest/userguide/CreatingAnSMBFileShare.html
     
     		- Goto https://console.aws.amazon.com/storagegatewa
 		- Click create gwateway
@@ -47,8 +48,32 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 				- Add SMB (anywhere)
 			- Launch - pick or create key pair (ave if needed)
 			- Launch instance
-			
-    - Create file share (SMB) - https://docs.aws.amazon.com/storagegateway/latest/userguide/CreatingAnSMBFileShare.html
+			- Go back to AWS storage gateway tab in browser
+			- Click Next (Public)
+			- Goto EC2 instance, find the instance you jsut created and clic kon it to show properties
+			- Note public IP (v4)
+			- Go back to gateway tab and enter IP and click connect o gateway
+			- Give it a name and click Activate Gateway
+			- You will see preparing disks
+			- Then choose the disk and allocate it to Cache and click exit
+			- You need an S3 bucket in order to create a file share, if you dont have one create one
+				- Create s3 bucket
+				- Goto https://console.aws.amazon.com/s3
+				- Click create bucket
+				- Give it a name, Next
+				- Click thru and choose your options, defaults work fine
+			- Back on file share create screen
+			- Enter the bucket name you jsut created
+			- Choose SMB
+			- No logging is fine, Next
+			- Next
+			- SMB Sharing setting - Edit
+			- Authentication method - Guest access
+			- Click Close
+			- Click Create File Share
+				
+
+    
     
 5.  Credentials
     - Setup IAM - https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-creds
