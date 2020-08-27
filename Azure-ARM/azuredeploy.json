@@ -879,7 +879,7 @@
                 "No"
             ],
             "metadata": {
-                "description": "If you select No, you must enter the FQDN of an existing sql server accessable by this azure subscription"
+                "description": "If you select No, you must enter the FQDN of an existing SQL Server accessible by this azure subscription"
             }
         },
         "SQLServerName": {
