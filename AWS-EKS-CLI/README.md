@@ -71,6 +71,9 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 			- Authentication method - Guest access
 			- Click Close
 			- Click Create File Share
+			- get connect info to share
+				- Click on fileshare
+				- Find net use statement and copy it as it has the info for the file repository
 				
 
     
