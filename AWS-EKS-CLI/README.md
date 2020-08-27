@@ -41,47 +41,50 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 			- get oubound ip - Invoke-RestMethod http://ipinfo.io/json | Select -exp ip
 
 4.  File Share
-    - Create storage gateway (File via EC2) - https://docs.aws.amazon.com/storagegateway/latest/userguide/create-gateway-file.html
-    - Create file share (SMB) - https://docs.aws.amazon.com/storagegateway/latest/userguide/CreatingAnSMBFileShare.html
-      		
+    - Create storage gateway (File via EC2) and File Share (SMB)
+    		
+		- https://docs.aws.amazon.com/storagegateway/latest/userguide/create-gateway-file.html
+    		
+		- https://docs.aws.amazon.com/storagegateway/latest/userguide/CreatingAnSMBFileShare.html
+		
 		- Goto https://console.aws.amazon.com/storagegateway
-		- Click create gwateway
-		- File gateway
-		- EC2 - Launch intance
-			- Choose size (Smallest without EBS seems to work fine)
-			- Goto Add volume
-				- Add minimum is 150GB otherwise you get warning
-			- Goto Configure Security group
-				- Add HTTP (anywhere)
-				- Add SMB (anywhere)
-			- Launch - pick or create key pair (ave if needed)
-			- Launch instance
-			- Go back to AWS storage gateway tab in browser
-			- Click Next (Public)
-			- Goto EC2 instance, find the instance you jsut created and clic kon it to show properties
-			- Note public IP (v4)
-			- Go back to gateway tab and enter IP and click connect o gateway
-			- Give it a name and click Activate Gateway
-			- You will see preparing disks
-			- Then choose the disk and allocate it to Cache and click exit
-			- You need an S3 bucket in order to create a file share, if you dont have one create one
-				- Create s3 bucket
-				- Goto https://console.aws.amazon.com/s3
-				- Click create bucket
-				- Give it a name, Next
-				- Click thru and choose your options, defaults work fine
-			- Back on file share create screen
-			- Enter the bucket name you jsut created
-			- Choose SMB
-			- No logging is fine, Next
-			- Next
-			- SMB Sharing setting - Edit
-			- Authentication method - Guest access
-			- Click Close
-			- Click Create File Share
-			- get connect info to share
-				- Click on fileshare
-				- Find net use statement and copy it as it has the info for the file repository
+			- Click create gwateway
+			- File gateway
+			- EC2 - Launch intance
+				- Choose size (Smallest without EBS seems to work fine)
+				- Goto Add volume
+					- Add minimum is 150GB otherwise you get warning
+				- Goto Configure Security group
+					- Add HTTP (anywhere)
+					- Add SMB (anywhere)
+				- Launch - pick or create key pair (ave if needed)
+				- Launch instance
+				- Go back to AWS storage gateway tab in browser
+				- Click Next (Public)
+				- Goto EC2 instance, find the instance you jsut created and clic kon it to show properties
+				- Note public IP (v4)
+				- Go back to gateway tab and enter IP and click connect o gateway
+				- Give it a name and click Activate Gateway
+				- You will see preparing disks
+				- Then choose the disk and allocate it to Cache and click exit
+				- You need an S3 bucket in order to create a file share, if you dont have one create one
+					- Create s3 bucket
+					- Goto https://console.aws.amazon.com/s3
+					- Click create bucket
+					- Give it a name, Next
+					- Click thru and choose your options, defaults work fine
+				- Back on file share create screen
+				- Enter the bucket name you jsut created
+				- Choose SMB
+				- No logging is fine, Next
+				- Next
+				- SMB Sharing setting - Edit
+				- Authentication method - Guest access
+				- Click Close
+				- Click Create File Share
+				- get connect info to share
+					- Click on fileshare
+					- Find net use statement and copy it as it has the info for the file repository
 				
 
     
