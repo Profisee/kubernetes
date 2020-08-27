@@ -12,23 +12,25 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 
 3.  SQL Server
     - AWS RDS instance - https://aws.amazon.com/getting-started/hands-on/create-microsoft-sql-db/
-    	- Goto https://console.aws.amazon.com/rds
-	- Click create database
-	- Standard Create and Microsoft SQL Server
-	- Edition - Choose what you want
-	- Version - Choose (default should be fine)
-	- Templates - Choose what you are doing
-	- Give sql server name as db intance identifier
-	- Credentials
-		- Master username - login name to use
-		- Password - strong password
-	- Size - Choose what you need
-	- Storage - Defaults should be fine, probably no need for autoscaling
-	- Connectivity
-		- Public access yes (simpler to debug) - Change to fit your security needs when ready
-	- Defaults for rest
-	- Wait for database to be available
-    - Make sure the SQL Server is accessable by the EKS cluster
+    	
+		- Goto https://console.aws.amazon.com/rds
+		- Click create database
+		- Standard Create and Microsoft SQL Server
+		- Edition - Choose what you want
+		- Version - Choose (default should be fine)
+		- Templates - Choose what you are doing
+		- Give sql server name as db intance identifier
+		- Credentials
+			- Master username - login name to use
+			- Password - strong password
+		- Size - Choose what you need
+		- Storage - Defaults should be fine, probably no need for autoscaling
+		- Connectivity
+			- Public access yes (simpler to debug) - Change to fit your security needs when ready
+		- Defaults for rest
+		- Wait for database to be available
+    	
+	- Make sure the SQL Server is accessable by the EKS cluster
 
 4.  File Share
     - Create storage gateway (File via EC2) - https://docs.aws.amazon.com/storagegateway/latest/userguide/create-gateway-file.html
