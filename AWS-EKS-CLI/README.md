@@ -109,7 +109,22 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 
     
     
-5.  Credentials
+5. AWS kubernetes utilities
+	- https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+	- Install aws cli - https://awscli.amazonaws.com/AWSCLIV2.msi
+	- Install eksctl 
+		- Install chocolately if you need it - https://chocolatey.org/install
+		- Install eksctl - chocolatey install -y eksctl 
+	- Install kubectl
+		- curl -o kubectl.exe https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.9/2020-08-04/bin/windows/amd64/kubectl.exe
+		- Set path
+			- Create a new directory for your command line binaries, such as C:\bin.
+			- Copy the kubectl.exe binary to your new directory.
+			- Edit your user or system PATH environment variable to add the new directory to your PATH.
+			- Close your PowerShell terminal and open a new one to pick up the new PATH variable.
+		
+	
+6.  Credentials
     - Setup IAM - https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-creds
     
 		    aws configure
@@ -117,6 +132,9 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 		    AWS Secret Access Key [None]: XXXX
 		    Default region name [None]: us-east-1
 		    Default output format [None]: json
+		    
+
+	
       
 
 ## Deployment
