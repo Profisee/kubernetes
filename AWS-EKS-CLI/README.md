@@ -7,8 +7,12 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 1.  License
     - Profisee license associated with the dns for the environment
     - Token for access to the profisee container
+    		- Username
+		- Password
 
 2.  Https certificate including the private key
+	- Certificate
+		
 
 3.  SQL Server
     - AWS RDS instance - https://aws.amazon.com/getting-started/hands-on/create-microsoft-sql-db/
