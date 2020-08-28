@@ -16,3 +16,31 @@ This ARM template deploys Profisee platform into a new Azure Kubernetes service 
 ## Deployment steps
 
 Click the "Deploy to Azure" button at the beginning of this document
+
+
+## Verify:
+
+1.  Open up cloud shell
+    
+    Launch Cloud Shell from the top navigation of the Azure portal.
+    
+    ![CloudShell](https://docs.microsoft.com/en-us/azure/cloud-shell/media/quickstart/shell-icon.png)
+  
+2.  Configure kubectl
+
+        az aks get-credentials --resource-group MyResourceGroup --name MyAKSCluster --overwrite-existing
+    
+3.  The initial deploy will have to download the container which takes about 10 minutes.  Verify its finished downloading the container:
+
+		kubectl describe pod profisee-0 #check status and wait for "Pulling" to finish
+
+4.  Container can be accessed with the following command:
+    
+        kubectl exec -it profisee-0 powershell
+
+5.  System logs can be accessed with the following command:
+    
+        Get-Content C:\Profisee\Configuration\LogFiles\SystemLog.log
+	
+6.  Goto Profisee Platform web portal
+	- http(s)://app.company.com/profisee
