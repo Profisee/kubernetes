@@ -35,7 +35,7 @@
         },
         "ProfiseeACRPassword": {
             "defaultValue": "",
-            "type": "String",
+            "type": "securestring",
             "metadata": {
                 "description": "User password supplied by Profisee support."
             }
@@ -879,7 +879,7 @@
                 "No"
             ],
             "metadata": {
-                "description": "If you select No, you must enter the FQDN of an existing SQL Server accessible by this azure subscription"
+                "description": "If you select No, you must enter the FQDN of an existing sql server accessable by this azure subscription"
             }
         },
         "SQLServerName": {
@@ -935,21 +935,7 @@
                 "description": "Access key for existing storage account if not creating one.  If creating one, not required and will be ignored.  Can contain only lowercase letters and numbers. Name must be between 3 and 24 characters."
             }
         },
-        "StorageAccountType": {
-            "type": "string",
-            "defaultValue": "Standard_LRS",
-            "allowedValues": [
-                "Standard_LRS",
-                "Standard_ZRS",
-                "Standard_GRS",
-                "Standard_RAGRS",
-                "Premium_LRS"
-            ],
-            "metadata": {
-                "description": "Storage Account type"
-            }
-        },
-         "StorageAccountFileShareName": {
+        "StorageAccountFileShareName": {
             "defaultValue": "files",
             "type": "String",
             "metadata": {
@@ -1021,7 +1007,7 @@
     "resources": [
         {
             "type": "Microsoft.ContainerService/managedClusters",
-            "apiVersion": "2020-03-01",
+            "apiVersion": "2020-07-01",
             "name": "[parameters('KubernetesClusterName')]",
             "location": "[resourceGroup().location]",
             "sku": {
@@ -1091,7 +1077,7 @@
         },
         {
             "type": "Microsoft.ContainerService/managedClusters/agentPools",
-            "apiVersion": "2020-03-01",
+            "apiVersion": "2020-07-01",
             "name": "[concat(parameters('KubernetesClusterName'), '/nplinux1')]",
             "dependsOn": [
                 "[resourceId('Microsoft.ContainerService/managedClusters', parameters('KubernetesClusterName'))]"
@@ -1111,7 +1097,7 @@
         },
         {
             "type": "Microsoft.ContainerService/managedClusters/agentPools",
-            "apiVersion": "2020-03-01",
+            "apiVersion": "2020-07-01",
             "name": "[concat(parameters('KubernetesClusterName'), '/npwin1')]",
             "dependsOn": [
                 "[resourceId('Microsoft.ContainerService/managedClusters', parameters('KubernetesClusterName'))]"
@@ -1148,7 +1134,7 @@
                     "name": "AllowAllWindowsAzureIps",
                     "type": "firewallrules",
                     "location": "[resourceGroup().location]",
-                    "apiVersion": "2014-04-01",
+                    "apiVersion": "2015-05-01-preview",
                     "dependsOn": [
                         "[concat('Microsoft.Sql/servers/', tolower(parameters('SQLServerName')))]"
                     ],
@@ -1164,14 +1150,15 @@
             "name": "[tolower(parameters('StorageAccountName'))]",
             "type": "Microsoft.Storage/storageAccounts",
             "location": "[resourceGroup().location]",
-            "apiVersion": "2015-06-15",
+            "apiVersion": "2019-06-01",
             "dependsOn": [],
             "tags": {
                 "displayName": "[parameters('StorageAccountName')]"
             },
-            "properties": {
-                "accountType": "[parameters('StorageAccountType')]"
-            }
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "StorageV2"
         },
         {
             "condition": "[equals(tolower(parameters('StorageAccountCreateNew')),tolower('Yes'))]",
@@ -1311,7 +1298,7 @@
                 }
 
             ],
-            "primaryScriptUri": "https://raw.githubusercontent.com/Profisee/kubernetes/master/Azure-ARM/deployprofisee.sh"            
+            "primaryScriptUri": "https://raw.githubusercontent.com/profisee/kubernetes/master/Azure-ARM/deployprofisee.sh"            
         }
         },
         {
