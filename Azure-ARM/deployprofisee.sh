@@ -12,7 +12,7 @@ chmod 700 get_helm.sh;
 #install nginx
 helm repo add stable https://kubernetes-charts.storage.googleapis.com/;
 #get profisee nginx settings
-curl -fsSL -o nginxSettings.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/Azure-ARM/nginxSettings.yaml;
+curl -fsSL -o nginxSettings.yaml https://raw.githubusercontent.com/profisee/kubernetes/master/Azure-ARM/nginxSettings.yaml;
 helm uninstall nginx
 helm install nginx stable/nginx-ingress --values nginxSettings.yaml --set controller.service.loadBalancerIP=$publicInIP;
 
@@ -49,7 +49,7 @@ fi
 
 #install profisee platform
 #set profisee helm chart settings
-curl -fsSL -o Settings.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/Azure-ARM/Settings.yaml;
+curl -fsSL -o Settings.yaml https://raw.githubusercontent.com/profisee/kubernetes/master/Azure-ARM/Settings.yaml;
 auth="$(echo -n "$ACRUSER:$ACRUSERPASSWORD" | base64)"
 sed -i -e 's/$ACRUSER/'"$ACRUSER"'/g' Settings.yaml
 sed -i -e 's/$ACRPASSWORD/'"$ACRUSERPASSWORD"'/g' Settings.yaml
@@ -57,6 +57,9 @@ sed -i -e 's/$ACREMAIL/'"support@profisee.com"'/g' Settings.yaml
 sed -i -e 's/$ACRAUTH/'"$auth"'/g' Settings.yaml
 sed -e '/$TLSCERT/ {' -e 'r tls.cert' -e 'd' -e '}' -i Settings.yaml
 sed -e '/$TLSKEY/ {' -e 'r tls.key' -e 'd' -e '}' -i Settings.yaml
+
+rm tls.cert
+rm tls.key
 
 #create the azure app id (clientid)
 azureAppReplyUrl="${EXTERNALDNSURL}/profisee/auth/signin-microsoft"
@@ -67,7 +70,6 @@ if [ "$UPDATEAAD" = "Yes" ]; then
 	CLIENTID=$(echo "$CLIENTID" | tr -d '"')
 	#add a Graph API permission of "Sign in and read user profile"
 	az ad app permission add --id $CLIENTID --api 00000002-0000-0000-c000-000000000000 --api-permissions 311a71cc-e848-46a1-bdf8-97ff7156d8e6=Scope
-	az ad app permission grant --id $CLIENTID --api 00000002-0000-0000-c000-000000000000
 fi
 
 #get storage account pw - if not supplied
@@ -88,7 +90,7 @@ FILEREPOURL="\\\\\\\\\\\\\\\\${STORAGEACCOUNTNAME}.file.core.windows.net\\\\\\\\
 IFS='.' read -r -a repostring <<< "$PROFISEEVERSION"
 
 ACRREPONAME="profisee${repostring[0],,}"; #lowercase is the ,,
-ACRREPOLABEL="${repostring[1],,}"; #lowercase is the ,,
+ACRREPOLABEL="${repostring[1],,}";
 
 #set values in Settings.yaml
 sed -i -e 's/$SQLNAME/'"$SQLNAME"'/g' Settings.yaml
@@ -98,24 +100,36 @@ sed -i -e 's/$SQLUSERPASSWORD/'"$SQLUSERPASSWORD"'/g' Settings.yaml
 sed -i -e 's/$FILEREPOUSERNAME/'"$FILEREPOUSERNAME"'/g' Settings.yaml
 sed -i -e 's~$FILEREPOPASSWORD~'"$FILEREPOPASSWORD"'~g' Settings.yaml
 sed -i -e 's/$FILEREPOURL/'"$FILEREPOURL"'/g' Settings.yaml
+sed -i -e 's/$FILESHARENAME/'"$STORAGEACCOUNTFILESHARENAME"'/g' Settings.yaml
 sed -i -e 's~$OIDCURL~'"$OIDCURL"'~g' Settings.yaml
 sed -i -e 's/$CLIENTID/'"$CLIENTID"'/g' Settings.yaml
 sed -i -e 's/$OIDCCLIENTSECRET/'"$OIDCCLIENTSECRET"'/g' Settings.yaml
 sed -i -e 's/$ADMINACCOUNTNAME/'"$ADMINACCOUNTNAME"'/g' Settings.yaml
-sed -i -e 's/$EXTERNALDNSURL/'"$EXTERNALDNSURL"'/g' Settings.yaml
+sed -i -e 's~$EXTERNALDNSURL~'"$EXTERNALDNSURL"'~g' Settings.yaml
 sed -i -e 's/$EXTERNALDNSNAME/'"$EXTERNALDNSNAME"'/g' Settings.yaml
 sed -i -e 's~$LICENSEDATA~'"$LICENSEDATA"'~g' Settings.yaml
 sed -i -e 's/$ACRREPONAME/'"$ACRREPONAME"'/g' Settings.yaml
 sed -i -e 's/$ACRREPOLABEL/'"$ACRREPOLABEL"'/g' Settings.yaml
 
 #Add settings.yaml as a secret so its always available after the deployment
-kubectl delete secret profisee-settings
-kubectl create secret generic profisee-settings --from-file=.\Settings.yaml
+kubectl delete secret profisee-settings-yaml
+kubectl create secret generic profisee-settings-yml --from-file=Settings.yaml
 
+#Install Profisee Platform
 helm repo add profisee https://profisee.github.io/kubernetes
 helm uninstall profiseeplatform2020r1
 helm install profiseeplatform2020r1 profisee/profisee-platform --values Settings.yaml
 
+#Add Azure File volume
+curl -fsSL -o StatefullSet_AddAzureFileVolume.yaml https://raw.githubusercontent.com/profisee/kubernetes/master/Azure-ARM/StatefullSet_AddAzureFileVolume.yaml;
+STORAGEACCOUNTNAME="$(echo -n "$STORAGEACCOUNTNAME" | base64)"
+FILEREPOPASSWORD="$(echo -n "$FILEREPOPASSWORD" | base64 | tr -d '\n')" #The last tr is needed because base64 inserts line breaks after every 76th character
+sed -i -e 's/$STORAGEACCOUNTNAME/'"$STORAGEACCOUNTNAME"'/g' StatefullSet_AddAzureFileVolume.yaml
+sed -i -e 's/$STORAGEACCOUNTKEY/'"$FILEREPOPASSWORD"'/g' StatefullSet_AddAzureFileVolume.yaml
+sed -i -e 's/$STORAGEACCOUNTFILESHARENAME/'"$STORAGEACCOUNTFILESHARENAME"'/g' StatefullSet_AddAzureFileVolume.yaml
+kubectl apply -f StatefullSet_AddAzureFileVolume.yaml
+
+#Output
 result="{\"Result\":[\
 {\"IP\":\"$nginxip\"},\
 {\"WEBURL\":\"${EXTERNALDNSURL}/Profisee\"},\
