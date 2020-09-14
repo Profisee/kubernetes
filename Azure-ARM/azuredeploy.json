@@ -1002,7 +1002,9 @@
     },
     "variables": 
     {
-        "vnetId":"[resourceId(parameters('KubernetesVnetResourceGroup'),'Microsoft.Network/virtualNetworks/subnets',parameters('KubernetesVnetName'),parameters('KubernetesSubnetName'))]"
+        "vnetId":"[resourceId(parameters('KubernetesVnetResourceGroup'),'Microsoft.Network/virtualNetworks/subnets',parameters('KubernetesVnetName'),parameters('KubernetesSubnetName'))]",
+        "externalurl":"[if(equals(parameters('HttpsConfigure'),'Yes'), concat('https://',parameters('DNSHostName'),'.',parameters('DNSDomainName')),concat('http://',parameters('DNSHostName'),'.',parameters('DNSDomainName')))]",
+        "platformUrl":"[concat(variables('externalurl'),'/profisee')]"
     },
     "resources": [
         {
@@ -1249,7 +1251,7 @@
                 },
                 {
                     "name": "EXTERNALDNSURL",
-                    "value": "[if(equals(parameters('HttpsConfigure'),'Yes'), concat('https://',parameters('DNSHostName'),'.',parameters('DNSDomainName')),concat('http://',parameters('DNSHostName'),'.',parameters('DNSDomainName')))]"
+                    "value": "[variables('externalurl')]"
                 },                
                 {
                     "name": "OIDCURL",
@@ -1298,7 +1300,7 @@
                 }
 
             ],
-            "primaryScriptUri": "https://raw.githubusercontent.com/profisee/kubernetes/master/Azure-ARM/deployprofisee.sh"            
+            "primaryScriptUri": "https://raw.githubusercontent.com/profiseedev/kubernetes/master/Azure-ARM/deployprofisee.sh"            
         }
         },
         {
@@ -1325,6 +1327,10 @@
     "KubernetesClusterFQDN": {
             "type": "string",
             "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', parameters('KubernetesClusterName'))).FQDN]"
-        }
+        },
+    "ProfiseePlatformURL": {
+        "type": "string",
+        "value": "[variables('platformUrl')]"
+    }
   }
 }
