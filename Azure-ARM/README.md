@@ -39,8 +39,15 @@ Click the "Deploy to Azure" button at the beginning of this document
         kubectl exec -it profisee-0 powershell
 
 5.  System logs can be accessed with the following command:
-    
-        Get-Content C:\Profisee\Configuration\LogFiles\SystemLog.log
-	
+
+		#Configuration log
+		Get-Content C:\Profisee\Configuration\LogFiles\SystemLog.log
+		#Authentication service log
+		Get-Content C:\Profisee\Services\Auth\LogFiles\SystemLog.log
+		#WebPortal Log
+		Get-Content C:\Profisee\WebPortal\LogFiles\SystemLog.log
+		#Gateway log
+		Get-Content C:\Profisee\Web\LogFiles\SystemLog.log
+
 6.  Goto Profisee Platform web portal
 	- http(s)://app.company.com/profisee
