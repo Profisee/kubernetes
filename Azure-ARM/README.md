@@ -90,6 +90,6 @@ Click the "Deploy to Azure" button at the beginning of this document
 
 	#Connect to pod if not already connected
 	iisreset
-	Restart-Service PRofisee
+	Restart-Service Profisee
 	
 	
