@@ -53,12 +53,17 @@ Click the "Deploy to Azure" button at the beginning of this document
 	- http(s)://app.company.com/profisee
 
 
-##Trouble shooting
+## Trouble shooting
 
-###Install Lens (Kubernetes IDE)
+### Install Lens (Kubernetes IDE)
 
 Main website is https://k8slens.dev/
+
 Install the latest https://github.com/lensapp/lens/releases/latest
 
-#####Add AKS cluster to Lens
+#### Add AKS cluster to Lens
+
+Go to Azure portal, resource group of AKS cluster
+
+Choose the cluster, click connect
 	
