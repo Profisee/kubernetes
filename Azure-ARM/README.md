@@ -85,5 +85,6 @@ Click the "Deploy to Azure" button at the beginning of this document
 	In Lens, choose workloads, then pods
 	Click on pod - profisee-(x)
 	Click on the "Pod Shell" left icon in top blue nav bar.  This will "connect" you to the container
+	Now in the terminal window (bottom), you are "connected" to the pod (container)
 	
 	
