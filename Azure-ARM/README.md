@@ -57,13 +57,27 @@ Click the "Deploy to Azure" button at the beginning of this document
 
 ### Install Lens (Kubernetes IDE)
 
-Main website is https://k8slens.dev/
+	Main website is https://k8slens.dev/
 
-Install the latest https://github.com/lensapp/lens/releases/latest
+	Install the latest https://github.com/lensapp/lens/releases/latest
 
 #### Add AKS cluster to Lens
 
-Go to Azure portal, resource group of AKS cluster
+	Go to Azure portal, open cloud shell
 
-Choose the cluster, click connect
+	Run this to "configure" kunectl
+	az aks get-credentials --resource-group MyResourceGroup --name MyAKSCluster --overwrite-existing
+	
+	Get contents of kube.config
+	run kubectl config view
+	copy all the out put of that command (select with mouse, right click copy)
+	
+	Go to Lens
+	Click big plus (+) to add a cluster
+	Click paste as text
+	Goto select contect dropdown and choose the cluster
+	Click outside the dropdown area
+	Click "Add Cluster(s)"
+	Wait for it to connect and now Lens is connected to that aks cluster.
+	
 	
