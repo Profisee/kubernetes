@@ -80,7 +80,7 @@ Click the "Deploy to Azure" button at the beginning of this document
 	Click "Add Cluster(s)"
 	Wait for it to connect and now Lens is connected to that aks cluster.
 	
-### Connect to pod (container)
+#### Connect to pod (container)
 
 	In Lens, choose workloads, then pods
 	Click on pod - profisee-(x)
