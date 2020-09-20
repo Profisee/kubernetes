@@ -129,3 +129,7 @@ Click the "Deploy to Azure" button at the beginning of this document
 
 	Get-Content C:\Profisee\Configuration\LogFiles\SystemLog.log 
 
+#### Base 64 encode a string - All secrets are base 64 encoded
+
+	$B64String =[Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes("OrigString")) 
+	write-host $B64String 
