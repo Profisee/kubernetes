@@ -69,7 +69,7 @@ Click the "Deploy to Azure" button at the beginning of this document
 	az aks get-credentials --resource-group MyResourceGroup --name MyAKSCluster --overwrite-existing
 	
 	Get contents of kube.config
-	run kubectl config view  --minify --raw
+	run kubectl config view --minify --raw
 	copy all the out put of that command (select with mouse, right click copy)
 	
 	Go to Lens
