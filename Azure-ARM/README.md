@@ -93,3 +93,39 @@ Click the "Deploy to Azure" button at the beginning of this document
 	Restart-Service Profisee
 	
 	
+#### Replace license 
+
+	Download the Settings.Yaml file which is located in the generated storage account.  
+
+	Download from generated storage account 
+
+	Click on generated storage account in Resouce group, then File shares, then the generated file share name, then on azscriptinput 
+
+	Click Settings.yaml, then download 
+
+	Edit the file and replace the value for licenseFileData: 
+
+	Upload to cloud drive 
+
+	From cloud shell window click the Upload/Download file button in menu  
+
+	Upload 
+
+	Find the file you just downloaded it and click open 
+
+	Wait for it to say complete (bottom right of shell window) 
+
+	#Uninstall profisee and reinstall 
+
+	helm repo add profisee https://profisee.github.io/kubernetes 
+
+	helm uninstall profiseeplatform2020r1 
+
+	helm install profiseeplatform2020r1 profisee/profisee-platform --values Settings.yaml 
+
+	#Connect to container and make sure the config process has no errors 
+
+	kubectl exec -it profisee-0 powershell 
+
+	Get-Content C:\Profisee\Configuration\LogFiles\SystemLog.log 
+
