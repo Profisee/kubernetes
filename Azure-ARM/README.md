@@ -99,7 +99,7 @@ Install the latest https://github.com/lensapp/lens/releases/latest
 	Click on profisee-files
 	Paste your new license string supplied byb Profisee Support in textbox under profisee.plic
 	Click save.
-	Your lciense has been updated.
+	Your license has been updated.
 	You have to detroy the pod and have it recreate itself for it to take affect.
 	
 #### Replace license with Azure Cloud shell
