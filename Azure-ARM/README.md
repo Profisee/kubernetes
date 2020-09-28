@@ -57,9 +57,9 @@ Click the "Deploy to Azure" button at the beginning of this document
 
 ### Install Lens (Kubernetes IDE)
 
-	Main website is https://k8slens.dev/
+Main website https://k8slens.dev
 
-	Install the latest https://github.com/lensapp/lens/releases/latest
+Install the latest https://github.com/lensapp/lens/releases/latest
 
 #### Add AKS cluster to Lens
 
