@@ -86,14 +86,23 @@ Install the latest https://github.com/lensapp/lens/releases/latest
 	Click on pod - profisee-(x)
 	Click on the "Pod Shell" left icon in top blue nav bar.  This will "connect" you to the container
 	Now in the terminal window (bottom), you are "connected" to the pod (container)
+
 #### Restart Profisee service and IIS in pod (container)
 
 	#Connect to pod if not already connected
 	iisreset
 	Restart-Service Profisee
 	
+#### Replace license with Lens
+
+	In Lens, choose workloads, then Configuration, then secrets
+	Click on profisee-files
+	Paste your new license string supplied byb Profisee Support in textbox under profisee.plic
+	Click save.
+	Your lciense has been updated.
+	You have to detroy the pod and have it recreate itself for it to take affect.
 	
-#### Replace license 
+#### Replace license with Azure Cloud shell
 
 	Download the Settings.Yaml file which is located in the generated storage account.  
 		Download from generated storage account 
