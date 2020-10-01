@@ -124,4 +124,20 @@ Install the latest https://github.com/lensapp/lens/releases/latest
 	Connect to container and make sure the config process has no errors 
 		kubectl exec -it profisee-0 powershell 
 		Get-Content C:\Profisee\Configuration\LogFiles\SystemLog.log 
+		
+### Check sql connection from container
+
+	$connectionString = 'Data Source={0};database={1};User ID={2};Password={3}' -f $env:ProfiseeSqlServer,$env:ProfiseeSqlDatabase,$env:ProfiseeSqlUserName,$env:ProfiseeSqlPassword
+	$sqlConnection = New-Object System.Data.SqlClient.SqlConnection $connectionString
+	$sqlConnection.Open()
+	$sqlConnection.Close()
+
+### Check connection to fileshare
+
+	#map drive to X
+	$pass=$env:ProfiseeAttachmentRepositoryUserPassword|ConvertTo-SecureString -AsPlainText -Force
+	$azureCredential = New-Object System.Management.Automation.PsCredential($env:ProfiseeAttachmentRepositoryUserName,$pass)
+	New-PSDrive -Name "X" -PSProvider "FileSystem" -Root $env:ProfiseeAttachmentRepositoryLocation -Credential $azureCredential -Persist;
+	#remove mapped drive
+	Remove-PSDrive X
 
