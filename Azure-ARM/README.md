@@ -55,52 +55,11 @@ Click the "Deploy to Azure" button at the beginning of this document
 
 ## Trouble shooting
 
-### Install Lens (Kubernetes IDE)
-
-Main website https://k8slens.dev
-
-Install the latest https://github.com/lensapp/lens/releases/latest
-
-#### Add AKS cluster to Lens
-
-	Go to Azure portal, open cloud shell
-
-	Run this to "configure" kunectl
-	az aks get-credentials --resource-group MyResourceGroup --name MyAKSCluster --overwrite-existing
-	
-	Get contents of kube.config
-	run kubectl config view --minify --raw
-	copy all the out put of that command (select with mouse, right click copy)
-	
-	Go to Lens
-	Click big plus (+) to add a cluster
-	Click paste as text
-	Goto select contect dropdown and choose the cluster
-	Click outside the dropdown area
-	Click "Add Cluster(s)"
-	Wait for it to connect and now Lens is connected to that aks cluster.
-	
-#### Connect to pod (container)
-
-	In Lens, choose workloads, then pods
-	Click on pod - profisee-(x)
-	Click on the "Pod Shell" left icon in top blue nav bar.  This will "connect" you to the container
-	Now in the terminal window (bottom), you are "connected" to the pod (container)
-
 #### Restart Profisee service and IIS in pod (container)
 
 	#Connect to pod if not already connected
 	iisreset
 	Restart-Service Profisee
-	
-#### Replace license with Lens
-
-	In Lens, choose workloads, then Configuration, then secrets
-	Click on profisee-files
-	Paste your new license string supplied byb Profisee Support in textbox under profisee.plic
-	Click save.
-	Your license has been updated.
-	You have to detroy the pod and have it recreate itself for it to take affect.
 	
 #### Replace license with Azure Cloud shell
 
@@ -140,4 +99,47 @@ Install the latest https://github.com/lensapp/lens/releases/latest
 	New-PSDrive -Name "X" -PSProvider "FileSystem" -Root $env:ProfiseeAttachmentRepositoryLocation -Credential $azureCredential -Persist;
 	#remove mapped drive
 	Remove-PSDrive X
+	
+## Trouble shooting with Lens
+
+### Install Lens (Kubernetes IDE)
+
+Main website https://k8slens.dev
+
+Install the latest https://github.com/lensapp/lens/releases/latest
+
+### Add AKS cluster to Lens
+
+	Go to Azure portal, open cloud shell
+
+	Run this to "configure" kunectl
+	az aks get-credentials --resource-group MyResourceGroup --name MyAKSCluster --overwrite-existing
+	
+	Get contents of kube.config
+	run kubectl config view --minify --raw
+	copy all the out put of that command (select with mouse, right click copy)
+	
+	Go to Lens
+	Click big plus (+) to add a cluster
+	Click paste as text
+	Goto select contect dropdown and choose the cluster
+	Click outside the dropdown area
+	Click "Add Cluster(s)"
+	Wait for it to connect and now Lens is connected to that aks cluster.
+	
+### Connect to pod (container)
+
+	In Lens, choose workloads, then pods
+	Click on pod - profisee-(x)
+	Click on the "Pod Shell" left icon in top blue nav bar.  This will "connect" you to the container
+	Now in the terminal window (bottom), you are "connected" to the pod (container)
+
+### Replace license with Lens
+
+	In Lens, choose workloads, then Configuration, then secrets
+	Click on profisee-files
+	Paste your new license string supplied byb Profisee Support in textbox under profisee.plic
+	Click save.
+	Your license has been updated.
+	You have to detroy the pod and have it recreate itself for it to take affect.
 
