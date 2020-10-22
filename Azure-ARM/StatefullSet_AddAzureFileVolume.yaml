@@ -12,7 +12,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   annotations:
-    meta.helm.sh/release-name: profiseeplatform2020r1
+    meta.helm.sh/release-name: profiseeplatform
   labels:
     app: profisee
   name: profisee

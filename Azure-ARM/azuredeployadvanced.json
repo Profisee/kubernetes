@@ -1,0 +1,1388 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "ProfiseeVersion": {
+            "defaultValue": "2020R2.0",
+            "type": "String",
+            "allowedValues": [
+                "2020R1.0",
+				"2020R1.1",
+                "2020R2.0"
+            ],
+            "metadata": {
+                "description": "Version of the Profisee platform to use."
+            }
+        },
+        "ProfiseeAdminUserAccount": {
+            "defaultValue": "first.last@company.com",
+            "type": "String",
+            "metadata": {
+                "description": "Name of the account of the first super user who will be registered in the Profisee platform, who will be able to logon and add other users."
+            }
+        },
+        "ProfiseeLicense": {
+            "type": "String",
+            "metadata": {
+                "description": "Profisee platform license string supplied by Profisee support."
+            }
+        },              
+        "ActiveDirectoryCreateApp": {
+            "defaultValue": "Yes",
+            "type": "String",
+            "allowedValues": [
+                "Yes",
+                "No"
+            ],
+            "metadata": {
+                "description": "The Active Directory App Registration will be created and configured.  If No, then you must supply an existing clientid and register the reply url manually.  example - https://profisee.company.com/profisee/auth/signin-microsoft"
+            }
+        },
+        "ActiveDirectoryClientId": {
+            "defaultValue": "",
+            "type": "String",
+            "metadata": {
+                "description": "ClientId of existing Azure Active Directory App Registration which will be used by the profisee platform for authentication."
+            }
+        },
+         "ManagedIdentityName": {
+            "type": "String",
+            "metadata": {
+                "description": "Existing user assigned Managed Identity with contributer access at the subscription level or contributor access to the resource group this is deployed to and the resource group the domain is in if updating dns.  If Active Directory Create Application is Yes, then it must also have Application Developer role in order to create and configure the azure active directory application."
+            }
+        },
+         "ManagedIdentityResourceGroup": {
+            "defaultValue": "[resourceGroup().name]",
+            "type": "String",
+            "metadata": {
+                "description": "Resource group the managed identity was created in."
+            }
+        },        
+        "KubernetesLinuxNodeSize": {
+            "defaultValue": "Standard_D2_v3",
+            "type": "String",
+            "allowedValues": [
+                "Basic_A0",
+                "Basic_A1",
+                "Basic_A2",
+                "Basic_A3",
+                "Basic_A4",
+                "Standard_A0",
+                "Standard_A1",
+                "Standard_A1_v2",
+                "Standard_A10",
+                "Standard_A11",
+                "Standard_A2",
+                "Standard_A2_v2",
+                "Standard_A2m_v2",
+                "Standard_A3",
+                "Standard_A4",
+                "Standard_A4_v2",
+                "Standard_A4m_v2",
+                "Standard_A5",
+                "Standard_A6",
+                "Standard_A7",
+                "Standard_A8",
+                "Standard_A8_v2",
+                "Standard_A8m_v2",
+                "Standard_A9",
+                "Standard_B12ms",
+                "Standard_B16ms",
+                "Standard_B1ls",
+                "Standard_B1ms",
+                "Standard_B1s",
+                "Standard_B20ms",
+                "Standard_B2ms",
+                "Standard_B2s",
+                "Standard_B4ms",
+                "Standard_B8ms",
+                "Standard_D1",
+                "Standard_D1_v2",
+                "Standard_D11",
+                "Standard_D11_v2",
+                "Standard_D11_v2_Promo",
+                "Standard_D12",
+                "Standard_D12_v2",
+                "Standard_D12_v2_Promo",
+                "Standard_D13",
+                "Standard_D13_v2",
+                "Standard_D13_v2_Promo",
+                "Standard_D14",
+                "Standard_D14_v2",
+                "Standard_D14_v2_Promo",
+                "Standard_D15_v2",
+                "Standard_D16_v3",
+                "Standard_D16_v4",
+                "Standard_D16a_v4",
+                "Standard_D16as_v4",
+                "Standard_D16d_v4",
+                "Standard_D16ds_v4",
+                "Standard_D16s_v3",
+                "Standard_D16s_v4",
+                "Standard_D2",
+                "Standard_D2_v2",
+                "Standard_D2_v2_Promo",
+                "Standard_D2_v3",
+                "Standard_D2_v4",
+                "Standard_D2a_v4",
+                "Standard_D2as_v4",
+                "Standard_D2d_v4",
+                "Standard_D2ds_v4",
+                "Standard_D2s_v3",
+                "Standard_D2s_v4",
+                "Standard_D3",
+                "Standard_D3_v2",
+                "Standard_D3_v2_Promo",
+                "Standard_D32_v3",
+                "Standard_D32_v4",
+                "Standard_D32a_v4",
+                "Standard_D32as_v4",
+                "Standard_D32d_v4",
+                "Standard_D32ds_v4",
+                "Standard_D32s_v3",
+                "Standard_D32s_v4",
+                "Standard_D4",
+                "Standard_D4_v2",
+                "Standard_D4_v2_Promo",
+                "Standard_D4_v3",
+                "Standard_D4_v4",
+                "Standard_D48_v3",
+                "Standard_D48_v4",
+                "Standard_D48a_v4",
+                "Standard_D48as_v4",
+                "Standard_D48d_v4",
+                "Standard_D48ds_v4",
+                "Standard_D48s_v3",
+                "Standard_D48s_v4",
+                "Standard_D4a_v4",
+                "Standard_D4as_v4",
+                "Standard_D4d_v4",
+                "Standard_D4ds_v4",
+                "Standard_D4s_v3",
+                "Standard_D4s_v4",
+                "Standard_D5_v2",
+                "Standard_D5_v2_Promo",
+                "Standard_D64_v3",
+                "Standard_D64_v4",
+                "Standard_D64a_v4",
+                "Standard_D64as_v4",
+                "Standard_D64d_v4",
+                "Standard_D64ds_v4",
+                "Standard_D64s_v3",
+                "Standard_D64s_v4",
+                "Standard_D8_v3",
+                "Standard_D8_v4",
+                "Standard_D8a_v4",
+                "Standard_D8as_v4",
+                "Standard_D8d_v4",
+                "Standard_D8ds_v4",
+                "Standard_D8s_v3",
+                "Standard_D8s_v4",
+                "Standard_D96a_v4",
+                "Standard_D96as_v4",
+                "Standard_DC1s_v2",
+                "Standard_DC2s",
+                "Standard_DC2s_v2",
+                "Standard_DC4s",
+                "Standard_DC4s_v2",
+                "Standard_DC8_v2",
+                "Standard_DS1",
+                "Standard_DS1_v2",
+                "Standard_DS11",
+                "Standard_DS11_v2",
+                "Standard_DS11_v2_Promo",
+                "Standard_DS11-1_v2",
+                "Standard_DS12",
+                "Standard_DS12_v2",
+                "Standard_DS12_v2_Promo",
+                "Standard_DS12-1_v2",
+                "Standard_DS12-2_v2",
+                "Standard_DS13",
+                "Standard_DS13_v2",
+                "Standard_DS13_v2_Promo",
+                "Standard_DS13-2_v2",
+                "Standard_DS13-4_v2",
+                "Standard_DS14",
+                "Standard_DS14_v2",
+                "Standard_DS14_v2_Promo",
+                "Standard_DS14-4_v2",
+                "Standard_DS14-8_v2",
+                "Standard_DS15_v2",
+                "Standard_DS2",
+                "Standard_DS2_v2",
+                "Standard_DS2_v2_Promo",
+                "Standard_DS3",
+                "Standard_DS3_v2",
+                "Standard_DS3_v2_Promo",
+                "Standard_DS4",
+                "Standard_DS4_v2",
+                "Standard_DS4_v2_Promo",
+                "Standard_DS5_v2",
+                "Standard_DS5_v2_Promo",
+                "Standard_E16_v3",
+                "Standard_E16_v4",
+                "Standard_E16-4ds_v4",
+                "Standard_E16-4s_v3",
+                "Standard_E16-4s_v4",
+                "Standard_E16-8ds_v4",
+                "Standard_E16-8s_v3",
+                "Standard_E16-8s_v4",
+                "Standard_E16a_v4",
+                "Standard_E16as_v4",
+                "Standard_E16d_v4",
+                "Standard_E16ds_v4",
+                "Standard_E16s_v3",
+                "Standard_E16s_v4",
+                "Standard_E2_v3",
+                "Standard_E2_v4",
+                "Standard_E20_v3",
+                "Standard_E20_v4",
+                "Standard_E20a_v4",
+                "Standard_E20as_v4",
+                "Standard_E20d_v4",
+                "Standard_E20ds_v4",
+                "Standard_E20s_v3",
+                "Standard_E20s_v4",
+                "Standard_E2a_v4",
+                "Standard_E2as_v4",
+                "Standard_E2d_v4",
+                "Standard_E2ds_v4",
+                "Standard_E2s_v3",
+                "Standard_E2s_v4",
+                "Standard_E32_v3",
+                "Standard_E32_v4",
+                "Standard_E32-16ds_v4",
+                "Standard_E32-16s_v3",
+                "Standard_E32-16s_v4",
+                "Standard_E32-8ds_v4",
+                "Standard_E32-8s_v3",
+                "Standard_E32-8s_v4",
+                "Standard_E32a_v4",
+                "Standard_E32as_v4",
+                "Standard_E32d_v4",
+                "Standard_E32ds_v4",
+                "Standard_E32s_v3",
+                "Standard_E32s_v4",
+                "Standard_E4_v3",
+                "Standard_E4_v4",
+                "Standard_E4-2ds_v4",
+                "Standard_E4-2s_v3",
+                "Standard_E4-2s_v4",
+                "Standard_E48_v3",
+                "Standard_E48_v4",
+                "Standard_E48a_v4",
+                "Standard_E48as_v4",
+                "Standard_E48d_v4",
+                "Standard_E48ds_v4",
+                "Standard_E48s_v3",
+                "Standard_E48s_v4",
+                "Standard_E4a_v4",
+                "Standard_E4as_v4",
+                "Standard_E4d_v4",
+                "Standard_E4ds_v4",
+                "Standard_E4s_v3",
+                "Standard_E4s_v4",
+                "Standard_E64_v3",
+                "Standard_E64_v4",
+                "Standard_E64-16ds_v4",
+                "Standard_E64-16s_v3",
+                "Standard_E64-16s_v4",
+                "Standard_E64-32ds_v4",
+                "Standard_E64-32s_v3",
+                "Standard_E64-32s_v4",
+                "Standard_E64a_v4",
+                "Standard_E64as_v4",
+                "Standard_E64d_v4",
+                "Standard_E64ds_v4",
+                "Standard_E64i_v3",
+                "Standard_E64is_v3",
+                "Standard_E64s_v3",
+                "Standard_E64s_v4",
+                "Standard_E8_v3",
+                "Standard_E8_v4",
+                "Standard_E8-2ds_v4",
+                "Standard_E8-2s_v3",
+                "Standard_E8-2s_v4",
+                "Standard_E8-4ds_v4",
+                "Standard_E8-4s_v3",
+                "Standard_E8-4s_v4",
+                "Standard_E8a_v4",
+                "Standard_E8as_v4",
+                "Standard_E8d_v4",
+                "Standard_E8ds_v4",
+                "Standard_E8s_v3",
+                "Standard_E8s_v4",
+                "Standard_E96a_v4",
+                "Standard_E96as_v4",
+                "Standard_F1",
+                "Standard_F16",
+                "Standard_F16s",
+                "Standard_F16s_v2",
+                "Standard_F1s",
+                "Standard_F2",
+                "Standard_F2s",
+                "Standard_F2s_v2",
+                "Standard_F32s_v2",
+                "Standard_F4",
+                "Standard_F48s_v2",
+                "Standard_F4s",
+                "Standard_F4s_v2",
+                "Standard_F64s_v2",
+                "Standard_F72s_v2",
+                "Standard_F8",
+                "Standard_F8s",
+                "Standard_F8s_v2",
+                "Standard_H16",
+                "Standard_H16_Promo",
+                "Standard_H16m",
+                "Standard_H16m_Promo",
+                "Standard_H16mr",
+                "Standard_H16mr_Promo",
+                "Standard_H16r",
+                "Standard_H16r_Promo",
+                "Standard_H8",
+                "Standard_H8_Promo",
+                "Standard_H8m",
+                "Standard_H8m_Promo",
+                "Standard_HB120rs_v2",
+                "Standard_HB60rs",
+                "Standard_HC44rs",
+                "Standard_L16s_v2",
+                "Standard_L32s_v2",
+                "Standard_L48s_v2",
+                "Standard_L64s_v2",
+                "Standard_L80s_v2",
+                "Standard_L8s_v2",
+                "Standard_M128",
+                "Standard_M128-32ms",
+                "Standard_M128-64ms",
+                "Standard_M128m",
+                "Standard_M128ms",
+                "Standard_M128s",
+                "Standard_M16-4ms",
+                "Standard_M16-8ms",
+                "Standard_M16ms",
+                "Standard_M208ms_v2",
+                "Standard_M208s_v2",
+                "Standard_M32-16ms",
+                "Standard_M32-8ms",
+                "Standard_M32ls",
+                "Standard_M32ms",
+                "Standard_M32ts",
+                "Standard_M416-208ms_v2",
+                "Standard_M416-208s_v2",
+                "Standard_M416ms_v2",
+                "Standard_M416s_v2",
+                "Standard_M64",
+                "Standard_M64-16ms",
+                "Standard_M64-32ms",
+                "Standard_M64ls",
+                "Standard_M64m",
+                "Standard_M64ms",
+                "Standard_M64s",
+                "Standard_M8-2ms",
+                "Standard_M8-4ms",
+                "Standard_M8ms",
+                "Standard_NC12",
+                "Standard_NC12_Promo",
+                "Standard_NC12s_v2",
+                "Standard_NC12s_v3",
+                "Standard_NC24",
+                "Standard_NC24_Promo",
+                "Standard_NC24r",
+                "Standard_NC24r_Promo",
+                "Standard_NC24rs_v2",
+                "Standard_NC24rs_v3",
+                "Standard_NC24s_v2",
+                "Standard_NC24s_v3",
+                "Standard_NC6",
+                "Standard_NC6_Promo",
+                "Standard_NC6s_v2",
+                "Standard_NC6s_v3",
+                "Standard_ND12s",
+                "Standard_ND24rs",
+                "Standard_ND24s",
+                "Standard_ND40rs_v2",
+                "Standard_ND40s_v3",
+                "Standard_ND6s",
+                "Standard_NP10s",
+                "Standard_NP20s",
+                "Standard_NP40s",
+                "Standard_NV12",
+                "Standard_NV12_Promo",
+                "Standard_NV12s_v2",
+                "Standard_NV12s_v3",
+                "Standard_NV16as_v4",
+                "Standard_NV24",
+                "Standard_NV24_Promo",
+                "Standard_NV24s_v2",
+                "Standard_NV24s_v3",
+                "Standard_NV32as_v4",
+                "Standard_NV48s_v3",
+                "Standard_NV4as_v4",
+                "Standard_NV6",
+                "Standard_NV6_Promo",
+                "Standard_NV6s_v2",
+                "Standard_NV8as_v4",
+                "Standard_PB6s"
+            ],
+            "metadata": {
+                "description": "Size of the VM to use for the linux node(s) in the kubernetes cluster."
+            }
+        },
+        "KubernetesLinuxNodeCount": {
+            "defaultValue": "1",
+            "type": "String",            
+            "metadata": {
+                "description": "Amount of the nodes to create in the linux node pool."
+            }
+        },
+        "KubernetesWindowsNodeSize": {
+            "defaultValue": "Standard_D4_v3",
+            "type": "String",
+            "allowedValues": [
+                "Basic_A0",
+                "Basic_A1",
+                "Basic_A2",
+                "Basic_A3",
+                "Basic_A4",
+                "Standard_A0",
+                "Standard_A1",
+                "Standard_A1_v2",
+                "Standard_A10",
+                "Standard_A11",
+                "Standard_A2",
+                "Standard_A2_v2",
+                "Standard_A2m_v2",
+                "Standard_A3",
+                "Standard_A4",
+                "Standard_A4_v2",
+                "Standard_A4m_v2",
+                "Standard_A5",
+                "Standard_A6",
+                "Standard_A7",
+                "Standard_A8",
+                "Standard_A8_v2",
+                "Standard_A8m_v2",
+                "Standard_A9",
+                "Standard_B12ms",
+                "Standard_B16ms",
+                "Standard_B1ls",
+                "Standard_B1ms",
+                "Standard_B1s",
+                "Standard_B20ms",
+                "Standard_B2ms",
+                "Standard_B2s",
+                "Standard_B4ms",
+                "Standard_B8ms",
+                "Standard_D1",
+                "Standard_D1_v2",
+                "Standard_D11",
+                "Standard_D11_v2",
+                "Standard_D11_v2_Promo",
+                "Standard_D12",
+                "Standard_D12_v2",
+                "Standard_D12_v2_Promo",
+                "Standard_D13",
+                "Standard_D13_v2",
+                "Standard_D13_v2_Promo",
+                "Standard_D14",
+                "Standard_D14_v2",
+                "Standard_D14_v2_Promo",
+                "Standard_D15_v2",
+                "Standard_D16_v3",
+                "Standard_D16_v4",
+                "Standard_D16a_v4",
+                "Standard_D16as_v4",
+                "Standard_D16d_v4",
+                "Standard_D16ds_v4",
+                "Standard_D16s_v3",
+                "Standard_D16s_v4",
+                "Standard_D2",
+                "Standard_D2_v2",
+                "Standard_D2_v2_Promo",
+                "Standard_D2_v3",
+                "Standard_D2_v4",
+                "Standard_D2a_v4",
+                "Standard_D2as_v4",
+                "Standard_D2d_v4",
+                "Standard_D2ds_v4",
+                "Standard_D2s_v3",
+                "Standard_D2s_v4",
+                "Standard_D3",
+                "Standard_D3_v2",
+                "Standard_D3_v2_Promo",
+                "Standard_D32_v3",
+                "Standard_D32_v4",
+                "Standard_D32a_v4",
+                "Standard_D32as_v4",
+                "Standard_D32d_v4",
+                "Standard_D32ds_v4",
+                "Standard_D32s_v3",
+                "Standard_D32s_v4",
+                "Standard_D4",
+                "Standard_D4_v2",
+                "Standard_D4_v2_Promo",
+                "Standard_D4_v3",
+                "Standard_D4_v4",
+                "Standard_D48_v3",
+                "Standard_D48_v4",
+                "Standard_D48a_v4",
+                "Standard_D48as_v4",
+                "Standard_D48d_v4",
+                "Standard_D48ds_v4",
+                "Standard_D48s_v3",
+                "Standard_D48s_v4",
+                "Standard_D4a_v4",
+                "Standard_D4as_v4",
+                "Standard_D4d_v4",
+                "Standard_D4ds_v4",
+                "Standard_D4s_v3",
+                "Standard_D4s_v4",
+                "Standard_D5_v2",
+                "Standard_D5_v2_Promo",
+                "Standard_D64_v3",
+                "Standard_D64_v4",
+                "Standard_D64a_v4",
+                "Standard_D64as_v4",
+                "Standard_D64d_v4",
+                "Standard_D64ds_v4",
+                "Standard_D64s_v3",
+                "Standard_D64s_v4",
+                "Standard_D8_v3",
+                "Standard_D8_v4",
+                "Standard_D8a_v4",
+                "Standard_D8as_v4",
+                "Standard_D8d_v4",
+                "Standard_D8ds_v4",
+                "Standard_D8s_v3",
+                "Standard_D8s_v4",
+                "Standard_D96a_v4",
+                "Standard_D96as_v4",
+                "Standard_DC1s_v2",
+                "Standard_DC2s",
+                "Standard_DC2s_v2",
+                "Standard_DC4s",
+                "Standard_DC4s_v2",
+                "Standard_DC8_v2",
+                "Standard_DS1",
+                "Standard_DS1_v2",
+                "Standard_DS11",
+                "Standard_DS11_v2",
+                "Standard_DS11_v2_Promo",
+                "Standard_DS11-1_v2",
+                "Standard_DS12",
+                "Standard_DS12_v2",
+                "Standard_DS12_v2_Promo",
+                "Standard_DS12-1_v2",
+                "Standard_DS12-2_v2",
+                "Standard_DS13",
+                "Standard_DS13_v2",
+                "Standard_DS13_v2_Promo",
+                "Standard_DS13-2_v2",
+                "Standard_DS13-4_v2",
+                "Standard_DS14",
+                "Standard_DS14_v2",
+                "Standard_DS14_v2_Promo",
+                "Standard_DS14-4_v2",
+                "Standard_DS14-8_v2",
+                "Standard_DS15_v2",
+                "Standard_DS2",
+                "Standard_DS2_v2",
+                "Standard_DS2_v2_Promo",
+                "Standard_DS3",
+                "Standard_DS3_v2",
+                "Standard_DS3_v2_Promo",
+                "Standard_DS4",
+                "Standard_DS4_v2",
+                "Standard_DS4_v2_Promo",
+                "Standard_DS5_v2",
+                "Standard_DS5_v2_Promo",
+                "Standard_E16_v3",
+                "Standard_E16_v4",
+                "Standard_E16-4ds_v4",
+                "Standard_E16-4s_v3",
+                "Standard_E16-4s_v4",
+                "Standard_E16-8ds_v4",
+                "Standard_E16-8s_v3",
+                "Standard_E16-8s_v4",
+                "Standard_E16a_v4",
+                "Standard_E16as_v4",
+                "Standard_E16d_v4",
+                "Standard_E16ds_v4",
+                "Standard_E16s_v3",
+                "Standard_E16s_v4",
+                "Standard_E2_v3",
+                "Standard_E2_v4",
+                "Standard_E20_v3",
+                "Standard_E20_v4",
+                "Standard_E20a_v4",
+                "Standard_E20as_v4",
+                "Standard_E20d_v4",
+                "Standard_E20ds_v4",
+                "Standard_E20s_v3",
+                "Standard_E20s_v4",
+                "Standard_E2a_v4",
+                "Standard_E2as_v4",
+                "Standard_E2d_v4",
+                "Standard_E2ds_v4",
+                "Standard_E2s_v3",
+                "Standard_E2s_v4",
+                "Standard_E32_v3",
+                "Standard_E32_v4",
+                "Standard_E32-16ds_v4",
+                "Standard_E32-16s_v3",
+                "Standard_E32-16s_v4",
+                "Standard_E32-8ds_v4",
+                "Standard_E32-8s_v3",
+                "Standard_E32-8s_v4",
+                "Standard_E32a_v4",
+                "Standard_E32as_v4",
+                "Standard_E32d_v4",
+                "Standard_E32ds_v4",
+                "Standard_E32s_v3",
+                "Standard_E32s_v4",
+                "Standard_E4_v3",
+                "Standard_E4_v4",
+                "Standard_E4-2ds_v4",
+                "Standard_E4-2s_v3",
+                "Standard_E4-2s_v4",
+                "Standard_E48_v3",
+                "Standard_E48_v4",
+                "Standard_E48a_v4",
+                "Standard_E48as_v4",
+                "Standard_E48d_v4",
+                "Standard_E48ds_v4",
+                "Standard_E48s_v3",
+                "Standard_E48s_v4",
+                "Standard_E4a_v4",
+                "Standard_E4as_v4",
+                "Standard_E4d_v4",
+                "Standard_E4ds_v4",
+                "Standard_E4s_v3",
+                "Standard_E4s_v4",
+                "Standard_E64_v3",
+                "Standard_E64_v4",
+                "Standard_E64-16ds_v4",
+                "Standard_E64-16s_v3",
+                "Standard_E64-16s_v4",
+                "Standard_E64-32ds_v4",
+                "Standard_E64-32s_v3",
+                "Standard_E64-32s_v4",
+                "Standard_E64a_v4",
+                "Standard_E64as_v4",
+                "Standard_E64d_v4",
+                "Standard_E64ds_v4",
+                "Standard_E64i_v3",
+                "Standard_E64is_v3",
+                "Standard_E64s_v3",
+                "Standard_E64s_v4",
+                "Standard_E8_v3",
+                "Standard_E8_v4",
+                "Standard_E8-2ds_v4",
+                "Standard_E8-2s_v3",
+                "Standard_E8-2s_v4",
+                "Standard_E8-4ds_v4",
+                "Standard_E8-4s_v3",
+                "Standard_E8-4s_v4",
+                "Standard_E8a_v4",
+                "Standard_E8as_v4",
+                "Standard_E8d_v4",
+                "Standard_E8ds_v4",
+                "Standard_E8s_v3",
+                "Standard_E8s_v4",
+                "Standard_E96a_v4",
+                "Standard_E96as_v4",
+                "Standard_F1",
+                "Standard_F16",
+                "Standard_F16s",
+                "Standard_F16s_v2",
+                "Standard_F1s",
+                "Standard_F2",
+                "Standard_F2s",
+                "Standard_F2s_v2",
+                "Standard_F32s_v2",
+                "Standard_F4",
+                "Standard_F48s_v2",
+                "Standard_F4s",
+                "Standard_F4s_v2",
+                "Standard_F64s_v2",
+                "Standard_F72s_v2",
+                "Standard_F8",
+                "Standard_F8s",
+                "Standard_F8s_v2",
+                "Standard_H16",
+                "Standard_H16_Promo",
+                "Standard_H16m",
+                "Standard_H16m_Promo",
+                "Standard_H16mr",
+                "Standard_H16mr_Promo",
+                "Standard_H16r",
+                "Standard_H16r_Promo",
+                "Standard_H8",
+                "Standard_H8_Promo",
+                "Standard_H8m",
+                "Standard_H8m_Promo",
+                "Standard_HB120rs_v2",
+                "Standard_HB60rs",
+                "Standard_HC44rs",
+                "Standard_L16s_v2",
+                "Standard_L32s_v2",
+                "Standard_L48s_v2",
+                "Standard_L64s_v2",
+                "Standard_L80s_v2",
+                "Standard_L8s_v2",
+                "Standard_M128",
+                "Standard_M128-32ms",
+                "Standard_M128-64ms",
+                "Standard_M128m",
+                "Standard_M128ms",
+                "Standard_M128s",
+                "Standard_M16-4ms",
+                "Standard_M16-8ms",
+                "Standard_M16ms",
+                "Standard_M208ms_v2",
+                "Standard_M208s_v2",
+                "Standard_M32-16ms",
+                "Standard_M32-8ms",
+                "Standard_M32ls",
+                "Standard_M32ms",
+                "Standard_M32ts",
+                "Standard_M416-208ms_v2",
+                "Standard_M416-208s_v2",
+                "Standard_M416ms_v2",
+                "Standard_M416s_v2",
+                "Standard_M64",
+                "Standard_M64-16ms",
+                "Standard_M64-32ms",
+                "Standard_M64ls",
+                "Standard_M64m",
+                "Standard_M64ms",
+                "Standard_M64s",
+                "Standard_M8-2ms",
+                "Standard_M8-4ms",
+                "Standard_M8ms",
+                "Standard_NC12",
+                "Standard_NC12_Promo",
+                "Standard_NC12s_v2",
+                "Standard_NC12s_v3",
+                "Standard_NC24",
+                "Standard_NC24_Promo",
+                "Standard_NC24r",
+                "Standard_NC24r_Promo",
+                "Standard_NC24rs_v2",
+                "Standard_NC24rs_v3",
+                "Standard_NC24s_v2",
+                "Standard_NC24s_v3",
+                "Standard_NC6",
+                "Standard_NC6_Promo",
+                "Standard_NC6s_v2",
+                "Standard_NC6s_v3",
+                "Standard_ND12s",
+                "Standard_ND24rs",
+                "Standard_ND24s",
+                "Standard_ND40rs_v2",
+                "Standard_ND40s_v3",
+                "Standard_ND6s",
+                "Standard_NP10s",
+                "Standard_NP20s",
+                "Standard_NP40s",
+                "Standard_NV12",
+                "Standard_NV12_Promo",
+                "Standard_NV12s_v2",
+                "Standard_NV12s_v3",
+                "Standard_NV16as_v4",
+                "Standard_NV24",
+                "Standard_NV24_Promo",
+                "Standard_NV24s_v2",
+                "Standard_NV24s_v3",
+                "Standard_NV32as_v4",
+                "Standard_NV48s_v3",
+                "Standard_NV4as_v4",
+                "Standard_NV6",
+                "Standard_NV6_Promo",
+                "Standard_NV6s_v2",
+                "Standard_NV8as_v4",
+                "Standard_PB6s"
+            ],
+            "metadata": {
+                "description": "Size of the VM to use for the Windows node(s) in the kubernetes cluster."
+            }
+        },
+        "KubernetesWindowsNodeCount": {
+            "defaultValue": "1",
+            "type": "String",            
+            "metadata": {
+                "description": "Amount of the nodes to create in the windows node pool."
+            }
+        },
+        "KubernetesVersion": {
+            "defaultValue": "",
+            "type": "String",            
+            "metadata": {
+                "description": "Version of kubernetes to use. Leave blank to use the default version from Microsoft."
+            }
+        },
+        "KubernetesVnetName": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "Name of an existing VNET that will contain this AKS deployment.  Leave blank to create a new one with defaults"
+            }
+        },
+        "KubernetesVnetResourceGroup": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "Name of the existing VNET resource group.  Leave blank if not using an existing VNet."
+            }
+        },
+        "KubernetesSubnetName": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "Subnet name that will contain the App Service Environment in the existing VNet.  Leave blank if not using an existing VNet."
+            }
+        },
+        "KubernetesServiceCidr": {
+            "type": "string",
+            "defaultValue": "10.0.0.0/16",
+            "metadata": {
+                "description": "A CIDR notation IP range from which to assign service cluster IPs."
+            }
+        },
+        "KubernetesDNSServiceIP": {
+            "type": "string",
+            "defaultValue": "10.0.0.10",
+            "metadata": {
+                "description": "Containers DNS server IP address."
+            }
+        },
+        "KubernetesDockerBridgeCidr": {
+            "type": "string",
+            "defaultValue": "172.17.0.1/16",
+            "metadata": {
+                "description": "A CIDR notation IP for Docker bridge."
+            }
+        },
+        "SQLServerCreateNew": {
+            "defaultValue": "Yes",
+            "type": "String",
+            "allowedValues": [
+                "Yes",
+                "No"
+            ],
+            "metadata": {
+                "description": "If you select No, you must enter the FQDN of an existing sql server accessable by this azure subscription"
+            }
+        },
+        "SQLServerName": {
+            "defaultValue": "mysqlservername",
+            "type": "String",
+            "metadata": {
+                "description": "Enter a unique sql server name.  Can contain only lowercase letters, numbers, and '-', but can't start or end with '-' or have more than 63 characters and be an available sqlserver name in azure.  SQL Server names are globally unique in Azure"
+            }
+        },        
+        "SQLServerUser": {
+            "defaultValue":"sqladmin",
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+                "description": "Administrator SQL login name to create with the new sql server or to use to connect to existing sql server.  Your login name must not contain a SQL Identifier or a typical system name (like admin, administrator, sa, root, dbmanager, loginmanager, etc.) or a built-in database user or role (like dbo, guest, public, etc.).  Your login name must not include non-alphanumeric characters.  Your login name must not start with numbers or symbols"
+            }
+        },
+        "SQLServerPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for sql server user.  The password does not contain the account name of the user and must be at least eight characters long and be no more than 128 characters in length.  The password contains characters from three of the following four categories: Latin uppercase letters (A through Z).  Latin lowercase letters (a through z).  Base 10 digits (0 through 9).  Non-alphanumeric characters such as: exclamation point (!), dollar sign ($), number sign (#), or percent (%)."
+            }
+        },
+        "SQLServerDatabaseName": {
+            "defaultValue": "Profisee",
+            "type": "String",
+            "metadata": {
+                "description": "Name of database to create and/or use.  Name should not match special pattern and has a length of at most 128.  Should not contain reserved words.  No database with the same name exists in the server"
+            }
+        },
+        "StorageAccountCreateNew": {
+            "defaultValue": "Yes",
+            "type": "String",
+            "allowedValues": [
+                "Yes",
+                "No"
+            ],
+            "metadata": {
+                "description": "If you select No, you must enter the information for an existing storage account including password.  If you choose Yes, password is not required and will be ignored."
+            }
+        },
+        "StorageAccountName": {
+            "defaultValue": "mystorageaccountname",
+            "type": "String",
+            "metadata": {
+                "description": "Enter a unique name.  Can contain only lowercase letters and numbers. Name must be between 3 and 24 characters.  Storage account names are globally unique in Azure"
+            }
+        }, 
+         "StorageAccountAccessKey": {
+            "defaultValue":"",
+            "type": "securestring",
+            "metadata": {
+                "description": "Access key for existing storage account if not creating one.  If creating one, not required and will be ignored.  Can contain only lowercase letters and numbers. Name must be between 3 and 24 characters."
+            }
+        },
+        "StorageAccountFileShareName": {
+            "defaultValue": "files",
+            "type": "String",
+            "metadata": {
+                "description": "Name of file share in the storage account to create and/or use.   Can contain only lowercase letters, numbers, and hyphens, and must begin and end with a letter or a number. The name cannot contain two consecutive hyphens."
+            }
+        },
+        "DNSUpdate": {
+            "defaultValue": "Yes",
+            "type": "String",
+            "allowedValues": [
+                "Yes",
+                "No"
+            ],
+            "metadata": {
+                "description": "If Yes then your dns zone must be in Azure.  If No then you have to update the dns record yourself.  Use the IP adress that is output from the InstallProfiseePlatform deploymnet step"
+            }
+        },
+        "DNSHostName": {
+            "defaultValue": "myprofiseehostname",
+            "type": "String",
+            "metadata": {
+                "description": "Host name to use/create.  Required if updating DNS."
+            }
+        },
+        "DNSDomainName": {
+            "defaultValue": "mydomain.com",
+            "type": "String",
+            "metadata": {
+                "description": "Domain name name to use.  Required if updating DNS."
+            }
+        },
+        "DNSDomainResourceGroup": {
+            "defaultValue": "mydnszoneresourcegroup",
+            "type": "String",
+            "metadata": {
+                "description": "Resource group that the DNS zone (Domain name) is in.  Required if updating DNS."
+            }
+        },   
+        "HttpsConfigure": {
+            "defaultValue": "Yes",
+            "type": "String",
+            "allowedValues": [
+                "Yes",
+                "No"
+            ],
+            "metadata": {
+                "description": "If Yes, then you must supply the certificate informtion.  If No then you web traffic is not secure and only works over http."
+            }
+        }, 
+        "HttpsCertificate": {
+            "defaultValue": "",
+            "type": "String",
+            "metadata": {
+                "description": "Required if using Https.  Paste the text from TLS certificate. Starts with    -----BEGIN CERTIFICATE-----"
+            }
+        },
+        "HttpsCertificatePrivateKey": {
+            "defaultValue": "",
+            "type": "String",
+            "metadata": {
+                "description": "Required if using Https.  Paste the text from private key for your TLS certificate. Starts with    -----BEGIN PRIVATE KEY-----"
+            }
+        }
+    },
+    "variables": 
+    {
+        "ScriptURL":"https://raw.githubusercontent.com/profisee/kubernetes/master/Azure-ARM/deployprofisee.sh",
+        "KubernetesVnetResourceGroup":"[parameters('KubernetesVnetResourceGroup')]",
+        "vnetId":"[resourceId(parameters('KubernetesVnetResourceGroup'),'Microsoft.Network/virtualNetworks/subnets',parameters('KubernetesVnetName'),parameters('KubernetesSubnetName'))]",
+        "PROFISEEVERSION":"[parameters('ProfiseeVersion')]",
+        "ADMINACCOUNTNAME":"[parameters('ProfiseeAdminUserAccount')]",
+        "LICENSEDATA":"[parameters('ProfiseeLicense')]",
+        "ACRUSER":"",
+        "ACRUSERPASSWORD":"",
+
+        "UPDATEAAD":"[parameters('ActiveDirectoryCreateApp')]",
+        "CLIENTID":"[parameters('ActiveDirectoryClientId')]",
+        "OIDCURL":"[concat('https://login.microsoftonline.com/',subscription().tenantId)]",
+
+        "KubernetesVersion":"[parameters('KubernetesVersion')]",
+        "KubernetesClusterName": "[concat(resourceGroup().name,'ProfiseeCluster')]",
+
+        "KubernetesServiceCidr": "[parameters('KubernetesServiceCidr')]",
+        "KubernetesDNSServiceIP": "[parameters('KubernetesDNSServiceIP')]",
+        "KubernetesDockerBridgeCidr": "[parameters('KubernetesDockerBridgeCidr')]",
+        "KubernetesLinuxNodeCount": "[int(parameters('KubernetesLinuxNodeCount'))]",
+        "KubernetesLinuxNodeSize": "[parameters('KubernetesLinuxNodeSize')]",
+        "KubernetesWindowsNodeCount": "[int(parameters('KubernetesWindowsNodeCount'))]",
+        "KubernetesWindowsNodeSize": "[parameters('KubernetesWindowsNodeSize')]",
+
+        "ManagedIdentityResourceGroup": "[parameters('ManagedIdentityResourceGroup')]",
+        "ManagedIdentityName": "[parameters('ManagedIdentityName')]",
+
+        "DNSHostName": "[parameters('DNSHostName')]",
+        "DNSDomainName": "[parameters('DNSDomainName')]",
+	    "ExternalDNSName": "[concat(variables('DNSHostName'),'.',variables('DNSDomainName'))]",
+        "ExternalDNSURL":"[if(equals(parameters('HttpsConfigure'),'Yes'), concat('https://',variables('ExternalDNSName')),concat('http://',variables('ExternalDNSName')))]",
+        "DOMAINNAMERESOURCEGROUP":"[parameters('DNSDomainResourceGroup')]",
+        "DNSUpdate":"[parameters('DNSUpdate')]",
+        
+        "SQLServerCreateNew" : "[parameters('SQLServerCreateNew')]",
+        "SQLServerName":"[parameters('SQLServerName')]",
+        "SQLNAME": "[if(equals(variables('SQLServerCreateNew'),'Yes'), concat(variables('SQLServerName'),'.database.windows.net'),variables('SQLServerName'))]",
+        "SQLDBNAME":"[parameters('SQLServerDatabaseName')]",
+        "SQLUSERPASSWORD":"[parameters('SQLServerPassword')]",
+        "SQLUSERNAME":"[parameters('SQLServerUser')]",
+
+        "StorageAccountCreateNew" : "[parameters('StorageAccountCreateNew')]",
+        "STORAGEACCOUNTNAME":"[parameters('StorageAccountName')]",
+        "FILEREPOPASSWORD":"[parameters('StorageAccountAccessKey')]",
+        "STORAGEACCOUNTFILESHARENAME":"[parameters('StorageAccountFileShareName')]",
+        
+        
+        "CONFIGUREHTTPS":"[parameters('HttpsConfigure')]",
+        "TLSCERT":"[parameters('HttpsCertificate')]",
+        "TLSKEY":"[parameters('HttpsCertificatePrivateKey')]",
+                
+        "USELETSENCRYPT":"No",
+        "KubenetesInfrastructureResourceGroupName":"[concat('MC_',resourceGroup().name,'_', variables('KubernetesClusterName'), '_',resourceGroup().location)]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ContainerService/managedClusters",
+            "apiVersion": "2020-07-01",
+            "name": "[variables('KubernetesClusterName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Basic",
+                "tier": "Free"
+            },
+            "properties": {
+                "kubernetesVersion": "[variables('KubernetesVersion')]",
+                "dnsPrefix": "profisee",
+                "agentPoolProfiles": [
+                    {
+                        "name": "nplinux1",
+                        "count": "[variables('KubernetesLinuxNodeCount')]",
+                        "vmSize": "[variables('KubernetesLinuxNodeSize')]",
+                        "osDiskSizeGB": 100,
+                        "maxPods": 30,
+                        "type": "VirtualMachineScaleSets",
+                        "orchestratorVersion": "[variables('KubernetesVersion')]",
+                        "enableNodePublicIP": false,
+                        "nodeLabels": {},
+                        "mode": "System",
+                        "osType": "Linux",
+                        "vnetSubnetID": "[if(not(empty(variables('KubernetesVnetResourceGroup'))),variables('vnetId'),json('null'))]"
+                    },
+                    {
+                        "name": "npwin1",
+                        "count": "[variables('KubernetesWindowsNodeCount')]",
+                        "vmSize": "[variables('KubernetesWindowsNodeSize')]",
+                        "osDiskSizeGB": 100,
+                        "maxPods": 30,
+                        "type": "VirtualMachineScaleSets",
+                        "orchestratorVersion": "[variables('KubernetesVersion')]",
+                        "enableNodePublicIP": false,
+                        "mode": "User",
+                        "osType": "Windows",
+                        "vnetSubnetID": "[if(not(empty(variables('KubernetesVnetResourceGroup'))),variables('vnetId'),json('null'))]"
+                    }
+                ],
+                "linuxProfile": {
+                    "adminUsername": "azureuser",
+                    "ssh": {
+                        "publicKeys": [
+                            {
+                                "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDOJtY73a8o8/+lSlrEycIchV77zZJeXHZT1+Lvhf97yrmPIU5hiVDLm3z8gD8sxi5VSQ7K3KvTbI7ssNUruXCVSWziDl2jTxOVfGo9faneP1dXGDnU7sRvRHHZ+9xwzh4zGdX4eMWZf1Szh8868f7KBn93mZJZt4Z3uQKJJZuDIveAeYMNQrOi1KGwRPNIOpK3Mu/TzDPo0q51mOYM7KoB0HsZmgWVVMY7vFnwWZGnBOS3QJEZKd369mFgDZ42h3p3gDkcMN76naApSnfCqTZMJ9jr1w0wSNw21IKMFCHph2t5kOPMNQCTq3uA4tbkWHMHyxrXgqBOKHgmVXNFF2BT"
+                            }
+                        ]
+                    }
+                },
+                "windowsProfile": {
+                    "adminUsername": "winadmin",
+                    "adminPassword": "Ple@seCh@ngeMe1234!"
+                },                
+                "nodeResourceGroup": "[variables('KubenetesInfrastructureResourceGroupName')]",
+                "enableRBAC": true,
+                "networkProfile": {
+                    "networkPlugin": "azure",
+                    "loadBalancerSku": "Standard",
+                    "outboundType": "loadBalancer",
+                    "serviceCidr": "[variables('KubernetesServiceCidr')]",
+                    "dnsServiceIP": "[variables('KubernetesDNSServiceIP')]",
+                    "dockerBridgeCidr": "[variables('KubernetesDockerBridgeCidr')]"
+                }
+            },
+            "identity": {
+                "type": "SystemAssigned"
+            }
+        },
+        {
+            "type": "Microsoft.ContainerService/managedClusters/agentPools",
+            "apiVersion": "2020-07-01",
+            "name": "[concat(variables('KubernetesClusterName'), '/nplinux1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('KubernetesClusterName'))]"
+            ],
+            "properties": {
+                "count": "[variables('KubernetesLinuxNodeCount')]",
+                "vmSize": "[variables('KubernetesLinuxNodeSize')]",
+                "osDiskSizeGB": 100,
+                "maxPods": 30,
+                "type": "VirtualMachineScaleSets",
+                "orchestratorVersion": "[variables('KubernetesVersion')]",
+                "enableNodePublicIP": false,
+                "nodeLabels": {},
+                "mode": "System",
+                "osType": "Linux"
+            }
+        },
+        {
+            "type": "Microsoft.ContainerService/managedClusters/agentPools",
+            "apiVersion": "2020-07-01",
+            "name": "[concat(variables('KubernetesClusterName'), '/npwin1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('KubernetesClusterName'))]"
+            ],
+            "properties": {
+                "count": "[variables('KubernetesWindowsNodeCount')]",
+                "vmSize": "[variables('KubernetesWindowsNodeSize')]",
+                "osDiskSizeGB": 100,
+                "maxPods": 30,
+                "type": "VirtualMachineScaleSets",
+                "orchestratorVersion": "[variables('KubernetesVersion')]",
+                "enableNodePublicIP": false,
+                "mode": "User",
+                "osType": "Windows"
+            }
+        },
+        {
+            "condition": "[equals(tolower(variables('SQLServerCreateNew')),tolower('Yes'))]",
+            "name": "[tolower(variables('SQLServerName'))]",
+            "type": "Microsoft.Sql/servers",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2019-06-01-preview",
+            "dependsOn": [],
+            "tags": {
+                "displayName": "SQLServer"
+            },
+            "properties": {
+                "administratorLogin": "[variables('SQLUSERNAME')]",
+                "administratorLoginPassword": "[variables('SQLUSERPASSWORD')]"
+            },
+            "resources": [
+                {
+                    "condition": "[equals(tolower(variables('SQLServerCreateNew')),tolower('Yes'))]",
+                    "name": "AllowAllWindowsAzureIps",
+                    "type": "firewallrules",
+                    "location": "[resourceGroup().location]",
+                    "apiVersion": "2015-05-01-preview",
+                    "dependsOn": [
+                        "[concat('Microsoft.Sql/servers/', tolower(variables('SQLServerName')))]"
+                    ],
+                    "properties": {
+                        "startIpAddress": "0.0.0.0",
+                        "endIpAddress": "0.0.0.0"
+                    }
+                }
+            ]
+        },
+        {
+            "condition": "[equals(tolower(variables('StorageAccountCreateNew')),tolower('Yes'))]",
+            "name": "[tolower(variables('StorageAccountName'))]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2019-06-01",
+            "dependsOn": [],
+            "tags": {
+                "displayName": "[variables('StorageAccountName')]"
+            },
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "StorageV2"
+        },
+        {
+            "condition": "[equals(tolower(variables('StorageAccountCreateNew')),tolower('Yes'))]",
+            "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(tolower(variables('StorageAccountName')), '/default/', tolower(variables('StorageAccountFileShareName')))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', tolower(variables('StorageAccountName')))]"
+            ]
+        },          
+        {
+        "type": "Microsoft.Resources/deploymentScripts",
+        "apiVersion": "2019-10-01-preview",
+        "name": "InstallProfiseePlatform",
+        "location": "[resourceGroup().location]",
+        "kind": "AzureCLI",
+         "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('KubernetesClusterName'))]"
+            ],
+        "identity": {
+            "type": "userAssigned",
+            "userAssignedIdentities": {
+                "[concat('/subscriptions/',subscription().subscriptionId,'/resourcegroups/',variables('ManagedIdentityResourceGroup'),'/providers/Microsoft.ManagedIdentity/userAssignedIdentities/',variables('ManagedIdentityName'))]":{}
+            }
+        },
+        "properties": {
+            "forceUpdateTag": "[guid(resourceGroup().id)]",
+            "azCliVersion": "2.0.80",
+            "timeout": "PT1H",
+            "cleanupPreference": "OnExpiration",
+            "retentionInterval": "P30D",
+            "environmentVariables": [
+                {
+                    "name": "RESOURCEGROUPNAME",
+                    "value": "[resourceGroup().name]"
+                },
+                {
+                    "name": "CLUSTERNAME",
+                    "value": "[variables('KubernetesClusterName')]"
+                },
+                {
+                    "name": "SQLNAME",
+                    "value": "[variables('SQLNAME')]"
+                },
+                {
+                    "name": "SQLUSERNAME",
+                    "value": "[variables('SQLUSERNAME')]"
+                },
+                {
+                    "name": "SQLUSERPASSWORD",
+                    "value": "[variables('SQLUSERPASSWORD')]"
+                },
+                {
+                    "name": "SQLDBNAME",
+                    "value": "[variables('SQLDBNAME')]"
+                },
+                {
+                    "name": "STORAGEACCOUNTNAME",
+                    "value": "[variables('STORAGEACCOUNTNAME')]"
+                },
+                {
+                    "name": "STORAGEACCOUNTFILESHARENAME",
+                    "value": "[variables('StorageAccountFileShareName')]"
+                },
+                {
+                    "name": "ADMINACCOUNTNAME",
+                    "value": "[variables('ADMINACCOUNTNAME')]"
+                },
+                {
+                    "name": "DNSHOSTNAME",
+                    "value": "[variables('DNSHostName')]"
+                },
+                {
+                    "name": "DNSDOMAINNAME",
+                    "value": "[variables('DNSDomainName')]"
+                },
+                {
+                    "name": "DOMAINNAMERESOURCEGROUP",
+                    "value": "[variables('DOMAINNAMERESOURCEGROUP')]"
+                },
+                {
+                    "name": "UPDATEDNS",
+                    "value": "[variables('DNSUpdate')]"
+                },
+                {
+                    "name": "EXTERNALDNSNAME",
+                    "value": "[variables('ExternalDNSName')]"
+                },
+                {
+                    "name": "EXTERNALDNSURL",
+                    "value": "[variables('ExternalDNSURL')]"
+                },                
+                {
+                    "name": "OIDCURL",
+                    "value": "[variables('OIDCURL')]"
+                },
+                {
+                    "name": "LICENSEDATA",
+                    "value": "[variables('LICENSEDATA')]"
+                },
+                {
+                    "name": "ACRUSER",
+                    "value": "[variables('ACRUSER')]"
+                },
+                {
+                    "name": "ACRUSERPASSWORD",
+                    "value": "[variables('ACRUSERPASSWORD')]"
+                },
+                {
+                    "name": "TLSCERT",
+                    "value": "[variables('TLSCERT')]"
+                },
+                {
+                    "name": "TLSKEY",
+                    "value": "[variables('TLSKEY')]"
+                },
+                {
+                    "name": "PROFISEEVERSION",
+                    "value": "[variables('PROFISEEVERSION')]"
+                },
+                {
+                    "name": "UPDATEAAD",
+                    "value": "[variables('UPDATEAAD')]"
+                },
+                {
+                    "name": "CLIENTID",
+                    "value": "[variables('CLIENTID')]"
+                },
+                {
+                    "name": "CONFIGUREHTTPS",
+                    "value": "[variables('CONFIGUREHTTPS')]"
+                }
+                ,
+                {
+                    "name": "FILEREPOPASSWORD",
+                    "value": "[variables('FILEREPOPASSWORD')]"
+                }
+                ,
+                {
+                    "name": "USELETSENCRYPT",
+                    "value": "[variables('USELETSENCRYPT')]"
+                },
+                 {
+                    "name": "AKSINFRARESOURCEGROUPNAME",
+                    "value": "[variables('KubenetesInfrastructureResourceGroupName')]"
+                },
+                {
+                    "name": "SQLSERVERCREATENEW",
+                    "value": "[variables('SQLServerCreateNew')]"
+                }
+            ],
+            "primaryScriptUri": "[variables('ScriptURL')]"            
+        }
+        },
+        {
+            "apiVersion": "2018-02-01",
+            "name": "pid-498552cf-87f5-55b7-a69b-5364df5c1994",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": []
+                }
+            }
+        }       
+        
+    ],
+    "outputs": 
+    {
+    "InstallProfiseePlatformOutputs": {
+      "value": "[reference('InstallProfiseePlatform').outputs]",
+      "type": "object"
+    },
+    "KubernetesClusterFQDN": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('KubernetesClusterName'))).FQDN]"
+        }
+  }
+}

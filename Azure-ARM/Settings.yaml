@@ -10,7 +10,7 @@ profiseeRunTime:
         password: "$FILEREPOPASSWORD"
         logonType: "NewCredentials"
         location: "$FILEREPOURL"
-    externalDnsUrl: ""
+    externalDnsUrl: "$EXTERNALDNSURL"
     externalDnsName: "$EXTERNALDNSNAME"
     oidc:
         name: "Azure Active Directory"
@@ -22,6 +22,7 @@ profiseeRunTime:
         firstNameClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
         lastNameClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
         emailClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+    clusterNodeCount: 1
 clusterNode:
     limits:
       cpu: 1000
