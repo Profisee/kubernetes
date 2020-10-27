@@ -1020,6 +1020,16 @@
                         "startIpAddress": "0.0.0.0",
                         "endIpAddress": "0.0.0.0"
                     }
+                },
+                {
+                "condition": "[equals(tolower(variables('SQLServerCreateNew')),tolower('Yes'))]",
+                "type": "databases",
+                "apiVersion": "2020-08-01-preview",
+                "name": "Profisee",
+                "location": "[resourceGroup().location]",
+                "dependsOn": [
+                    "[resourceId('Microsoft.Sql/servers', concat(variables('SQLServerName')))]"
+                ]
                 }
             ]
         },
