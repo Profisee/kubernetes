@@ -68,7 +68,7 @@ chmod 700 get_helm.sh;
 
 #install nginx
 echo $"Installing nginx started";
-helm repo add stable https://kubernetes-charts.storage.googleapis.com/;
+helm repo add stable https://charts.helm.sh/stable;
 #get profisee nginx settings
 curl -fsSL -o nginxSettings.yaml "$REPOURL/Azure-ARM/nginxSettings.yaml";
 helm uninstall nginx
@@ -81,16 +81,21 @@ else
 	helm install nginx stable/nginx-ingress --values nginxSettings.yaml --set controller.service.loadBalancerIP=$publicInIP	
 fi
 
-echo $"Installing nginx finished";
+echo $"Installing nginx finished, sleeping for 30s to wait for its IP";
 
 #wait for the ip to be available.  usually a few seconds
 sleep 30;
 #get ip for nginx
 nginxip=$(kubectl get services nginx-nginx-ingress-controller --output="jsonpath={.status.loadBalancer.ingress[0].ip}");
+
+if [ -z "$nginxip" ]; then
+    echo $"nginx is not configure properly because the LB IP is null.  Exiting with error";
+	exit 1
+fi
 echo $"nginx LB IP is $nginxip";
 
 #fix tls variables
-echo $"fix tls variables started\n";
+echo $"fix tls variables started";
 #cert
 if [ "$CONFIGUREHTTPS" = "Yes" ]; then
 	printf '%s\n' "$TLSCERT" | sed 's/- /-\n/g; s/ -/\n-/g' | sed '/CERTIFICATE/! s/ /\n/g' >> a.cert;
@@ -98,7 +103,7 @@ if [ "$CONFIGUREHTTPS" = "Yes" ]; then
 else    
     echo '    NA' > tls.cert;
 fi
-rm a.cert
+rm -f a.cert
 
 #key
 if [ "$CONFIGUREHTTPS" = "Yes" ]; then
@@ -107,14 +112,16 @@ if [ "$CONFIGUREHTTPS" = "Yes" ]; then
 else
 	echo '    NA' > tls.key;	    
 fi
-rm a.key
+rm -f a.key
 
 #set dns
 if [ "$UPDATEDNS" = "Yes" ]; then
+	echo "Update DNS started";
 	az network dns record-set a delete -g $DOMAINNAMERESOURCEGROUP -z $DNSDOMAINNAME -n $DNSHOSTNAME --yes;
 	az network dns record-set a add-record -g $DOMAINNAMERESOURCEGROUP -z $DNSDOMAINNAME -n $DNSHOSTNAME -a $nginxip --ttl 5;
+	echo "Update DNS finished";
 fi
-echo $"fix tls variables finished\n";
+echo $"fix tls variables finished";
 
 #install profisee platform
 echo $"install profisee platform statrted";
@@ -128,17 +135,20 @@ sed -i -e 's/$ACRAUTH/'"$auth"'/g' Settings.yaml
 sed -e '/$TLSCERT/ {' -e 'r tls.cert' -e 'd' -e '}' -i Settings.yaml
 sed -e '/$TLSKEY/ {' -e 'r tls.key' -e 'd' -e '}' -i Settings.yaml
 
-rm tls.cert
-rm tls.key
+rm -f tls.cert
+rm -f tls.key
 
 #create the azure app id (clientid)
 azureAppReplyUrl="${EXTERNALDNSURL}/profisee/auth/signin-microsoft"
 if [ "$UPDATEAAD" = "Yes" ]; then
 	echo "Update AAD started";
 	azureClientName="${RESOURCEGROUPNAME}_${CLUSTERNAME}";
+	echo $"azureClientName is $azureClientName";
+	echo $"azureAppReplyUrl is $azureAppReplyUrl";
 	CLIENTID=$(az ad app create --display-name $azureClientName --reply-urls $azureAppReplyUrl --query 'appId');
 	#clean client id - remove quotes
 	CLIENTID=$(echo "$CLIENTID" | tr -d '"')
+	echo $"CLIENTID is $CLIENTID";
 	#add a Graph API permission of "Sign in and read user profile"
 	az ad app permission add --id $CLIENTID --api 00000003-0000-0000-c000-000000000000 --api-permissions e1fe6dd8-ba31-4d61-89e7-88639da4683d=Scope
 	az ad app permission grant --id $CLIENTID --api 00000003-0000-0000-c000-000000000000
