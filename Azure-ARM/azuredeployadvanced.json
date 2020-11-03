@@ -1235,7 +1235,7 @@
             "azCliVersion": "2.0.80",
             "timeout": "PT1H",
             "cleanupPreference": "OnExpiration",
-            "retentionInterval": "P30D",
+            "retentionInterval": "P1D",
             "environmentVariables": [
                 {
                     "name": "RESOURCEGROUPNAME",
