@@ -235,7 +235,7 @@ fi
 
 #################################Install Profisee Start #######################################
 echo "Install Profisee started";
-helm repo add profisee https://profiseedev.github.io/kubernetes
+helm repo add profisee https://profisee.github.io/kubernetes
 helm repo update
 helm uninstall profiseeplatform
 helm install profiseeplatform profisee/profisee-platform --values Settings.yaml
