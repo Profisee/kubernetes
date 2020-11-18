@@ -565,12 +565,12 @@
                     "name": "DNSUpdate",
                     "type": "Microsoft.Common.OptionsGroup",
                     "label": "Use default Azure DNS?",
-                    "defaultValue": "Yes, use default Azure DNS and Let’s Encrypt for certificates (ex. https://[profisee name].[region].cloudapps.azure.com/profisee)",
+                    "defaultValue": "Yes, use default Azure DNS and Let’s Encrypt for certificates (ex. https://[profisee name].[region].cloudapp.azure.com/profisee)",
                     "toolTip": "",
                     "constraints": {
                       "allowedValues": [
                         {
-                          "label": "Yes, use default Azure DNS and Let’s Encrypt for certificates (ex. https://[profisee name].[region].cloudapps.azure.com/profisee)",
+                          "label": "Yes, use default Azure DNS and Let’s Encrypt for certificates (ex. https://[profisee name].[region].cloudapp.azure.com/profisee)",
                           "value": "No"
                         },
                         {
