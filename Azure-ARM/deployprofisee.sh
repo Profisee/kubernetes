@@ -1,5 +1,9 @@
 #!/bin/bash
-REPOURL="https://raw.githubusercontent.com/profisee/kubernetes/master";
+REPONAME="profiseedev"
+REPOURL="https://raw.githubusercontent.com/$REPONAME/kubernetes/master";
+HELMREPOURL="https://$REPONAME.github.io/kubernetes";
+echo $"REPOURL is $REPOURL";
+echo $"HELMREPOURL is $HELMREPOURL";
 
 az login --identity
 #install the aks cli since this script runs in az 2.0.80 and the az aks was not added until 2.5
@@ -28,6 +32,9 @@ rm LicenseReader.tar.002
 rm LicenseReader.tar.003
 rm LicenseReader.tar.004
 echo $"Downloading and extracting license reader finished";
+
+echo $"Cleaning license string to remove and unwanted characters - linebreaks, spaces, etc...";
+LICENSEDATA=$(echo $LICENSEDATA|tr -d '\n')
 
 echo $"Getting values from license started";
 ./LicenseReader "ExternalDnsUrl" $LICENSEDATA
@@ -66,19 +73,72 @@ curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scr
 chmod 700 get_helm.sh;
 ./get_helm.sh;
 
+#create profisee namespace
+kubectl create namespace profisee
+
+#download the settings.yaml
+curl -fsSL -o Settings.yaml "$REPOURL/Azure-ARM/Settings.yaml";
+
+#install keyvault drivers
+if [ "$USEKEYVAULT" = "Yes" ]; then
+	echo $"Installing keyvault csi driver - started"
+	#Install the Secrets Store CSI driver and the Azure Key Vault provider for the driver
+	helm repo add csi-secrets-store-provider-azure https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts
+	helm install --namespace profisee csi-secrets-store-provider-azure csi-secrets-store-provider-azure/csi-secrets-store-provider-azure
+	echo $"Installing keyvault csi driver - finished"
+
+	echo $"Installing keyvault aad pod identity - started"
+	#Install the Azure Active Directory (Azure AD) identity into AKS.
+	helm repo add aad-pod-identity https://raw.githubusercontent.com/Azure/aad-pod-identity/master/charts
+	helm install --namespace profisee pod-identity aad-pod-identity/aad-pod-identity
+	echo $"Installing keyvault aad pod identity - finished"
+
+	#Assign roles needed for kv
+	echo $"Managing Identity configuration for KV access - started"
+	az role assignment create --role "Managed Identity Operator" --assignee $KUBERNETESCLIENTID --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$RESOURCEGROUPNAME
+	az role assignment create --role "Managed Identity Operator" --assignee $KUBERNETESCLIENTID --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$AKSINFRARESOURCEGROUPNAME
+	az role assignment create --role "Virtual Machine Contributor" --assignee $KUBERNETESCLIENTID --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$AKSINFRARESOURCEGROUPNAME
+
+	#Create AD Identity, get clientid and principalid to assign the reader role to (next command)
+	identityName="AKSKeyVaultUser"
+	az identity create -g $AKSINFRARESOURCEGROUPNAME -n $identityName
+
+	akskvidentityClientId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'clientId')
+	akskvidentityClientId=$(echo "$akskvidentityClientId" | tr -d '"')
+	akskvidentityClientResourceId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'id')
+	akskvidentityClientResourceId=$(echo "$akskvidentityClientResourceId" | tr -d '"')
+	principalId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'principalId')
+	principalId=$(echo "$principalId" | tr -d '"')
+    echo $principalId
+	#KEYVAULT looks like this this /subscriptions/$SUBID/resourceGroups/$kvresourceGroup/providers/Microsoft.KeyVault/vaults/$kvname
+	IFS='/' read -r -a kv <<< "$KEYVAULT" #splits the KEYVAULT on slashes and gets last one
+	keyVaultName=${kv[-1]}
+	keyVaultResourceGroup=${kv[4]}
+	keyVaultSubscriptionId=${kv[2]}
+	az role assignment create --role "Reader" --assignee $principalId --scope $KEYVAULT
+	az keyvault set-policy -n $keyVaultName --secret-permissions get --spn $akskvidentityClientId
+	az keyvault set-policy -n $keyVaultName --key-permissions get --spn $akskvidentityClientId
+    echo $"Managing Identity configuration for KV access - finished"
+fi
+
 #install nginx
 echo $"Installing nginx started";
 helm repo add stable https://charts.helm.sh/stable;
+
+#new going forward
+#helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+#helm install --namespace profisee nginx ingress-nginx/ingress-nginx
+
 #get profisee nginx settings
 curl -fsSL -o nginxSettings.yaml "$REPOURL/Azure-ARM/nginxSettings.yaml";
-helm uninstall nginx
+helm uninstall --namespace profisee nginx
 
 if [ "$USELETSENCRYPT" = "Yes" ]; then
 	echo $"Installing nginx for Lets Encrypt and setting the dns name for its IP."
-	helm install nginx stable/nginx-ingress --values nginxSettings.yaml --set controller.service.loadBalancerIP=$publicInIP --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=$DNSHOSTNAME;
+	helm install --namespace profisee nginx stable/nginx-ingress --values nginxSettings.yaml --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=$DNSHOSTNAME;
 else
 	echo $"Installing nginx not for Lets Encrypt and not setting the dns name for its IP."
-	helm install nginx stable/nginx-ingress --values nginxSettings.yaml --set controller.service.loadBalancerIP=$publicInIP	
+	helm install --namespace profisee nginx stable/nginx-ingress --values nginxSettings.yaml
 fi
 
 echo $"Installing nginx finished, sleeping for 30s to wait for its IP";
@@ -86,11 +146,17 @@ echo $"Installing nginx finished, sleeping for 30s to wait for its IP";
 #wait for the ip to be available.  usually a few seconds
 sleep 30;
 #get ip for nginx
-nginxip=$(kubectl get services nginx-nginx-ingress-controller --output="jsonpath={.status.loadBalancer.ingress[0].ip}");
+nginxip=$(kubectl --namespace profisee get services nginx-nginx-ingress-controller --output="jsonpath={.status.loadBalancer.ingress[0].ip}");
 
 if [ -z "$nginxip" ]; then
-    echo $"nginx is not configure properly because the LB IP is null.  Exiting with error";
-	exit 1
+	#try again
+	echo $"nginx is not configure properly because the LB IP is null, trying again in 60 seconds";
+    sleep 60;
+	nginxip=$(kubectl --namespace profisee get services nginx-nginx-ingress-controller --output="jsonpath={.status.loadBalancer.ingress[0].ip}");
+	if [ -z "$nginxip" ]; then
+    	echo $"nginx is not configure properly because the LB IP is null.  Exiting with error";
+		exit 1
+	fi
 fi
 echo $"nginx LB IP is $nginxip";
 
@@ -126,7 +192,6 @@ echo $"fix tls variables finished";
 #install profisee platform
 echo $"install profisee platform statrted";
 #set profisee helm chart settings
-curl -fsSL -o Settings.yaml "$REPOURL/Azure-ARM/Settings.yaml";
 auth="$(echo -n "$ACRUSER:$ACRUSERPASSWORD" | base64)"
 sed -i -e 's/$ACRUSER/'"$ACRUSER"'/g' Settings.yaml
 sed -i -e 's/$ACRPASSWORD/'"$ACRUSERPASSWORD"'/g' Settings.yaml
@@ -196,10 +261,11 @@ sed -i -e 's/$SQLNAME/'"$SQLNAME"'/g' Settings.yaml
 sed -i -e 's/$SQLDBNAME/'"$SQLDBNAME"'/g' Settings.yaml
 sed -i -e 's/$SQLUSERNAME/'"$SQLUSERNAME"'/g' Settings.yaml
 sed -i -e 's/$SQLUSERPASSWORD/'"$SQLUSERPASSWORD"'/g' Settings.yaml
+sed -i -e 's/$FILEREPOACCOUNTNAME/'"$STORAGEACCOUNTNAME"'/g' Settings.yaml
 sed -i -e 's/$FILEREPOUSERNAME/'"$FILEREPOUSERNAME"'/g' Settings.yaml
 sed -i -e 's~$FILEREPOPASSWORD~'"$FILEREPOPASSWORD"'~g' Settings.yaml
 sed -i -e 's/$FILEREPOURL/'"$FILEREPOURL"'/g' Settings.yaml
-sed -i -e 's/$FILESHARENAME/'"$STORAGEACCOUNTFILESHARENAME"'/g' Settings.yaml
+sed -i -e 's/$FILEREPOSHARENAME/'"$STORAGEACCOUNTFILESHARENAME"'/g' Settings.yaml
 sed -i -e 's~$OIDCURL~'"$OIDCURL"'~g' Settings.yaml
 sed -i -e 's/$CLIENTID/'"$CLIENTID"'/g' Settings.yaml
 sed -i -e 's/$OIDCCLIENTSECRET/'"$OIDCCLIENTSECRET"'/g' Settings.yaml
@@ -209,10 +275,28 @@ sed -i -e 's/$EXTERNALDNSNAME/'"$EXTERNALDNSNAME"'/g' Settings.yaml
 sed -i -e 's~$LICENSEDATA~'"$LICENSEDATA"'~g' Settings.yaml
 sed -i -e 's/$ACRREPONAME/'"$ACRREPONAME"'/g' Settings.yaml
 sed -i -e 's/$ACRREPOLABEL/'"$ACRREPOLABEL"'/g' Settings.yaml
+if [ "$USEKEYVAULT" = "Yes" ]; then
+	sed -i -e 's/$USEKEYVAULT/'true'/g' Settings.yaml
 
-#Add settings.yaml as a secret so its always available after the deployment
-kubectl delete secret profisee-settings
-kubectl create secret generic profisee-settings --from-file=Settings.yaml
+	sed -i -e 's/$KEYVAULTIDENTITCLIENTID/'"$akskvidentityClientId"'/g' Settings.yaml
+	sed -i -e 's~$KEYVAULTIDENTITYRESOURCEID~'"$akskvidentityClientResourceId"'~g' Settings.yaml
+
+	sed -i -e 's/$SQL_USERNAMESECRET/'"$SQLUSERNAME"'/g' Settings.yaml
+	sed -i -e 's/$SQL_USERPASSWORDSECRET/'"$SQLUSERPASSWORD"'/g' Settings.yaml
+	sed -i -e 's/$TLS_CERTSECRET/'"$TLSCERT"'/g' Settings.yaml
+	sed -i -e 's/$LICENSE_DATASECRET/'"$LICENSEDATASECRETNAME"'/g' Settings.yaml
+	sed -i -e 's/$KUBERNETESCLIENTID/'"$KUBERNETESCLIENTID"'/g' Settings.yaml
+
+	sed -i -e 's/$KEYVAULTNAME/'"$keyVaultName"'/g' Settings.yaml
+	sed -i -e 's/$KEYVAULTRESOURCEGROUP/'"$keyVaultResourceGroup"'/g' Settings.yaml
+
+	sed -i -e 's/$AZURESUBSCRIPTIONID/'"$keyVaultSubscriptionId"'/g' Settings.yaml
+	sed -i -e 's/$AZURETENANTID/'"$TENANTID"'/g' Settings.yaml
+
+	$SUBSCRIPTIONID
+else
+	sed -i -e 's/$USEKEYVAULT/'false'/g' Settings.yaml
+fi
 
 if [ "$USELETSENCRYPT" = "Yes" ]; then
 	#################################Lets Encrypt Part 1 Start #####################################
@@ -223,48 +307,48 @@ if [ "$USELETSENCRYPT" = "Yes" ]; then
 	# Update your local Helm chart repository cache
 	helm repo update
 	# Install the cert-manager Helm chart
-	helm install cert-manager jetstack/cert-manager --namespace default --version v0.16.1 --set installCRDs=true --set nodeSelector."beta\.kubernetes\.io/os"=linux --set webhook.nodeSelector."beta\.kubernetes\.io/os"=linux --set cainjector.nodeSelector."beta\.kubernetes\.io/os"=linux
+	helm install --namespace profisee cert-manager jetstack/cert-manager --namespace default --version v0.16.1 --set installCRDs=true --set nodeSelector."beta\.kubernetes\.io/os"=linux --set webhook.nodeSelector."beta\.kubernetes\.io/os"=linux --set cainjector.nodeSelector."beta\.kubernetes\.io/os"=linux
 	#wait for the cert manager to be ready
+	echo $"Lets Encrypt, waiting for certificate manager to be ready, sleeping for 30s";
 	sleep 30;
-	#create the CA cluster issuer
-	curl -fsSL -o clusterissuer.yaml "$REPOURL/Azure-ARM/clusterissuer.yaml";
-	kubectl apply -f clusterissuer.yaml
+	#create the CA cluster issuer - now in profisee helm chart
+	#curl -fsSL -o clusterissuer.yaml "$REPOURL/Azure-ARM/clusterissuer.yaml";
+	#kubectl apply -f clusterissuer.yaml
+	sed -i -e 's/$USELETSENCRYPT/'true'/g' Settings.yaml
 	echo "Lets Encrypt Part 1 finshed";
 	#################################Lets Encrypt Part 1 End #######################################
+else
+	sed -i -e 's/$USELETSENCRYPT/'false'/g' Settings.yaml
 fi
+
+#Add settings.yaml as a secret so its always available after the deployment
+kubectl delete secret profisee-settings --namespace profisee
+kubectl create secret generic profisee-settings --namespace profisee --from-file=Settings.yaml
 
 #################################Install Profisee Start #######################################
 echo "Install Profisee started";
-helm repo add profisee https://profisee.github.io/kubernetes
+helm repo add profisee $HELMREPOURL
 helm repo update
-helm uninstall profiseeplatform
-helm install profiseeplatform profisee/profisee-platform --values Settings.yaml
-echo "Install Profisee finsihed";
+helm uninstall --namespace profisee profiseeplatform
+helm install --namespace profisee profiseeplatform profisee/profisee-platform --values Settings.yaml
+
+#Make sure it installed, if not return error
+profiseeinstalledname=$(echo $(helm list --filter 'profisee+' --namespace profisee -o json)| jq '.[].name')
+if [ -z "$profiseeinstalledname" ]; then
+	echo "Profisee did not get installed.  Exiting with error";
+	exit 1
+else
+	echo "Install Profisee finished";
+fi;
 #################################Install Profisee End #######################################
-#################################Add Azure File volume Start #######################################
-echo "Add Azure File volume started";
-curl -fsSL -o StatefullSet_AddAzureFileVolume.yaml "$REPOURL/Azure-ARM/StatefullSet_AddAzureFileVolume.yaml";
-STORAGEACCOUNTNAME="$(echo -n "$STORAGEACCOUNTNAME" | base64)"
-FILEREPOPASSWORD="$(echo -n "$FILEREPOPASSWORD" | base64 | tr -d '\n')" #The last tr is needed because base64 inserts line breaks after every 76th character
-sed -i -e 's/$STORAGEACCOUNTNAME/'"$STORAGEACCOUNTNAME"'/g' StatefullSet_AddAzureFileVolume.yaml
-sed -i -e 's/$STORAGEACCOUNTKEY/'"$FILEREPOPASSWORD"'/g' StatefullSet_AddAzureFileVolume.yaml
-sed -i -e 's/$STORAGEACCOUNTFILESHARENAME/'"$STORAGEACCOUNTFILESHARENAME"'/g' StatefullSet_AddAzureFileVolume.yaml
-kubectl apply -f StatefullSet_AddAzureFileVolume.yaml
-echo "Add Azure File volume finished";
-#################################Add Azure File volume End #######################################
 
-if [ "$USELETSENCRYPT" = "Yes" ]; then
-	#################################Lets Encrypt Part 2 Start #####################################
-	#Install Ingress for lets encrypt
-	echo "Lets Encrypt Part 2 started";
-	curl -fsSL -o ingressletsencrypt.yaml "$REPOURL/Azure-ARM/ingressletsencrypt.yaml";
-	sed -i -e 's/$EXTERNALDNSNAME/'"$EXTERNALDNSNAME"'/g' ingressletsencrypt.yaml
-	kubectl apply -f ingressletsencrypt.yaml
-	echo "Lets Encrypt Part 2 finished";
-	#################################Lets Encrypt Part 2 End #######################################
-fi
+#wait for pod to be ready (downloaded)
+echo "Waiting for pod to be downloaded and be ready..";
+sleep 30;
+kubectl wait --timeout=1200s --for=condition=ready pod/profisee-0 --namespace profisee
 
-echo $"install profisee platform finished";
+echo $"Install Profisee Platform finished";
+
 result="{\"Result\":[\
 {\"IP\":\"$nginxip\"},\
 {\"WEBURL\":\"${EXTERNALDNSURL}/Profisee\"},\
@@ -272,6 +356,8 @@ result="{\"Result\":[\
 {\"FILEREPOURL\":\"$FILEREPOURL\"},\
 {\"AZUREAPPCLIENTID\":\"$CLIENTID\"},\
 {\"AZUREAPPREPLYURL\":\"$azureAppReplyUrl\"},\
+{\"SQLSERVER\":\"$SQLNAME\"},\
+{\"SQLDATABASE\":\"$SQLDBNAME\"},\
 {\"ACRREPONAME\":\"$ACRREPONAME\"},\
 {\"ACRREPOLABEL\":\"$ACRREPOLABEL\"}\
 ]}"

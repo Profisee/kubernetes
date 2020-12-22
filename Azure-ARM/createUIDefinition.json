@@ -61,6 +61,40 @@
             "label": "Profisee",
             "elements": [
                 {
+                    "name": "UseKeyVault",
+                    "type": "Microsoft.Common.OptionsGroup",
+                    "label": "Use Key Vault?",
+                    "defaultValue": "No, I will supply them.",
+                    "toolTip": "",
+                    "constraints": {
+                      "allowedValues": [
+                        {
+                          "label": "Yes, pull sensitive information from Key Vault.",
+                          "value": "Yes"
+                        },
+                        {
+                          "label": "No, I will supply them.",
+                          "value": "No"
+                        }
+                      ],
+                      "required": true
+                    },
+                    "visible": true
+                },
+                {
+                    "name": "KeyVault",
+                    "type": "Microsoft.Solutions.ResourceSelector",
+                    "label": "Key Vault",
+                    "resourceType": "Microsoft.KeyVault/vaults",
+                    "options": {
+                        "filter": {
+                            "subscription": "All",
+                            "location": "All"
+                        }
+                    },
+                    "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
+                },
+                {
                     "name": "ProfiseeVersion",
                     "type": "Microsoft.Common.DropDown",
                     "label": "Version",
@@ -80,6 +114,10 @@
                             {
                                 "label": "2020R2.0",
                                 "value": "2020R2.0"
+                            },
+                            {
+                                "label": "2021R1.Preview",
+                                "value": "2021r1.preview"
                             }
                         ]
                     },
@@ -114,7 +152,21 @@
                       "openMode": "text",
                       "encoding": "UTF-8"
                     },
-                    "visible": true
+                    "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
+                },
+                {
+                    "name": "ProfiseeLicenseSecret",
+                    "type": "Microsoft.Common.TextBox",
+                    "label": "License",
+                    "defaultValue": "",
+                    "placeholder": "License secret name in KeyVault",
+                    "toolTip": "",
+                    "constraints": {
+                        "required": true,
+                        "regex": "",
+                        "validationMessage": ""
+                    },
+                    "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
                 },
                 {
                     "name": "ActiveDirectoryCreateApp",
@@ -136,7 +188,7 @@
                       "required": true
                     },
                     "visible": true
-                }, 
+                },                  
                 {
                     "name": "UserSuppliedClientyId",
                     "type": "Microsoft.Common.Section",
@@ -307,7 +359,7 @@
                                 "addressPrefixSize": "/24"
                             },
                             "constraints": {
-                                "minAddressPrefixSize": "/24"
+                                "minAddressPrefixSize": "/28"
                             },
                             "options": {
                                 "hideExisting": false
@@ -447,7 +499,20 @@
                         "regex": "",
                         "validationMessage": ""
                     },
-                    "visible": true
+                    "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
+                },
+                {
+                    "name": "SQLServerUserSecret",
+                    "type": "Microsoft.Common.TextBox",
+                    "label": "User",
+                    "placeholder": "SQL server username secret name in KeyVault",
+                    "toolTip": "Administrator SQL login name to create with the new SQL Server or to use to connect to existing SQL Server.  Your login name must not contain a SQL Identifier or a typical system name (like admin, administrator, sa, root, dbmanager, loginmanager, etc.) or a built-in database user or role (like dbo, guest, public, etc.).  Your login name must not include non-alphanumeric characters.  Your login name must not start with numbers or symbols",
+                    "constraints": {
+                        "required": true,
+                        "regex": "",
+                        "validationMessage": ""
+                    },
+                    "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
                 },
                 {
                     "name": "SQLServerPassword",
@@ -465,7 +530,21 @@
                     "options": {
                         "hideConfirmation": false
                     },
-                    "visible": true
+                    "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
+                },
+                {
+                    "name": "SQLServerPasswordSecret",
+                    "type": "Microsoft.Common.TextBox",
+                    "label": "Password",
+                    "defaultValue": "",
+                    "placeholder": "SQL server password secret name in KeyVault",
+                    "toolTip": "",
+                    "constraints": {
+                        "required": true,
+                        "regex": "",
+                        "validationMessage": ""
+                    },
+                    "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
                 },
                 {
                     "name": "SQLServerDatabaseName",
@@ -694,7 +773,21 @@
                               "openMode": "text",
                               "encoding": "UTF-8"
                             },
-                            "visible": true
+                            "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
+                        },
+                        {
+                            "name": "HttpsCertificateSecret",
+                            "type": "Microsoft.Common.TextBox",
+                            "label": "Https Certificate",
+                            "defaultValue": "",
+                            "placeholder": "Https Certificate name in KeyVault",
+                            "toolTip": "",
+                            "constraints": {
+                                "required": true,
+                                "regex": "",
+                                "validationMessage": ""
+                            },
+                            "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
                         },
                         {
                             "name": "HttpsCertificatePrivateKey",
@@ -711,7 +804,7 @@
                               "openMode": "text",
                               "encoding": "UTF-8"
                             },
-                            "visible": true
+                            "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
                         }
                     ],
                     "visible": "[equals(steps('networking').HttpsConfigure,'Yes')]"
@@ -724,7 +817,7 @@
 
             "ProfiseeVersion": "[steps('profisee').ProfiseeVersion]",
             "ProfiseeAdminUserAccount": "[steps('profisee').ProfiseeAdminUserAccount]",
-            "ProfiseeLicense": "[steps('profisee').ProfiseeLicense]",
+            "ProfiseeLicense": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('profisee').ProfiseeLicenseSecret, steps('profisee').ProfiseeLicense)]",
             "ProfiseeACRUserName": "[steps('profisee').ProfiseeACRUserName]",
             "ProfiseeACRPassword": "[steps('profisee').ProfiseeACRPassword]",
             "ActiveDirectoryCreateApp": "[steps('profisee').ActiveDirectoryCreateApp]",
@@ -746,8 +839,8 @@
 
             "SQLServerCreateNew": "[steps('sql').SQLServerCreateNew]",
             "SQLServerName": "[if(equals(steps('sql').SQLServerCreateNew, 'Yes'), steps('sql').SQLServerName, steps('sql').SQLServerNameExisting.name)]",
-            "SQLServerUser": "[steps('sql').SQLServerUser]",
-            "SQLServerPassword": "[steps('sql').SQLServerPassword]",
+            "SQLServerUser": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('sql').SQLServerUserSecret, steps('sql').SQLServerUser)]",
+            "SQLServerPassword": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('sql').SQLServerPasswordSecret, steps('sql').SQLServerPassword)]",
             "SQLServerDatabaseName": "[steps('sql').SQLServerDatabaseName]",
             "StorageAccountCreateNew": "[if(equals(steps('storage').StorageAccountNameSection.StorageAccountName.newOrExisting, 'new'), 'Yes', 'No')]",
             "StorageAccountName": "[steps('storage').StorageAccountNameSection.StorageAccountName.name]",
@@ -762,8 +855,14 @@
             "DNSDomainResourceGroup": "[steps('networking').UserDefinedDNS.DNSDomainResourceGroup]",
             "HttpsConfigure": "[coalesce(steps('networking').HttpsConfigure,'No')]",
             "UseLetsEncrypt": "[if(equals(coalesce(steps('networking').HttpsConfigure,'No'),'No'),'Yes','No')]",
-            "HttpsCertificate": "[steps('networking').UserDefinedHTTPS.HttpsCertificate]",
-            "HttpsCertificatePrivateKey": "[steps('networking').UserDefinedHTTPS.HttpsCertificatePrivateKey]"
+            "HttpsCertificate": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('networking').UserDefinedHTTPS.HttpsCertificateSecret, steps('networking').UserDefinedHTTPS.HttpsCertificate)]",
+
+            "HttpsCertificatePrivateKey": "[steps('networking').UserDefinedHTTPS.HttpsCertificatePrivateKey]",
+            "UseKeyVault":"[steps('profisee').UseKeyVault]",
+            "KeyVault":"[steps('profisee').KeyVault.id]"
+
+
+            
         }
     }
 }
