@@ -4,12 +4,15 @@ sqlServer:
     userName: "$SQLUSERNAME"
     password: "$SQLUSERPASSWORD"
 profiseeRunTime:
+    useLetsEncrypt: $USELETSENCRYPT
     adminAccount: "$ADMINACCOUNTNAME"
     fileRepository:
+        accountName: "$FILEREPOACCOUNTNAME"
         userName: "$FILEREPOUSERNAME"
         password: "$FILEREPOPASSWORD"
         logonType: "NewCredentials"
         location: "$FILEREPOURL"
+        fileShareName: "$FILEREPOSHARENAME"
     externalDnsUrl: ""
     externalDnsName: "$EXTERNALDNSNAME"
     oidc:
@@ -53,4 +56,26 @@ tlsCert: |
     $TLSCERT
 tlsKey: |
     $TLSKEY  
+cloud:
+    azure:
+      isProvider: false
+      useKeyVault: $USEKEYVAULT
+      keyVault:
+        identity: #must be created in the aks node resource group and have reader ploicy's on keyvault
+          clientId: "$KEYVAULTIDENTITCLIENTID"
+          resourceId: $KEYVAULTIDENTITYRESOURCEID
+        secrets:
+          sqlUserName: $SQL_USERNAMESECRET
+          sqlPassword: $SQL_USERPASSWORDSECRET
+          tlsCertificate: $TLS_CERTSECRET
+          license: $LICENSE_DATASECRET
+        name: "$KEYVAULTNAME"
+        resourceGroup: "$KEYVAULTRESOURCEGROUP"
+        subscriptionId: "$AZURESUBSCRIPTIONID"
+        tenantId: "$AZURETENANTID"
+        clusterClientId: "$KUBERNETESCLIENTID" #clientid of the aks cluster; Roles must be assigned ot it; role to main RG: "Managed Identity Operator"; roles to node RG: "Managed Identity Operator", "Virtual Machine Contributor"
+    aws:
+      isProvider: true
+    google:
+      isProvider: false
     
