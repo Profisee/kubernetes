@@ -249,12 +249,15 @@ fi
 FILEREPOUSERNAME="Azure\\\\\\\\${STORAGEACCOUNTNAME}"
 FILEREPOURL="\\\\\\\\\\\\\\\\${STORAGEACCOUNTNAME}.file.core.windows.net\\\\\\\\${STORAGEACCOUNTFILESHARENAME}"
 
-#PROFISEEVERSION looks like this 2020R1.0
-#The repo is Profisee + everything to the left of the .
-#The label is everything to the right of the .
+#PROFISEEVERSION looks like this profiseeplatform:2020R1.0
+#The repo is profiseeplatform or something like it, its everything to the left of the :
+#The label is everything to the right of the :
 
-ACRREPONAME="profiseeplatform"; 
-ACRREPOLABEL="${PROFISEEVERSION,,}"; #lowercase is the ,,
+IFS=':' read -r -a repostring <<< "$PROFISEEVERSION"
+
+#lowercase is the ,,
+ACRREPONAME="${repostring[0],,}"; 
+ACRREPOLABEL="${repostring[1],,}"
 
 #set values in Settings.yaml
 sed -i -e 's/$SQLNAME/'"$SQLNAME"'/g' Settings.yaml

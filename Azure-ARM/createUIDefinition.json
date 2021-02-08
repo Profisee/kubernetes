@@ -105,19 +105,19 @@
                         "allowedValues": [
                             {
                                 "label": "2020R1.0",
-                                "value": "2020R1.0"
+                                "value": "profiseeplatform:2020r1.0"
                             },
                             {
                                 "label": "2020R1.1",
-                                "value": "2020R1.1"
+                                "value": "profiseeplatform:2020r1.1"
                             },
                             {
                                 "label": "2020R2.0",
-                                "value": "2020R2.0"
+                                "value": "profiseeplatform:2020r2.0"
                             },
                             {
                                 "label": "2021R1.Preview",
-                                "value": "2021r1.preview"
+                                "value": "profiseeplatform:2021r1.preview"
                             }
                         ]
                     },
