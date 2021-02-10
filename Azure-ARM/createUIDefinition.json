@@ -118,6 +118,10 @@
                             {
                                 "label": "2021R1.Preview",
                                 "value": "profiseeplatform:2021r1.preview"
+                            },
+                            {
+                                "label": "2021R2.Preview",
+                                "value": "profiseeplatform:2021r2.preview"
                             }
                         ]
                     },
