@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "ProfiseeVersion": {
-            "value": "profiseeplatform:2020R2.0"
+            "value": "profiseeplatform:2021R1.0"
         },
         "ProfiseeAdminUserAccount": {
             "value": ""
