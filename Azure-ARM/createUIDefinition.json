@@ -98,7 +98,7 @@
                     "name": "ProfiseeVersion",
                     "type": "Microsoft.Common.DropDown",
                     "label": "Version",
-                    "defaultValue": "2020R2.0",
+                    "defaultValue": "2021R1.0",
                     "toolTip": "Which release of the Profisee Platform to start with.",
                     "constraints": {
                         "required": true,
@@ -116,8 +116,8 @@
                                 "value": "profiseeplatform:2020r2.0"
                             },
                             {
-                                "label": "2021R1.Preview",
-                                "value": "profiseeplatform:2021r1.preview"
+                                "label": "2021R1.0",
+                                "value": "profiseeplatform:2021r1.0"
                             },
                             {
                                 "label": "2021R2.Preview",
