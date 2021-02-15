@@ -6,10 +6,6 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 
 1.  License
     - Profisee license associated with the dns for the environment
-    - Token for access to the profisee container
-    	
-		- Username
-		- Password
 
 2.  Https certificate including the private key
 	- Certificate
