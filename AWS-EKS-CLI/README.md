@@ -218,8 +218,8 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 			      memory: 1000M        
 			image:
 			    registry: "profisee.azurecr.io"
-			    repository: "profisee2020r1"
-			    tag: "1"
+			    repository: "profiseeplatform"
+			    tag: "2021r1.0"
 			    auth: |
 				{
 				   "auths":{
