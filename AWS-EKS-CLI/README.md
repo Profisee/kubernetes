@@ -31,10 +31,9 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
     	
 		- Goto https://console.aws.amazon.com/rds
 		- Click create database
-		- Standard Create and Microsoft SQL Server
+		- Standard Create - Microsoft SQL Server
 		- Edition - Choose what you want
 		- Version - Choose (default should be fine)
-		- Templates - Choose what you are doing
 		- Give sql server name as db intance identifier
 		- Credentials
 			- Master username - login name to use
@@ -73,13 +72,13 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 				- Goto Configure Security group
 					- Add HTTP (anywhere)
 					- Add SMB (anywhere)
-				- Launch - pick or create key pair (ave if needed)
+				- Launch - pick or create key pair (Save/Download if needed)
 				- Launch instance
 				- Go back to AWS storage gateway tab in browser
 				- Click Next (Public)
 				- Goto EC2 instance, find the instance you jsut created and clic kon it to show properties
 				- Note public IP (v4)
-				- Go back to gateway tab and enter IP and click connect o gateway
+				- Go back to gateway tab and enter IP and click connect to gateway
 				- Give it a name and click Activate Gateway
 				- You will see preparing disks
 				- Then choose the disk and allocate it to Cache and click exit
