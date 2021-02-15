@@ -164,9 +164,10 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 
 3.  Install nginx for AWS
 
-            helm repo add stable https://kubernetes-charts.storage.googleapis.com/;
+            helm repo add stable https://charts.helm.sh/stable;
             curl -o nginxSettingsAWS.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/AWS-EKS-CLI/nginxSettingsAWS.yaml;
-            helm install nginx stable/nginx-ingress --values nginxSettingsAWS.yaml
+            kubectl creaate namespace profisee
+	    helm install nginx stable/nginx-ingress --values nginxSettingsAWS.yaml
 	    
 	- Wait for the load balancer to be provisioned.  goto aws ec2/load balancing console and wait for the state to go from provisioning to active (3ish minutes)
     
@@ -187,12 +188,15 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 			    userName: "Sql username"
 			    password: "Sql password"
 			profiseeRunTime:
+			    useLetsEncrypt: false
 			    adminAccount: "Email/account of the first super user who will be registered with Profisee, who will be able to logon and add other users."
 			    fileRepository:
+				accountName: ""
 				userName: "File repository username eg: abc-12345\\smbguest"
 				password: "File repository password"
 				logonType: "NewCredentials"
 				location: "File repository unc path eg: \\\\abc-12345.compute-1.amazonaws.com\\profisee"
+				fileShareName: "profisee"
 			    externalDnsUrl: ""
 			    externalDnsName: "web url to profisee endpoint eg: eks.mycompany.com"
 			    oidc:
@@ -240,6 +244,13 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 			    -----BEGIN PRIVATE KEY-----
 			    Add certificate key string with opening and closing tags like this
 			    -----END PRIVATE KEY-----
+			cloud:
+			    azure:
+			      isProvider: false      
+			    aws:
+			      isProvider: true
+			    google:
+			      isProvider: false
 
 5.  Configue Authentication provider
 	- Register redirect url http(s)://FQDNThatPointsToClusterIP/Profisee/auth/signin-microsoft
