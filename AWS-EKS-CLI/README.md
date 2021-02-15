@@ -257,18 +257,18 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 6.  Install Profisee
 
             helm repo add profisee https://profisee.github.io/kubernetes
-            helm uninstall profiseeplatform2020r1
-            helm install profiseeplatform2020r1 profisee/profisee-platform --values Settings.yaml
+            helm uninstall --namespace profisee profiseeplatform
+            helm install --namespace profisee profiseeplatform profisee/profisee-platform --values Settings.yaml
             
 # Verify:
 
 1.  The initial deploy will have to download the container which takes about 10 minutes.  Verify its finished downloading the container:
 
-		kubectl describe pod profisee-0 #check status and wait for "Pulling" to finish
+		kubectl --namespace profisee describe pod profisee-0#check status and wait for "Pulling" to finish
 
 1.  Container can be accessed with the following command:
     
-        kubectl exec -it profisee-0 powershell
+        kubectl --namespace profisee exec -it profisee-0 powershell
 
 2.  System logs can be accessed with the following command:
     
