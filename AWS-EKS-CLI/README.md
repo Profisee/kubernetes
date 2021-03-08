@@ -60,7 +60,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
     - https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-creating-volume.html
     
 5. Configure environment with required tools
-	- Use aws cloudshell 
+	- Use aws cloudshell - https://console.aws.amazon.com/cloudshell 
 	  - https://dev.to/aws-builders/setting-up-a-working-environment-for-amazon-eks-with-aws-cloudshell-1nn7
 	- Use local computer - no cloudshell
 	  - https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
