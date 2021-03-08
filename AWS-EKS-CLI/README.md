@@ -55,72 +55,27 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 			- Connect to container - kubectl exec -it profisee-0 powershell
 			- get oubound ip - Invoke-RestMethod http://ipinfo.io/json | Select -exp ip
 
-4.  File Share
-    - Create storage gateway (File via EC2) and File Share (SMB)
-    		
-		- https://docs.aws.amazon.com/storagegateway/latest/userguide/create-gateway-file.html
-    		
-		- https://docs.aws.amazon.com/storagegateway/latest/userguide/CreatingAnSMBFileShare.html
-		
-		- Goto https://console.aws.amazon.com/storagegateway
-			- Click create gwateway
-			- File gateway
-			- EC2 - Launch intance
-				- Choose size (Smallest without EBS seems to work fine)
-				- Goto Add volume
-					- Add minimum is 150GB otherwise you get warning
-				- Goto Configure Security group
-					- Add HTTP (anywhere)
-					- Add SMB (anywhere)
-				- Launch - pick or create key pair (Save/Download if needed)
-				- Launch instance
-				- Go back to AWS storage gateway tab in browser
-				- Click Next (Public)
-				- Goto EC2 instance, find the instance you jsut created and clic kon it to show properties
-				- Note public IP (v4)
-				- Go back to gateway tab and enter IP and click connect to gateway
-				- Give it a name and click Activate Gateway
-				- You will see preparing disks
-				- Then choose the disk and allocate it to Cache and click exit
-				- You need an S3 bucket in order to create a file share, if you dont have one create one
-					- Create s3 bucket
-					- Goto https://console.aws.amazon.com/s3
-					- Click create bucket
-					- Give it a name, Next
-					- Click thru and choose your options, defaults work fine
-				- Back on file share create screen
-				- Enter the bucket name you jsut created
-				- Choose SMB
-				- No logging is fine, Next
-				- Next
-				- SMB Sharing setting - Edit
-				- Authentication method - Guest access
-				- Click Close
-				- Click Create File Share
-				- get connect info to share
-					- Click on fileshare
-					- Find net use statement and copy it as it has the info for the file repository
-				
-
+4.  Create EBS volume
+    - aws ec2 create-volume --volume-type gp2 --size 80 --availability-zone us-east-1c --region us-east-1
+    - https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-creating-volume.html
     
-    
-5. AWS kubernetes utilities
-	- https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
-	- Install aws cli - https://awscli.amazonaws.com/AWSCLIV2.msi
-	- Install eksctl 
+5. Configure environment with required tools
+	- Use aws cloudshell 
+	  - https://dev.to/aws-builders/setting-up-a-working-environment-for-amazon-eks-with-aws-cloudshell-1nn7
+	- Use local computer - no cloudshell
+	  - https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+	  - Install aws cli - https://awscli.amazonaws.com/AWSCLIV2.msi
+	  - Install eksctl 
 		- Install chocolately if you need it - https://chocolatey.org/install
 		- Install eksctl - chocolatey install -y eksctl 
-	- Install kubectl
+	  - Install kubectl
 		- curl -o kubectl.exe https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.9/2020-08-04/bin/windows/amd64/kubectl.exe
 		- Set path
 			- Create a new directory for your command line binaries, such as C:\bin.
 			- Copy the kubectl.exe binary to your new directory.
 			- Edit your user or system PATH environment variable to add the new directory to your PATH.
 			- Close your PowerShell terminal and open a new one to pick up the new PATH variable.
-		
-	
-6.  Credentials
-    - Setup IAM - https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-creds
+           - Setup IAM - https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-creds
     
 		    aws configure
 		    AWS Access Key ID [None]: XXXX
@@ -141,7 +96,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
             metadata:
               name: MyCluster
               region: us-east-1
-              version: '1.17'  
+              version: '1.18'  
             managedNodeGroups:
               - name: linux-ng
                 instanceType: t2.large
@@ -179,7 +134,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 4.  Create Profisee Settings.yaml
     - Fetch the Settings.yaml template
       
-            curl -fsSL -o Settings.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/AWS-EKS-CLI/Settings.yaml;
+            curl -fsSL -o Settings.yaml https://raw.githubusercontent.com/Profiseedev/kubernetes/master/AWS-EKS-CLI/Settings.yaml;
     - Update the values
     
 			sqlServer: 
@@ -192,18 +147,18 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 			    adminAccount: "Email/account of the first super user who will be registered with Profisee, who will be able to logon and add other users."
 			    fileRepository:
 				accountName: ""
-				userName: "File repository username eg: abc-12345\\smbguest"
-				password: "File repository password"
+				userName: "user manager\\containeradministrator"
+				password: ""
 				logonType: "NewCredentials"
-				location: "File repository unc path eg: \\\\abc-12345.compute-1.amazonaws.com\\profisee"
-				fileShareName: "profisee"
+				location: "c:\\fileshare"
+				fileShareName: ""
 			    externalDnsUrl: "url to profisee endpoint eg: https://eks.mycompany.com"
 			    externalDnsName: "web url to profisee endpoint eg: eks.mycompany.com"
 			    oidc:
 				name: "Authority name eg: Okta"
 				authority: "Authority url  eg: https://mycompany.okta.com/oauth2/default"
 				clientId: "Authority client id eg" acbdefghijklmnop"
-				clientSecret: ""
+				clientSecret: "Authority client secret"
 				usernameClaim: "Authority username claim name.  eg: preferred_username"
 				userIdClaim: "Authority userid claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
 				firstNameClaim: "Authority first name claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
@@ -249,6 +204,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 			      isProvider: false      
 			    aws:
 			      isProvider: true
+			      ebsVolumeId: "volume id of existing ebs volume"
 			    google:
 			      isProvider: false
 
@@ -256,7 +212,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 	- Register redirect url http(s)://FQDNThatPointsToClusterIP/Profisee/auth/signin-microsoft
 6.  Install Profisee
 
-            helm repo add profisee https://profisee.github.io/kubernetes
+            helm repo add profisee https://profiseedev.github.io/kubernetes
             helm uninstall --namespace profisee profiseeplatform
             helm install --namespace profisee profiseeplatform profisee/profisee-platform --values Settings.yaml
             
