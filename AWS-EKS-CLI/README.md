@@ -6,27 +6,13 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 
 1.  License
     - Profisee license associated with the dns for the environment
+    - ACR username, password and token
 
-2.  Https certificate including the private key
-	- Certificate
-	
-			-----BEGIN CERTIFICATE-----
-			XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-			-----END CERTIFICATE-----
+2.  Https certificate and the private key
 			
-	- Key
-	
-			-----BEGIN PRIVATE KEY-----
-			XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-			-----END PRIVATE KEY-----
+3.  Choose your AWS region you want to use eg us-east-1
 
-			or
-
-			-----BEGIN RSA PRIVATE KEY-----
-			XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-			-----END RSA PRIVATE KEY-----
-			
-3.  SQL Server
+4.  SQL Server
     - AWS RDS instance - https://aws.amazon.com/getting-started/hands-on/create-microsoft-sql-db/
     	
 		- Goto https://console.aws.amazon.com/rds
@@ -45,69 +31,33 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 		- Defaults for rest
 		- Wait for database to be available
     	
-	- Make sure the SQL Server is accessable by the EKS cluster
-		- Click on sql instance
-		- Click on VPC security group
-		- Inbound rules
-		- Edit inbound rules
-		- Add MSSQL for outbound IP of cluster
-		- To get outbound ip of cluster Deployment step #5 needs to be complete
-			- Connect to container - kubectl exec -it profisee-0 powershell
-			- get oubound ip - Invoke-RestMethod http://ipinfo.io/json | Select -exp ip
-
-4.  Create EBS volume
-    - aws ec2 create-volume --volume-type gp2 --size 80 --availability-zone us-east-1c --region us-east-1
+5.  Create EBS volume - must be created in the same region/zone as the eks cluster
+    - aws ec2 create-volume --volume-type gp2 --size 1 --availability-zone us-east-1a --region us-east-1
     - https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-creating-volume.html
     
-5. Configure environment with required tools
-	- Use aws cloudshell - https://console.aws.amazon.com/cloudshell 
+6. Configure environment with required tools
+	- Use aws cloudshell 
 	  - https://dev.to/aws-builders/setting-up-a-working-environment-for-amazon-eks-with-aws-cloudshell-1nn7
-	- Use local computer - no cloudshell
-	  - https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+	- Use local computer - no cloudshell - https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
 	  - Install aws cli - https://awscli.amazonaws.com/AWSCLIV2.msi
-	  - Install eksctl 
-		- Install chocolately if you need it - https://chocolatey.org/install
-		- Install eksctl - chocolatey install -y eksctl 
-	  - Install kubectl
-		- curl -o kubectl.exe https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.9/2020-08-04/bin/windows/amd64/kubectl.exe
-		- Set path
-			- Create a new directory for your command line binaries, such as C:\bin.
-			- Copy the kubectl.exe binary to your new directory.
-			- Edit your user or system PATH environment variable to add the new directory to your PATH.
-			- Close your PowerShell terminal and open a new one to pick up the new PATH variable.
-           - Setup IAM - https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-creds
-    
-		    aws configure
-		    AWS Access Key ID [None]: XXXX
-		    AWS Secret Access Key [None]: XXXX
-		    Default region name [None]: us-east-1
-		    Default output format [None]: json
-		    
+	  - Install eksctl - https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html
+	  - Install kubectl - https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html
+          - Setup IAM - https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-creds
 
-	
+7.  Configure DNS	
+    - Choose a DNS host name that you want to use eg:  profiseemdm.mycompany.com
+    - Register that hostname in your DNS provider with a CNAME that points to xxxxxx.elb.<region>.amazonaws.com (this will be updated later.
       
 
 ## Deployment
 
-1.  Make cluster.yaml change the instance type to fit your needs.  https://aws.amazon.com/ec2/pricing/on-demand/
-
-            apiVersion: eksctl.io/v1alpha5
-            kind: ClusterConfig
-            metadata:
-              name: MyCluster
-              region: us-east-1
-              version: '1.18'  
-            managedNodeGroups:
-              - name: linux-ng
-                instanceType: t2.large
-                minSize: 1
-
-            nodeGroups:
-              - name: windows-ng
-                instanceType: m5.xlarge
-                minSize: 1
-                volumeSize: 100
-                amiFamily: WindowsServer2019FullContainer
+1.  Make cluster.yaml and upload to cloudshell.
+	- Download the cluster.yaml
+            	
+			curl -fsSL -o cluster.yaml https://raw.githubusercontent.com/profisee/kubernetes/master/AWS-EKS-CLI/cluster.yaml;
+		
+	- Change the name/region/zone
+	- Change the instance type(s) to fit your needs.  https://aws.amazon.com/ec2/pricing/on-demand/
     
 2.  Create the EKS Clusterr
     
@@ -128,110 +78,59 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
     
 3.  Get nginx IP
     
-        kubectl get services nginx-nginx-ingress-controller
-        #Note the external-ip and you need to create a cname record in dns to point to it (xxxxxx.elb.<region>.amazonaws.com)
+        kubectl get services nginx-nginx-ingress-controller --namespace profisee
+        #Note the external-ip and update the DNS hostname you created earlier and have it point to it (xxxxxx.elb.<region>.amazonaws.com)
 
-4.  Create Profisee Settings.yaml
-    - Fetch the Settings.yaml template
+4.  Configue Authentication provider
+	- Create/configure an auth provider in your auth providr of choice.  eg Azure Active Directory, OKTA
+	- Register redirect url http(s)://profiseemdm.mycompany.com/Profisee/auth/signin-microsoft
+	- Note the clientid and authority url.  The authority url for AAD is https://login.microsoftonline.com/{tenantid}
+
+5.  Create Profisee Settings.yaml
+    - Fetch the Settings.yaml template, download the yaml file so you can edit it locally
       
-            curl -fsSL -o Settings.yaml https://raw.githubusercontent.com/Profiseedev/kubernetes/master/AWS-EKS-CLI/Settings.yaml;
+            curl -fsSL -o Settings.yaml https://raw.githubusercontent.com/profisee/kubernetes/master/AWS-EKS-CLI/Settings.yaml;
     - Update the values
-    
-			sqlServer: 
-			    name: "Sql server fully qualified domain name"
-			    databaseName: "Database name"
-			    userName: "Sql username"
-			    password: "Sql password"
-			profiseeRunTime:
-			    useLetsEncrypt: false
-			    adminAccount: "Email/account of the first super user who will be registered with Profisee, who will be able to logon and add other users."
-			    fileRepository:
-				accountName: ""
-				userName: "user manager\\containeradministrator"
-				password: ""
-				logonType: "NewCredentials"
-				location: "c:\\fileshare"
-				fileShareName: ""
-			    externalDnsUrl: "url to profisee endpoint eg: https://eks.mycompany.com"
-			    externalDnsName: "web url to profisee endpoint eg: eks.mycompany.com"
-			    oidc:
-				name: "Authority name eg: Okta"
-				authority: "Authority url  eg: https://mycompany.okta.com/oauth2/default"
-				clientId: "Authority client id eg" acbdefghijklmnop"
-				clientSecret: "Authority client secret"
-				usernameClaim: "Authority username claim name.  eg: preferred_username"
-				userIdClaim: "Authority userid claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
-				firstNameClaim: "Authority first name claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
-				lastNameClaim: "Authority last name claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
-				emailClaim: "Authority email claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
-			clusterNode:
-			    limits:
-			      cpu: 1000
-			      memory: 10T
-			    requests:
-			      cpu: 1
-			      memory: 1000M        
-			image:
-			    registry: "profisee.azurecr.io"
-			    repository: "profiseeplatform"
-			    tag: "2021r1.0"
-			    auth: |
-				{
-				   "auths":{
-				      "profisee.azurecr.io":{
-					 "username":"Username supplied by Profisee support",
-					 "password":"Password supplied by Profisee support",
-					 "email":"support@profisee.com",
-					 "auth":"Token supplied by Profisee support"
-				      }
-				   }
-				}
-			licenseFileData: License string provided by Profisee support
+    - Upload to cloudshell    
 
-			oidcFileData: |
-			    {      
-			    }
-			tlsCert: |
-			    -----BEGIN CERTIFICATE-----
-			    Add certificate string with opening and closing tags like this
-			    -----END CERTIFICATE-----
-			tlsKey: |
-			    -----BEGIN PRIVATE KEY-----
-			    Add certificate key string with opening and closing tags like this
-			    -----END PRIVATE KEY-----
-			cloud:
-			    azure:
-			      isProvider: false      
-			    aws:
-			      isProvider: true
-			      ebsVolumeId: "volume id of existing ebs volume"
-			    google:
-			      isProvider: false
-
-5.  Configue Authentication provider
-	- Register redirect url http(s)://FQDNThatPointsToClusterIP/Profisee/auth/signin-microsoft
 6.  Install Profisee
 
-            helm repo add profisee https://profiseedev.github.io/kubernetes
+            helm repo add profisee https://profisee.github.io/kubernetes
             helm uninstall --namespace profisee profiseeplatform
             helm install --namespace profisee profiseeplatform profisee/profisee-platform --values Settings.yaml
-            
-# Verify:
+
+# Verify and finalize:
 
 1.  The initial deploy will have to download the container which takes about 10 minutes.  Verify its finished downloading the container:
 
-		kubectl --namespace profisee describe pod profisee-0#check status and wait for "Pulling" to finish
+	    #check status and wait for "Pulling" to finish
+	    kubectl --namespace profisee describe pod profisee-0
 
-1.  Container can be accessed with the following command:
+2.  View the kubernetes logs and you will see that it fails the first time as it cannot talk to the sql server.
+
+		kubectl logs profisee-0 --namespace profisee
+		
+3.  Update the sql security group to allow the container ip in
+	- Connect to container 
+	
+			kubectl exec -it profisee-0 powershell
+			
+	- Get oubound ip and make note of it
+	
+			Invoke-RestMethod http://ipinfo.io/json | Select -exp ip
+			
+	- Click on sql instance
+	- Click on VPC security group
+	- Inbound rules
+	- Edit inbound rules
+	- Add MSSQL for outbound IP of cluster
+
+4.  Remote back into the container and run ./setup.ps1
     
         kubectl --namespace profisee exec -it profisee-0 powershell
+		./Setup.ps1
 
-2.  System logs can be accessed with the following command:
-    
-        Get-Content C:\Profisee\Configuration\LogFiles\SystemLog.log
+5.  Make sure it succeeds
 	
-3.  Goto Profisee Platform web portal
+6.  Voila, goto Profisee Platform web portal
 	- http(s)://FQDNThatPointsToClusterIP/Profisee
-	
-
-

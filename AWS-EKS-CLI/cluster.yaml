@@ -1,0 +1,18 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: ProfiseeDemoCluster
+  region: us-east-1
+  version: '1.18'  
+managedNodeGroups:
+  - name: linux-ng
+    instanceType: t2.large
+    minSize: 1
+
+nodeGroups:
+  - name: windows-ng
+    instanceType: m5.xlarge
+    minSize: 1
+    volumeSize: 100
+    amiFamily: WindowsServer2019FullContainer
