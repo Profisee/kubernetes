@@ -77,33 +77,44 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
     
         aws eks --region us-east-1 update-kubeconfig --name MyCluster
 
-3.  Install nginx for AWS
+4.  Update the sql security group to allow the kubernetes nodes ips in
+    - Get the outbound IP's of the cluster.
+
+		kubectl get nodes  -o jsonpath='{.items[*].status.addresses[?(@.type == "ExternalIP")].address}'
+
+	- Click on sql instance
+	- Click on VPC security group
+	- Inbound rules
+	- Edit inbound rules
+	- Add MSSQL for outbound IP's of cluster
+
+5.  Install nginx for AWS
 
             helm repo add stable https://charts.helm.sh/stable;
             curl -o nginxSettingsAWS.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/AWS-EKS-CLI/nginxSettingsAWS.yaml;
             kubectl creaate namespace profisee
-	    helm install nginx stable/nginx-ingress --values nginxSettingsAWS.yaml --namespace profisee
+	    	helm install nginx stable/nginx-ingress --values nginxSettingsAWS.yaml --namespace profisee
 	    
 	- Wait for the load balancer to be provisioned.  goto aws ec2/load balancing console and wait for the state to go from provisioning to active (3ish minutes)
     
-3.  Get nginx IP
+6.  Get nginx IP
     
         kubectl get services nginx-nginx-ingress-controller --namespace profisee
         #Note the external-ip and update the DNS hostname you created earlier and have it point to it (xxxxxx.elb.<region>.amazonaws.com)
 
-4.  Configue Authentication provider
+7.  Configue Authentication provider
 	- Create/configure an auth provider in your auth providr of choice.  eg Azure Active Directory, OKTA
 	- Register redirect url http(s)://profiseemdm.mycompany.com/Profisee/auth/signin-microsoft
 	- Note the clientid, secret and authority url.  The authority url for AAD is https://login.microsoftonline.com/{tenantid}
 
-5.  Create Profisee Settings.yaml
+8.  Create Profisee Settings.yaml
     - Fetch the Settings.yaml template, download the yaml file so you can edit it locally
       
             curl -fsSL -o Settings.yaml https://raw.githubusercontent.com/profisee/kubernetes/master/AWS-EKS-CLI/Settings.yaml;
     - Update the values
     - Upload to cloudshell    
 
-6.  Install Profisee
+9.  Install Profisee
 
             helm repo add profisee https://profisee.github.io/kubernetes
             helm uninstall --namespace profisee profiseeplatform
@@ -116,31 +127,9 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 	    #check status and wait for "Pulling" to finish
 	    kubectl --namespace profisee describe pod profisee-0
 
-2.  View the kubernetes logs and you will see that it fails the first time as it cannot talk to the sql server.
+2.  View the kubernetes logs and wait for it to finish successfully starting up.  takes longer on the first time as it has to create all the objects in teh database
 
 		kubectl logs profisee-0 --namespace profisee
 		
-3.  Update the sql security group to allow the container ip in
-	- Connect to container 
-	
-			kubectl exec -it profisee-0 powershell
-			
-	- Get oubound ip and make note of it
-	
-			Invoke-RestMethod http://ipinfo.io/json | Select -exp ip
-			
-	- Click on sql instance
-	- Click on VPC security group
-	- Inbound rules
-	- Edit inbound rules
-	- Add MSSQL for outbound IP of cluster
-
-4.  Remote back into the container and run ./setup.ps1
-    
-        kubectl --namespace profisee exec -it profisee-0 powershell
-		./Setup.ps1
-
-5.  Make sure it succeeds
-	
-6.  Voila, goto Profisee Platform web portal
+3.  Voila, goto Profisee Platform web portal
 	- http(s)://FQDNThatPointsToClusterIP/Profisee

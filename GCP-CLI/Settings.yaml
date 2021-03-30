@@ -1,27 +1,31 @@
 sqlServer: 
-    name: "$SQLNAME"
-    databaseName: "$SQLDBNAME"
-    userName: "$SQLUSERNAME"
-    password: "$SQLUSERPASSWORD"
+    name: "Sql server fully qualified domain name"
+    databaseName: "Database name"
+    userName: "Sql username"
+    password: "Sql password"
 profiseeRunTime:
-    adminAccount: "$ADMINACCOUNTNAME"
+    useLetsEncrypt: false
+    adminAccount: "Email/account of the first super user who will be registered with Profisee, who will be able to logon and add other users."
     fileRepository:
-        userName: "$FILEREPOUSERNAME"
-        password: "$FILEREPOPASSWORD"
+        accountName: ""
+        userName: "user manager\\containeradministrator"
+        password: ""
         logonType: "NewCredentials"
-        location: "$FILEREPOURL"
-    externalDnsUrl: ""
-    externalDnsName: "$EXTERNALDNSNAME"
+        location: "c:\\fileshare"
+        fileShareName: ""
+    externalDnsUrl: "url to profisee endpoint eg: https://profiseemdm.mycompany.com"
+    externalDnsName: "web url to profisee endpoint eg: profiseemdm.mycompany.com"
     oidc:
-        name: "Azure Active Directory"
-        authority: "$OIDCURL"
-        clientId: "$CLIENTID"
-        clientSecret: "$OIDCCLIENTSECRET"
-        usernameClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
-        userIdClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
-        firstNameClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
-        lastNameClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
-        emailClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+        name: "Authority name eg: Okta or Azure Active Directory"
+        authority: "Authority url  eg: https://mycompany.okta.com/oauth2/default"
+        clientId: "Authority client id eg: acbdefghijklmnop"
+        clientSecret: "Authority client secret"
+        usernameClaim: "Authority username claim name.  eg: preferred_username or http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+        userIdClaim: "Authority userid claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+        firstNameClaim: "Authority first name claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
+        lastNameClaim: "Authority last name claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
+        emailClaim: "Authority email claim name.  eg: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+    clusterNodeCount: 1
 clusterNode:
     limits:
       cpu: 1000
@@ -31,26 +35,40 @@ clusterNode:
       memory: 1000M        
 image:
     registry: "profisee.azurecr.io"
-    repository: "$ACRREPONAME"
-    tag: "$ACRREPOLABEL"
+    repository: "profiseeplatform"
+    tag: "2021r1.0"
     auth: |
         {
            "auths":{
               "profisee.azurecr.io":{
-                 "username":"$ACRUSER",
-                 "password":"$ACRPASSWORD",
-                 "email":"$ACREMAIL",
-                 "auth":"$ACRAUTH"
+                 "username":"Username supplied by Profisee support",
+                 "password":"Username supplied by Profisee support",
+                 "email":"support@profisee.com",
+                 "auth":"Username supplied by Profisee support"
               }
            }
         }
-licenseFileData: $LICENSEDATA
+licenseFileData: License string provided by Profisee support
 
 oidcFileData: |
     {      
     }
 tlsCert: |
-    $TLSCERT
+    -----BEGIN CERTIFICATE-----
+    Add certificate string with opening and closing tags like this
+    -----END CERTIFICATE-----
+
 tlsKey: |
-    $TLSKEY  
-    
+    -----BEGIN PRIVATE KEY-----
+    Add certificate key string with opening and closing tags like this
+    -----END PRIVATE KEY-----  
+ 
+cloud:
+    azure:
+      isProvider: false      
+    aws:
+      isProvider: true
+      ebsVolumeId: "volume id of existing ebs volume"
+    google:
+      isProvider: false
+      gceVolumeName: ""     
