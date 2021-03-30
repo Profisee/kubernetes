@@ -28,12 +28,21 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 		- Storage - Defaults should be fine, probably no need for autoscaling
 		- Connectivity
 			- Public access yes (simpler to debug) - Change to fit your security needs when ready
-		- Defaults for rest
+		- Defaults for the rest of the options
 		- Wait for database to be available
+	- CLI sample: aws rds create-db-instance --engine sqlserver-ex --db-instance-class db.t3.small --db-instance-identifier profiseedemo --master-username sqladmin --master-user-password Password123 --allocated-storage 20
     	
 5.  Create EBS volume - must be created in the same region/zone as the eks cluster
-    - aws ec2 create-volume --volume-type gp2 --size 1 --availability-zone us-east-1a --region us-east-1
-    - https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-creating-volume.html
+    - EBS volume - https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-creating-volume.html
+
+	    - https://console.aws.amazon.com/ec2
+		- Click Volumes under Elastic Block Store on left
+		- Click create volume
+		- Choose volume type and size
+		- Choose Availability zone, make sure its in the same zone as the EKS cluster
+		- Click Create Volume
+		- When its finished creating, note the volume id
+	- CLI sample:  aws ec2 create-volume --volume-type gp2 --size 1 --availability-zone us-east-1a --region us-east-1
     
 6. Configure environment with required tools
 	- Use aws cloudshell 
