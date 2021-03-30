@@ -92,7 +92,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 
             helm repo add stable https://charts.helm.sh/stable;
             curl -o nginxSettingsAWS.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/AWS-EKS-CLI/nginxSettingsAWS.yaml;
-            kubectl creaate namespace profisee
+            kubectl create namespace profisee
 	    	helm install nginx stable/nginx-ingress --values nginxSettingsAWS.yaml --namespace profisee
 	    
 	- Wait for the load balancer to be provisioned.  goto aws ec2/load balancing console and wait for the state to go from provisioning to active (3ish minutes)
