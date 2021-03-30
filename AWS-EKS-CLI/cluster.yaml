@@ -15,4 +15,5 @@ nodeGroups:
     instanceType: m5.xlarge
     minSize: 1
     volumeSize: 100
+    availabilityZones: ["us-east-1a"]
     amiFamily: WindowsServer2019FullContainer
