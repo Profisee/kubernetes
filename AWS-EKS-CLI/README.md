@@ -56,8 +56,9 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
             	
 			curl -fsSL -o cluster.yaml https://raw.githubusercontent.com/profisee/kubernetes/master/AWS-EKS-CLI/cluster.yaml;
 		
-	- Change the name/region/zone
+	- Change the name, region and availabilityzones
 	- Change the instance type(s) to fit your needs.  https://aws.amazon.com/ec2/pricing/on-demand/
+	- For more complex deployments, including networking vpc and subnet configurations see https://eksctl.io/usage/schema/
     
 2.  Create the EKS Clusterr
     
@@ -84,7 +85,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 4.  Configue Authentication provider
 	- Create/configure an auth provider in your auth providr of choice.  eg Azure Active Directory, OKTA
 	- Register redirect url http(s)://profiseemdm.mycompany.com/Profisee/auth/signin-microsoft
-	- Note the clientid and authority url.  The authority url for AAD is https://login.microsoftonline.com/{tenantid}
+	- Note the clientid, secret and authority url.  The authority url for AAD is https://login.microsoftonline.com/{tenantid}
 
 5.  Create Profisee Settings.yaml
     - Fetch the Settings.yaml template, download the yaml file so you can edit it locally
