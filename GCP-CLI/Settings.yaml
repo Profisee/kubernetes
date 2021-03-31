@@ -49,7 +49,8 @@ image:
            }
         }
 licenseFileData: License string provided by Profisee support
-
+preInitScriptData: Cg==
+postInitScriptData: Cg==
 oidcFileData: |
     {      
     }
@@ -67,8 +68,8 @@ cloud:
     azure:
       isProvider: false      
     aws:
-      isProvider: true
-      ebsVolumeId: "volume id of existing ebs volume"
-    google:
       isProvider: false
-      gceVolumeName: ""     
+      ebsVolumeId: ""
+    google:
+      isProvider: true
+      gceVolumeName: "name of existing disk"     

@@ -4,8 +4,8 @@ controller:
   nodeSelector: 
     beta.kubernetes.io/os: linux
   replicaCount: 1
-  service: 
-    loadBalancerIP: 0.0.0.0
+  #service: 
+    #loadBalancerIP: 0.0.0.0
   config:
     proxy-buffering: "off"
     proxy-buffer-size: "16k"
