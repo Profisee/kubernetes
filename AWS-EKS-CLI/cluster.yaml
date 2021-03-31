@@ -4,11 +4,13 @@ kind: ClusterConfig
 metadata:
   name: ProfiseeDemo
   region: us-east-1
-  version: '1.18'  
+
 managedNodeGroups:
   - name: linux-ng
-    instanceType: t2.large
+    instanceType: t2.medium
     minSize: 1
+    volumeSize: 100
+    availabilityZones: ["us-east-1a"]
 
 nodeGroups:
   - name: windows-ng
