@@ -17,6 +17,15 @@
         "ActiveDirectoryClientId": {
             "value": ""
         },
+        "PurviewUrl": {
+            "value": ""
+        },
+        "PurviewClientId": {
+            "value": ""
+        },
+        "PurviewClientSecret": {
+            "value": ""
+        },
         "ManagedIdentityName": {
             "value": {              
             }

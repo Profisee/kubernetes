@@ -18,6 +18,18 @@
             "defaultValue": "",
             "type": "String"
         },
+        "PurviewUrl": {
+            "defaultValue": "",
+            "type": "String"
+        },
+        "PurviewClientId": {
+            "defaultValue": "",
+            "type": "String"
+        },
+        "PurviewClientSecret": {
+            "defaultValue": "",
+            "type": "String"
+        },
          "ManagedIdentityName": {
             "type": "object"
         },
@@ -189,7 +201,11 @@
         "KubenetesInfrastructureResourceGroupName":"[concat('MC_',resourceGroup().name,'_', variables('KubernetesClusterName'), '_',resourceGroup().location)]",
 
         "UseKeyVault":"[parameters('UseKeyVault')]",
-        "KeyVault":"[parameters('KeyVault')]"
+        "KeyVault":"[parameters('KeyVault')]",
+
+        "PurviewUrl":"[parameters('PurviewUrl')]",
+        "PurviewClientId":"[parameters('PurviewClientId')]",
+        "PurviewClientSecret":"[parameters('PurviewClientSecret')]"
     },
     "resources": 
     [
@@ -495,7 +511,7 @@
         },          
         {
             "type": "Microsoft.Resources/deploymentScripts",
-            "apiVersion": "2019-10-01-preview",
+            "apiVersion": "2020-10-01",
             "name": "InstallProfiseePlatform",
             "location": "[resourceGroup().location]",
             "kind": "AzureCLI",
@@ -504,7 +520,7 @@
                 ],
             "identity": "[variables('ManagedIdentityName')]",
             "properties": {
-                "forceUpdateTag": "[guid(resourceGroup().id)]",
+                "forceUpdateTag": "1",
                 "azCliVersion": "2.0.80",
                 "timeout": "PT1H",
                 "cleanupPreference": "OnExpiration",
@@ -651,6 +667,18 @@
                     {
                         "name": "KUBERNETESCLIENTID",
                         "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('KubernetesClusterName'))).identityProfile.kubeletidentity.clientId]"
+                    },
+                    {
+                        "name": "PURVIEWURL",
+                        "value": "[variables('PurviewUrl')]"
+                    },
+                    {
+                        "name": "PURVIEWCLIENTID",
+                        "value": "[variables('PurviewClientId')]"
+                    },
+                    {
+                        "name": "PURVIEWCLIENTSECRET",
+                        "value": "[variables('PurviewClientSecret')]"
                     }
                 ],
                 "primaryScriptUri": "[variables('ScriptURL')]"            

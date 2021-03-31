@@ -1,11 +1,25 @@
 #!/bin/bash
+exec 3>&1 4>&2
+trap 'exec 2>&4 1>&3' 0 1 2 3
+logfile=log_$(date +%Y-%m-%d_%H-%M-%S).out
+exec 1>$logfile 2>&1
+
+echo $"Profisee deploymented started $(date +"%Y-%m-%d %T")";
+
+
+FILE=./get_helm.sh
+if [ -f "$FILE" ]; then
+    echo $"Profisee deploymented exiting, already has been ran";
+	exit 1;
+fi
+
 REPONAME="profisee"
 REPOURL="https://raw.githubusercontent.com/$REPONAME/kubernetes/master";
 HELMREPOURL="https://$REPONAME.github.io/kubernetes";
 echo $"REPOURL is $REPOURL";
 echo $"HELMREPOURL is $HELMREPOURL";
 
-az login --identity
+#az login --identity
 #install the aks cli since this script runs in az 2.0.80 and the az aks was not added until 2.5
 az aks install-cli;
 #get the aks creds, this allows us to use kubectl commands if needed
@@ -123,31 +137,36 @@ fi
 
 #install nginx
 echo $"Installing nginx started";
+#old
 helm repo add stable https://charts.helm.sh/stable;
-
 #new going forward
 #helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-#helm install --namespace profisee nginx ingress-nginx/ingress-nginx
 
 #get profisee nginx settings
 curl -fsSL -o nginxSettings.yaml "$REPOURL/Azure-ARM/nginxSettings.yaml";
 helm uninstall --namespace profisee nginx
 
+staticIpInName="kubernetes-nginx"
+az network public-ip create --resource-group $AKSINFRARESOURCEGROUPNAME --name $staticIpInName --sku Standard --allocation-method static --dns-name $DNSHOSTNAME;
+nginxip=$(az network public-ip show -g $AKSINFRARESOURCEGROUPNAME -n $staticIpInName --query ipAddress --output tsv)
+
 if [ "$USELETSENCRYPT" = "Yes" ]; then
 	echo $"Installing nginx for Lets Encrypt and setting the dns name for its IP."
-	helm install --namespace profisee nginx stable/nginx-ingress --values nginxSettings.yaml --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=$DNSHOSTNAME;
+	helm install --namespace profisee nginx stable/nginx-ingress --values nginxSettings.yaml --set controller.service.loadBalancerIP=$nginxip #--set controller.service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=$DNSHOSTNAME;
+	#helm install --namespace profisee nginx ingress-nginx/ingress-nginx --values nginxSettings.yaml --set controller.service.loadBalancerIP=$nginxip #--set controller.service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=$DNSHOSTNAME;
 else
 	echo $"Installing nginx not for Lets Encrypt and not setting the dns name for its IP."
-	helm install --namespace profisee nginx stable/nginx-ingress --values nginxSettings.yaml
+	helm install --namespace profisee nginx stable/nginx-ingress --values nginxSettings.yaml --set controller.service.loadBalancerIP=$nginxip
+	#helm install --namespace profisee nginx ingress-nginx/ingress-nginx --values nginxSettings.yaml --set controller.service.loadBalancerIP=$nginxip
 fi
 
-echo $"Installing nginx finished, sleeping for 30s to wait for its IP";
-
-#wait for the ip to be available.  usually a few seconds
-sleep 30;
-#get ip for nginx
-nginxip=$(kubectl --namespace profisee get services nginx-nginx-ingress-controller --output="jsonpath={.status.loadBalancer.ingress[0].ip}");
-
+#echo $"Installing nginx finished, sleeping for 30s to wait for its IP";
+#
+##wait for the ip to be available.  usually a few seconds
+#sleep 30;
+##get ip for nginx
+#nginxip=$(kubectl --namespace profisee get services nginx-nginx-ingress-controller --output="jsonpath={.status.loadBalancer.ingress[0].ip}");
+#
 if [ -z "$nginxip" ]; then
 	#try again
 	echo $"nginx is not configure properly because the LB IP is null, trying again in 60 seconds";
@@ -278,6 +297,10 @@ sed -i -e 's/$EXTERNALDNSNAME/'"$EXTERNALDNSNAME"'/g' Settings.yaml
 sed -i -e 's~$LICENSEDATA~'"$LICENSEDATA"'~g' Settings.yaml
 sed -i -e 's/$ACRREPONAME/'"$ACRREPONAME"'/g' Settings.yaml
 sed -i -e 's/$ACRREPOLABEL/'"$ACRREPOLABEL"'/g' Settings.yaml
+sed -i -e 's~$PURVIEWURL~'"$PURVIEWURL"'~g' Settings.yaml
+sed -i -e 's/$PURVIEWTENANTID/'"$TENANTID"'/g' Settings.yaml
+sed -i -e 's/$PURVIEWCLIENTID/'"$PURVIEWCLIENTID"'/g' Settings.yaml
+sed -i -e 's/$PURVIEWCLIENTSECRET/'"$PURVIEWCLIENTSECRET"'/g' Settings.yaml
 if [ "$USEKEYVAULT" = "Yes" ]; then
 	sed -i -e 's/$USEKEYVAULT/'true'/g' Settings.yaml
 
@@ -325,11 +348,11 @@ else
 fi
 
 #Add settings.yaml as a secret so its always available after the deployment
-kubectl delete secret profisee-settings --namespace profisee
+kubectl delete secret profisee-settings --namespace profisee --ignore-not-found
 kubectl create secret generic profisee-settings --namespace profisee --from-file=Settings.yaml
 
 #################################Install Profisee Start #######################################
-echo "Install Profisee started";
+echo "Install Profisee started $(date +"%Y-%m-%d %T")";
 helm repo add profisee $HELMREPOURL
 helm repo update
 helm uninstall --namespace profisee profiseeplatform
@@ -341,16 +364,16 @@ if [ -z "$profiseeinstalledname" ]; then
 	echo "Profisee did not get installed.  Exiting with error";
 	exit 1
 else
-	echo "Install Profisee finished";
+	echo "Install Profisee finished $(date +"%Y-%m-%d %T")";
 fi;
 #################################Install Profisee End #######################################
 
 #wait for pod to be ready (downloaded)
-echo "Waiting for pod to be downloaded and be ready..";
+echo "Waiting for pod to be downloaded and be ready..$(date +"%Y-%m-%d %T")";
 sleep 30;
-kubectl wait --timeout=1200s --for=condition=ready pod/profisee-0 --namespace profisee
+kubectl wait --timeout=1800s --for=condition=ready pod/profisee-0 --namespace profisee
 
-echo $"Install Profisee Platform finished";
+echo $"Profisee deploymented finished $(date +"%Y-%m-%d %T")";
 
 result="{\"Result\":[\
 {\"IP\":\"$nginxip\"},\
@@ -364,4 +387,10 @@ result="{\"Result\":[\
 {\"ACRREPONAME\":\"$ACRREPONAME\"},\
 {\"ACRREPOLABEL\":\"$ACRREPOLABEL\"}\
 ]}"
+
+echo $result
+
+kubectl delete secret profisee-deploymentlog --namespace profisee --ignore-not-found
+kubectl create secret generic profisee-deploymentlog --namespace profisee --from-file=$logfile
+
 echo $result > $AZ_SCRIPTS_OUTPUT_PATH

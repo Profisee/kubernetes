@@ -56,7 +56,8 @@
               }
                        
         ],
-        "steps": [ {
+        "steps": [ 
+        {
             "name": "profisee",
             "label": "Profisee",
             "elements": [
@@ -122,6 +123,10 @@
                             {
                                 "label": "2021R2.Preview",
                                 "value": "profiseeplatform:2021r2.preview"
+                            },
+                            {
+                                "label": "2021R2.PurviewPreview",
+                                "value": "profiseeplatform:2021r2.purviewpreview"
                             }
                         ]
                     },
@@ -213,10 +218,51 @@
                         }
                     ],
                     "visible": "[equals(steps('profisee').ActiveDirectoryCreateApp,'No')]"
-                } 
+                },
+                {
+                    "name": "PurviewAPIBaseUrl",
+                    "type": "Microsoft.Common.TextBox",
+                    "label": "Purview API Url ",
+                    "defaultValue": "",
+                    "placeholder": "",
+                    "toolTip": "",
+                    "constraints": {
+                        "required": true,
+                        "regex": "",
+                        "validationMessage": ""
+                    },
+                    "visible": "[equals(steps('profisee').ProfiseeVersion,'profiseeplatform:2021r2.purviewpreview')]"                    
+                },
+                {
+                    "name": "PurviewClientID",
+                    "type": "Microsoft.Common.TextBox",
+                    "label": "Purview Service Principal ID",
+                    "defaultValue": "",
+                    "placeholder": "",
+                    "toolTip": "",
+                    "constraints": {
+                        "required": true,
+                        "regex": "",
+                        "validationMessage": ""
+                    },
+                    "visible": "[equals(steps('profisee').ProfiseeVersion,'profiseeplatform:2021r2.purviewpreview')]"                    
+                },
+                {
+                    "name": "PurviewClientSecret",
+                    "type": "Microsoft.Common.TextBox",
+                    "label": "Purview Service Principal Secret",
+                    "defaultValue": "",
+                    "placeholder": "",
+                    "toolTip": "",
+                    "constraints": {
+                        "required": true,
+                        "regex": "",
+                        "validationMessage": ""
+                    },
+                    "visible": "[equals(steps('profisee').ProfiseeVersion,'profiseeplatform:2021r2.purviewpreview')]"                    
+                }
             ]
-        },
-        
+        },        
         {
             "name": "kubernetes",
             "label": "Kubernetes",
@@ -863,10 +909,10 @@
 
             "HttpsCertificatePrivateKey": "[steps('networking').UserDefinedHTTPS.HttpsCertificatePrivateKey]",
             "UseKeyVault":"[steps('profisee').UseKeyVault]",
-            "KeyVault":"[steps('profisee').KeyVault.id]"
-
-
-            
+            "KeyVault":"[steps('profisee').KeyVault.id]",
+            "PurviewUrl":"[steps('profisee').PurviewAPIBaseUrl]",
+            "PurviewClientId":"[steps('profisee').PurviewClientID]",
+            "PurviewClientSecret":"[steps('profisee').PurviewClientSecret]"
         }
     }
 }
