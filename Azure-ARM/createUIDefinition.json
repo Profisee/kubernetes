@@ -868,8 +868,6 @@
             "ProfiseeVersion": "[steps('profisee').ProfiseeVersion]",
             "ProfiseeAdminUserAccount": "[steps('profisee').ProfiseeAdminUserAccount]",
             "ProfiseeLicense": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('profisee').ProfiseeLicenseSecret, steps('profisee').ProfiseeLicense)]",
-            "ProfiseeACRUserName": "[steps('profisee').ProfiseeACRUserName]",
-            "ProfiseeACRPassword": "[steps('profisee').ProfiseeACRPassword]",
             "ActiveDirectoryCreateApp": "[steps('profisee').ActiveDirectoryCreateApp]",
             "ActiveDirectoryClientId": "[steps('profisee').UserSuppliedClientyId.ActiveDirectoryClientId]",
                         
