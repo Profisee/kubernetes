@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: profisee-settings
+data:
+    ProfiseeSqlServer: {{.Values.sqlServer.name|quote}}
+    ProfiseeSqlDatabase: {{.Values.sqlServer.databaseName|quote}}
+    ProfiseeUseWindowsAuthentication: 'false'
+    #ProfiseeSqlUserName: {{.Values.sqlServer.userName|quote}} #in literal-secrets
+    #ProfiseeSqlPassword: {{.Values.sqlServer.password|quote}} #in literal-secrets
+    ProfiseeAdminAccount: {{.Values.profiseeRunTime.adminAccount|quote}}
+    ProfiseeAttachmentRepositoryLocation: {{.Values.profiseeRunTime.fileRepository.location|quote}}
+    #ProfiseeAttachmentRepositoryUserName: {{.Values.profiseeRunTime.fileRepository.userName|quote}} #in literal-secrets
+    #ProfiseeAttachmentRepositoryUserPassword: {{.Values.profiseeRunTime.fileRepository.password|quote}} #in literal-secrets
+    ProfiseeAttachmentRepositoryLogonType: {{.Values.profiseeRunTime.fileRepository.logonType|quote}}
+    ProfiseeExternalDNSUrl: {{.Values.profiseeRunTime.externalDnsUrl|quote}}
+    ProfiseeAdditionalOpenIdConnectProvidersFile: ''
+    ProfiseeOidcName: {{.Values.profiseeRunTime.oidc.name|quote}}
+    ProfiseeOidcAuthority: {{.Values.profiseeRunTime.oidc.authority|quote}}
+    #ProfiseeOidcClientId: {{.Values.profiseeRunTime.oidc.clientId|quote}} #in literal-secrets
+    #ProfiseeOidcClientSecret: {{.Values.profiseeRunTime.oidc.clientSecret|quote}} #in literal-secrets
+    ProfiseeOidcUsernameClaim: {{.Values.profiseeRunTime.oidc.usernameClaim|quote}}
+    ProfiseeOidcUserIdClaim: {{.Values.profiseeRunTime.oidc.userIdClaim|quote}}
+    ProfiseeOidcFirstNameClaim: {{.Values.profiseeRunTime.oidc.firstNameClaim|quote}}
+    ProfiseeOidcLastNameClaim: {{.Values.profiseeRunTime.oidc.lastNameClaim|quote}}
+    ProfiseeOidcEmailClaim: {{.Values.profiseeRunTime.oidc.emailClaim|quote}}

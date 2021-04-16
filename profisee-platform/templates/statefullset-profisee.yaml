@@ -1,0 +1,149 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: profisee
+  labels:
+    app: profisee
+spec:
+  selector:
+    matchLabels:
+      app: profisee
+  serviceName: profisee-service
+  replicas: {{.Values.profiseeRunTime.clusterNodeCount}}
+  template:
+    metadata:
+      name: profisee
+      labels:
+        app: profisee
+    spec:
+      terminationGracePeriodSeconds: 60 #How long kubernetes will wait for a pod to shut down before force deleting it
+      nodeSelector:
+        "beta.kubernetes.io/os": windows 
+      volumes:
+      - name: data-volume
+        secret:
+          secretName: profisee-license 
+      - name: initscripts
+        secret:
+          secretName: profisee-initscripts 
+      {{- if .Values.cloud.azure.isProvider }}
+      - name: fileshare
+        azureFile:
+          secretName: profisee-fileshare
+          shareName: {{.Values.profiseeRunTime.fileRepository.fileShareName}}
+          readOnly: false
+      {{- end }}
+      {{- if .Values.cloud.aws.isProvider }}
+      - name: fileshare
+        awsElasticBlockStore:
+          volumeID: {{.Values.cloud.aws.ebsVolumeId}}
+          fsType: ntfs
+      {{- end }}
+      {{- if .Values.cloud.google.isProvider }}
+      - name: fileshare
+        gcePersistentDisk:
+          pdName: {{.Values.cloud.google.gceVolumeName}}
+          fsType: ntfs
+      {{- end }}
+      dnsConfig:
+        searches:
+        - profisee-service.default.svc.cluster.local
+      containers:
+      - name: profisee
+        image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: Always      
+        livenessProbe:
+          exec:
+            command:
+              - powershell
+              - >-
+                if((Get-Service profisee).Status -eq 'Running'){return
+                0}else{throw 'Profisee service is down'}
+          initialDelaySeconds: 60
+          timeoutSeconds: 1
+          periodSeconds: 60
+        volumeMounts:
+        - name: data-volume
+          mountPath: C:\data
+          readOnly: true
+        - name: initscripts
+          mountPath: C:\scripts
+        {{- if .Values.cloud.azure.isProvider }}
+        - name: fileshare
+          mountPath: c:\Fileshare
+        {{- end }}
+        {{- if .Values.cloud.aws.isProvider }}
+        - name: fileshare
+          mountPath: c:\Fileshare
+        {{- end }}
+        {{- if .Values.cloud.google.isProvider }}
+        - name: fileshare
+          mountPath: c:\Fileshare
+        {{- end }}
+        envFrom:
+        - configMapRef:
+            name: profisee-settings
+        env:
+        - name: ProfiseeSqlUserName
+          valueFrom:
+            secretKeyRef:
+                name: profisee-sql-username
+                key: ProfiseeSqlUserName
+        - name: ProfiseeSqlPassword
+          valueFrom:
+            secretKeyRef:
+                name: profisee-sql-password
+                key: ProfiseeSqlPassword
+        - name: ProfiseeAttachmentRepositoryUserName
+          valueFrom:
+            secretKeyRef:
+                name: profisee-filerepository-username
+                key: ProfiseeAttachmentRepositoryUserName
+        - name: ProfiseeAttachmentRepositoryUserPassword
+          valueFrom:
+            secretKeyRef:
+                name: profisee-filerepository-password
+                key: ProfiseeAttachmentRepositoryUserPassword
+        - name: ProfiseeOidcClientId
+          valueFrom:
+            secretKeyRef:
+                name: profisee-oidc-clientid
+                key: ProfiseeOidcClientId
+        - name: ProfiseeOidcClientSecret
+          valueFrom:
+            secretKeyRef:
+                name: profisee-oidc-secret
+                key: ProfiseeOidcClientSecret
+        {{- if .Values.cloud.azure.isProvider }}
+        - name: ProfiseePurviewUrl
+          valueFrom:
+            secretKeyRef:
+                name: profisee-purview
+                key: ProfiseePurviewUrl
+        - name: ProfiseePurviewTenantId
+          valueFrom:
+            secretKeyRef:
+                name: profisee-purview
+                key: ProfiseePurviewTenantId
+        - name: ProfiseePurviewClientId
+          valueFrom:
+            secretKeyRef:
+                name: profisee-purview
+                key: ProfiseePurviewClientId
+        - name: ProfiseePurviewClientSecret
+          valueFrom:
+            secretKeyRef:
+                name: profisee-purview
+                key: ProfiseePurviewClientSecret
+        {{- end }}
+        resources:
+          limits:
+            cpu: {{.Values.clusterNode.limits.cpu}}
+            memory: {{.Values.clusterNode.limits.memory}}
+          requests:
+            cpu: {{.Values.clusterNode.requests.cpu}}
+            memory: {{.Values.clusterNode.requests.memory}}
+        ports:
+          - containerPort: 80
+      imagePullSecrets:
+      - name: profisee-containerregistry

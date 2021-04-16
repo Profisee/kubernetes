@@ -1,0 +1,90 @@
+sqlServer: 
+    name: "$SQLNAME"
+    databaseName: "$SQLDBNAME"
+    userName: "$SQLUSERNAME"
+    password: "$SQLUSERPASSWORD"
+profiseeRunTime:
+    useLetsEncrypt: $USELETSENCRYPT
+    adminAccount: "$ADMINACCOUNTNAME"
+    fileRepository:
+        accountName: "$FILEREPOACCOUNTNAME"
+        userName: "$FILEREPOUSERNAME"
+        password: "$FILEREPOPASSWORD"
+        logonType: "NewCredentials"
+        location: "$FILEREPOURL"
+        fileShareName: "$FILESHARENAME"
+    externalDnsUrl: ""
+    externalDnsName: "$EXTERNALDNSNAME"
+    oidc:
+        name: "Azure Active Directory"
+        authority: "$OIDCURL"
+        clientId: "$CLIENTID"
+        clientSecret: "$OIDCCLIENTSECRET"
+        usernameClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+        userIdClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+        firstNameClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
+        lastNameClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
+        emailClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+    clusterNodeCount: 1
+clusterNode:
+    limits:
+      cpu: 1000
+      memory: 10T
+    requests:
+      cpu: 1
+      memory: 1000M        
+image:
+    registry: "profisee.azurecr.io"
+    repository: "$ACRREPONAME"
+    tag: "$ACRREPOLABEL"
+    auth: |
+        {
+           "auths":{
+              "profisee.azurecr.io":{
+                 "username":"$ACRUSER",
+                 "password":"$ACRPASSWORD",
+                 "email":"$ACREMAIL",
+                 "auth":"$ACRAUTH"
+              }
+           }
+        }
+licenseFileData: $LICENSEDATA
+preInitScriptData: Cg==
+postInitScriptData: Cg==
+oidcFileData: |
+    {      
+    }
+tlsCert: |
+    $TLSCERT
+tlsKey: |
+    $TLSKEY  
+cloud:
+    azure:
+      isProvider: true
+      useKeyVault: false
+      keyVault:
+        identity: #must be created in the aks node resource group and have reader ploicy's on keyvault
+          clientId: ""
+          resourceId: 
+        secrets:
+          sqlUserName: ""
+          sqlPassword: ""
+          tlsCertificate: ""
+          license: ""
+        name: ""
+        resourceGroup: ""
+        subscriptionId: ""
+        tenantId: ""
+        clusterClientId: "" #clientid of the aks cluster; Roles must be assigned ot it; role to main RG: "Managed Identity Operator"; roles to node RG: "Managed Identity Operator", "Virtual Machine Contributor"
+      purview:
+        tenantId: "$AZURETENANTID"
+        clientId: "$CLIENTID"
+        clientSecret: "$OIDCCLIENTSECRET"
+        instanceName: "$PURVIEWINSTANCENAME"
+        baseUrl: "$PURVIEWBASEURL"
+    aws:
+      isProvider: false
+      ebsVolumeId: ""
+    google:
+      isProvider: false
+      gceVolumeName: "" 
