@@ -23,6 +23,12 @@ if [ -z "$RESOURCEGROUPNAME" ]; then
 	RESOURCEGROUPNAME=$ResourceGroupName
 fi
 
+if [ -z "$SUBSCRIPTIONID" ]; then
+	SUBSCRIPTIONID=$SubscriptionId
+fi
+
+printenv;
+
 #az login --identity
 #install the aks cli since this script runs in az 2.0.80 and the az aks was not added until 2.5
 az aks install-cli;
@@ -113,14 +119,20 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 
 	#Assign roles needed for kv
 	echo $"Managing Identity configuration for KV access - started"
+
+	echo $"Managing Identity configuration for KV access - step 1 started"
 	az role assignment create --role "Managed Identity Operator" --assignee $KUBERNETESCLIENTID --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$RESOURCEGROUPNAME
 	az role assignment create --role "Managed Identity Operator" --assignee $KUBERNETESCLIENTID --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$AKSINFRARESOURCEGROUPNAME
 	az role assignment create --role "Virtual Machine Contributor" --assignee $KUBERNETESCLIENTID --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$AKSINFRARESOURCEGROUPNAME
+	echo $"Managing Identity configuration for KV access - step 1 finished"
 
 	#Create AD Identity, get clientid and principalid to assign the reader role to (next command)
+	echo $"Managing Identity configuration for KV access - step 2 started"
 	identityName="AKSKeyVaultUser"
 	az identity create -g $AKSINFRARESOURCEGROUPNAME -n $identityName
+	echo $"Managing Identity configuration for KV access - step 2 finished"
 
+	echo $"Managing Identity configuration for KV access - step 3 started"
 	akskvidentityClientId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'clientId')
 	akskvidentityClientId=$(echo "$akskvidentityClientId" | tr -d '"')
 	akskvidentityClientResourceId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'id')
@@ -128,14 +140,21 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	principalId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'principalId')
 	principalId=$(echo "$principalId" | tr -d '"')
     echo $principalId
+	echo $"Managing Identity configuration for KV access - step 3 finished"
 	#KEYVAULT looks like this this /subscriptions/$SUBID/resourceGroups/$kvresourceGroup/providers/Microsoft.KeyVault/vaults/$kvname
+
+	echo $"Managing Identity configuration for KV access - step 4 started"
 	IFS='/' read -r -a kv <<< "$KEYVAULT" #splits the KEYVAULT on slashes and gets last one
 	keyVaultName=${kv[-1]}
 	keyVaultResourceGroup=${kv[4]}
 	keyVaultSubscriptionId=${kv[2]}
+	echo $"Managing Identity configuration for KV access - step 4a started"
 	az role assignment create --role "Reader" --assignee $principalId --scope $KEYVAULT
+	echo $"Managing Identity configuration for KV access - step 4b started"
 	az keyvault set-policy -n $keyVaultName --secret-permissions get --spn $akskvidentityClientId
+	echo $"Managing Identity configuration for KV access - step 4c started"
 	az keyvault set-policy -n $keyVaultName --key-permissions get --spn $akskvidentityClientId
+	echo $"Managing Identity configuration for KV access - step 4 finished"
     echo $"Managing Identity configuration for KV access - finished"
 fi
 
