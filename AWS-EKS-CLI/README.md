@@ -105,8 +105,11 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 7.  (Optional) - Install cert-manager for Let's Encrypt
 
 	kubectl label namespace default cert-manager.io/disable-validation=true
+	
 	helm repo add jetstack https://charts.jetstack.io
+	
 	helm install --namespace profisee cert-manager jetstack/cert-manager --namespace default --version v0.16.1 --set installCRDs=true --set nodeSelector."beta\.kubernetes\.io/os"=linux --set webhook.nodeSelector."beta\.kubernetes\.io/os"=linux --set cainjector.nodeSelector."beta\.kubernetes\.io/os"=linux
+	
 
 	update Settings.yaml useLetsEncrypt flag to true
 
