@@ -127,6 +127,10 @@
                             {
                                 "label": "2021R2.PurviewPreview",
                                 "value": "profiseeplatform:2021r2.purviewpreview"
+                            },
+                            {
+                                "label": "2021R2.MachineLearningPreview",
+                                "value": "profiseeplatform:2021r3.mlpreview"
                             }
                         ]
                     },
@@ -275,6 +279,19 @@
                     "toolTip": "Can only contain letters, numbers, underscores, and hyphens, must start and end with a letter or number, and must be unique in the current resource group",
                     "constraints": {
                         "required": true,
+                        "regex": "",
+                        "validationMessage": ""
+                    },
+                    "visible": true
+                },
+                {
+                    "name": "KubernetesVersion",
+                    "type": "Microsoft.Common.TextBox",
+                    "label": "Version",
+                    "defaultValue": "",
+                    "toolTip": "Leave blank for latest version, or enter the specific version you want to use.",
+                    "constraints": {
+                        "required": false,
                         "regex": "",
                         "validationMessage": ""
                     },
@@ -872,6 +889,7 @@
             "ActiveDirectoryClientId": "[steps('profisee').UserSuppliedClientyId.ActiveDirectoryClientId]",
                         
             "KubernetesClusterName": "[steps('kubernetes').KubernetesClusterName]",
+            "KubernetesVersion": "[steps('kubernetes').KubernetesVersion]",
             "KubernetesLinuxNodeSize": "[steps('kubernetes').KubernetesLinuxNodeSizeSection.KubernetesLinuxNodeSize]",
             "KubernetesLinuxNodeCount": "[steps('kubernetes').KubernetesLinuxNodeCount]",
             "KubernetesWindowsNodeSize": "[steps('kubernetes').KubernetesWindowsNodeSizeSection.KubernetesWindowsNodeSize]",
