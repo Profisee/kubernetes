@@ -139,7 +139,7 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	akskvidentityClientResourceId=$(echo "$akskvidentityClientResourceId" | tr -d '"')
 	principalId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'principalId')
 	principalId=$(echo "$principalId" | tr -d '"')
-    echo $principalId
+    echo $"principalid is $principalId"
 	echo $"Managing Identity configuration for KV access - step 3 finished"
 	#KEYVAULT looks like this this /subscriptions/$SUBID/resourceGroups/$kvresourceGroup/providers/Microsoft.KeyVault/vaults/$kvname
 
@@ -148,6 +148,9 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	keyVaultName=${kv[-1]}
 	keyVaultResourceGroup=${kv[4]}
 	keyVaultSubscriptionId=${kv[2]}
+	echo $"KEYVAULT is $KEYVAULT"
+	echo $"keyVaultName is $keyVaultName"
+	echo $"akskvidentityClientId is $akskvidentityClientId"
 	echo $"Managing Identity configuration for KV access - step 4a started"
 	az role assignment create --role "Reader" --assignee $principalId --scope $KEYVAULT
 	echo $"Managing Identity configuration for KV access - step 4b started"
