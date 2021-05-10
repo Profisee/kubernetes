@@ -288,8 +288,8 @@
                     "name": "KubernetesVersion",
                     "type": "Microsoft.Common.TextBox",
                     "label": "Version",
-                    "defaultValue": "",
-                    "toolTip": "Leave blank for latest version, or enter the specific version you want to use.",
+                    "defaultValue": "1.18.14",
+                    "toolTip": "Set blank for latest version, or enter the specific version you want to use.",
                     "constraints": {
                         "required": false,
                         "regex": "",
