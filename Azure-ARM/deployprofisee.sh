@@ -108,7 +108,11 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	echo $"Installing keyvault csi driver - started"
 	#Install the Secrets Store CSI driver and the Azure Key Vault provider for the driver
 	helm repo add csi-secrets-store-provider-azure https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts
-	helm install --namespace profisee csi-secrets-store-provider-azure csi-secrets-store-provider-azure/csi-secrets-store-provider-azure
+	
+	#https://github.com/Azure/secrets-store-csi-driver-provider-azure/releases/tag/0.0.16
+	#The behavior changed so now you have to enable the secrets-store-csi-driver.syncSecret.enabled=true
+	#We are not but if this is to run on a windows node, then you use this --set windows.enabled=true --set secrets-store-csi-driver.windows.enabled=true
+	helm install --namespace profisee csi-secrets-store-provider-azure csi-secrets-store-provider-azure/csi-secrets-store-provider-azure --set secrets-store-csi-driver.syncSecret.enabled=true
 	echo $"Installing keyvault csi driver - finished"
 
 	echo $"Installing keyvault aad pod identity - started"
