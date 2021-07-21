@@ -1,4 +1,3 @@
-# DEVELOPMENT ONLY.  INTERNAL USE ONLY
 # Deploy Profisee platform on to AKS using ARM template
 
 This ARM template deploys Profisee platform into a Azure Kubernetes Service cluster.
