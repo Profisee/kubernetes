@@ -2,933 +2,980 @@
     "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
     "handler": "Microsoft.Azure.CreateUIDef",
     "version": "0.1.2-preview",
-    "parameters": {
-        "resourceTypes": [
-            "microsoft.containerservice/managedclusters",
-            "microsoft.sql/servers",
-            "microsoft.storage/storageaccounts",
-            "microsoft.resources/deploymentscripts",
-            "microsoft.resources/resourcegroups"
-        ],
-        "basics": [ 
-            
-            {
-                "name": "text2",
-                "type": "Microsoft.Common.TextBlock",
-                "visible": true,
-                "options": {
-                  "text": " ",
-                  "link": {
-                    "label": "",
-                    "uri": ""
-                  }
+  "parameters": {
+    "resourceTypes": [
+      "microsoft.containerservice/managedclusters",
+      "microsoft.sql/servers",
+      "microsoft.storage/storageaccounts",
+      "microsoft.resources/deploymentscripts",
+      "microsoft.resources/resourcegroups"
+    ],
+    "basics": [
+
+      {
+        "name": "text2",
+        "type": "Microsoft.Common.TextBlock",
+        "visible": true,
+        "options": {
+          "text": " ",
+          "link": {
+            "label": "",
+            "uri": ""
+          }
+        }
+      },
+      {
+        "name": "ManagedIdentityName",
+        "type": "Microsoft.ManagedIdentity.IdentitySelector",
+        "label": "Managed Identity",
+        "toolTip": {
+          "systemAssignedIdentity": "",
+          "userAssignedIdentity": " The identity used to run the Profisee deployment"
+        },
+        "defaultValue": {
+          "systemAssignedIdentity": "OffOnly"
+        },
+        "options": {
+          "hideSystemAssignedIdentity": true,
+          "hideUserAssignedIdentity": false
+        },
+        "constraints": {
+          "required": true
+        },
+        "visible": true
+      },
+      {
+        "name": "text1",
+        "type": "Microsoft.Common.InfoBox",
+        "visible": true,
+        "options": {
+          "icon": "Info",
+          "text": "Click here to learn more about managed identities.",
+          "uri": "https://support.profisee.com/wikis/2020_r2_support/planning_your_managed_identity_configuration"
+        }
+      }
+
+    ],
+    "steps": [
+      {
+        "name": "profisee",
+        "label": "Profisee",
+        "elements": [
+          {
+            "name": "UseKeyVault",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Use Key Vault?",
+            "defaultValue": "No, I will supply them.",
+            "toolTip": "",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Yes, pull sensitive information from Key Vault.",
+                  "value": "Yes"
+                },
+                {
+                  "label": "No, I will supply them.",
+                  "value": "No"
                 }
-              },
-            {
-                "name": "ManagedIdentityName",
-                "type": "Microsoft.ManagedIdentity.IdentitySelector",
-                "label": "Managed Identity",
-                "toolTip": {
-                    "systemAssignedIdentity": "",
-                    "userAssignedIdentity": " The identity used to run the Profisee deployment"
+              ],
+              "required": true
+            },
+            "visible": true
+          },
+          {
+            "name": "KeyVault",
+            "type": "Microsoft.Solutions.ResourceSelector",
+            "label": "Key Vault",
+            "resourceType": "Microsoft.KeyVault/vaults",
+            "options": {
+              "filter": {
+                "subscription": "All",
+                "location": "All"
+              }
+            },
+            "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
+          },
+          {
+            "name": "ProfiseeVersion",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Version",
+            "defaultValue": "2021R2.0",
+            "toolTip": "Which release of the Profisee Platform to start with.",
+            "constraints": {
+              "required": true,
+              "allowedValues": [
+                {
+                  "label": "2020R1.0",
+                  "value": "profiseeplatform:2020r1.0"
                 },
-                "defaultValue": {
-                    "systemAssignedIdentity": "OffOnly"
+                {
+                  "label": "2020R1.1",
+                  "value": "profiseeplatform:2020r1.1"
                 },
-                "options": {
-                    "hideSystemAssignedIdentity": true,
-                    "hideUserAssignedIdentity": false
+                {
+                  "label": "2020R2.0",
+                  "value": "profiseeplatform:2020r2.0"
                 },
+                {
+                  "label": "2021R1.0",
+                  "value": "profiseeplatform:2021r1.0"
+                },
+                {
+                  "label": "2021R2.0",
+                  "value": "profiseeplatform:2021r2.0"
+                },
+                {
+                  "label": "2021R2.PurviewPreview",
+                  "value": "profiseeplatform:2021r2.purviewpreview"
+                },
+                {
+                  "label": "2021R2.MachineLearningPreview",
+                  "value": "profiseeplatform:2021r3.mlpreview"
+                }
+              ]
+            },
+            "visible": true
+          },
+          {
+            "name": "ProfiseeAdminUserAccount",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Admin User Account",
+            "defaultValue": "",
+            "placeholder": "first.last@company.com",
+            "toolTip": "The first Super User, who will be able to login and add other users.",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": true
+          },
+          {
+            "name": "ProfiseeLicense",
+            "type": "Microsoft.Common.FileUpload",
+            "label": "License",
+            "toolTip": "",
+            "constraints": {
+              "required": true,
+              "accept": ".txt"
+            },
+            "options": {
+              "multiple": false,
+              "uploadMode": "file",
+              "openMode": "text",
+              "encoding": "UTF-8"
+            },
+            "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
+          },
+          {
+            "name": "ProfiseeLicenseSecret",
+            "type": "Microsoft.Common.TextBox",
+            "label": "License",
+            "defaultValue": "",
+            "placeholder": "License secret name in KeyVault",
+            "toolTip": "",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
+          },
+          {
+            "name": "ActiveDirectoryCreateApp",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Do you want the deployment to create a new Azure Active Directory app registration for you?",
+            "defaultValue": "Yes, create and configure a new Azure Active Directory app registration",
+            "toolTip": "",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Yes, create and configure a new Azure Active Directory app registration",
+                  "value": "Yes"
+                },
+                {
+                  "label": "No, I will specify the client ID for an existing Azure Active Directory app registration",
+                  "value": "No"
+                }
+              ],
+              "required": true
+            },
+            "visible": true
+          },
+          {
+            "name": "UsePurview",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Use Purview?",
+            "defaultValue": "No, I don't want to use Purview for this configuration",
+            "toolTip": "",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Yes, configure using Purview",
+                  "value": "Yes"
+                },
+                {
+                  "label": "No, I don't want to use Purview for this configuration",
+                  "value": "No"
+                }
+              ],
+              "required": true
+            },
+            "visible": "[or(equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2021r2.purviewpreview'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2021r3.0'))]"
+          },
+          {
+            "name": "UserSuppliedClientyId",
+            "type": "Microsoft.Common.Section",
+            "label": "",
+            "elements": [
+              {
+                "name": "ActiveDirectoryClientId",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Application Registration Client Id",
+                "defaultValue": "",
+                "toolTip": "ClientId of existing Azure Active Directory App Registration which will be used by the Profisee platform for authentication.",
                 "constraints": {
-                    "required": true
+                  "required": "[equals(steps('profisee').ActiveDirectoryCreateApp,'No')]",
+                  "regex": "",
+                  "validationMessage": ""
                 },
                 "visible": true
-            },
-            {
-                "name": "text1",
-                "type": "Microsoft.Common.InfoBox",
-                "visible": true,
-                "options": {
-                  "icon": "Info",
-                  "text": "Click here to learn more about managed identities.",
-                  "uri": "https://support.profisee.com/wikis/2020_r2_support/planning_your_managed_identity_configuration"
-                }
               }
-                       
-        ],
-        "steps": [ 
-        {
-            "name": "profisee",
-            "label": "Profisee",
+            ],
+            "visible": "[equals(steps('profisee').ActiveDirectoryCreateApp,'No')]"
+          },
+          {
+            "name": "PurviewAccountName",
+            "type": "Microsoft.Solutions.ResourceSelector",
+            "label": "Select Purview Account",
+            "resourceType": "Microsoft.Purview/accounts",
+            "options": {
+              "filter": {
+                "subscription": "All",
+                "location": "All"
+              }
+            },
+            "visible": "[equals(steps('profisee').UsePurview,'Yes')]"
+          },
+          {
+            "name":"GetPurviewUrlRestApiResponse",
+            "type":"Microsoft.Solutions.ArmApiControl",
+            "request":{
+              "method": "GET",
+              "path": "[concat(subscription().id,'/resourceGroups/',last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5)),'/providers/Microsoft.Purview/accounts/',steps('profisee').PurviewAccountName.name,'?api-version=2020-12-01-preview')]",
+              "body": ""
+            }
+          },
+          {
+            "name": "PurviewClientID",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Purview Service Principal ID",
+            "defaultValue": "",
+            "placeholder": "",
+            "toolTip": "",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[equals(steps('profisee').UsePurview,'Yes')]"
+          },
+          {
+            "name": "PurviewClientSecret",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Purview Service Principal Secret",
+            "defaultValue": "",
+            "placeholder": "",
+            "toolTip": "",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[equals(steps('profisee').UsePurview,'Yes')]"
+          }
+        ]
+      },
+      {
+        "name": "kubernetes",
+        "label": "Kubernetes",
+        "elements": [
+          {
+            "name": "KubernetesClusterName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Cluster Name",
+            "defaultValue": "ProfiseeAKSCluster",
+            "toolTip": "Can only contain letters, numbers, underscores, and hyphens, must start and end with a letter or number, and must be unique in the current resource group",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": true
+          },
+          {
+            "name": "KubenetesInfrastructureResourceGroupName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Infrastructure Resource Group Name",
+            "defaultValue": "",
+            "toolTip": "Set blank for default of MC_resourcegroupname_clustername_location, or enter the resouce group name you want to use.  It must be new, cannot already exist.",
+            "constraints": {
+              "required": false,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": true
+          },
+          {
+            "name": "KubernetesVersion",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Version",
+            "defaultValue": "",
+            "toolTip": "Set blank for latest version, or enter the specific version you want to use.",
+            "constraints": {
+              "required": false,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": true
+          },
+          {
+            "name": "KubernetesLinuxNodeSizeSection",
+            "type": "Microsoft.Common.Section",
+            "label": "Linux VM",
             "elements": [
+              {
+                "name": "KubernetesLinuxNodeSize",
+                "type": "Microsoft.Compute.SizeSelector",
+                "label": "Size",
+                "toolTip": "",
+                "recommendedSizes": [
+                  "Standard_D2s_v3"
+                ],
+                "constraints": {
+                  "allowedSizes": []
+                },
+                "options": {
+                  "hideDiskTypeFilter": false
+                },
+                "osPlatform": "Linux",
+                "count": 1,
+                "visible": true
+              }
+            ],
+            "visible": true
+          },
+          {
+            "name": "KubernetesLinuxNodeCount",
+            "type": "Microsoft.Common.Slider",
+            "min": 1,
+            "max": 12,
+            "label": "Linux node count",
+            "subLabel": "",
+            "defaultValue": 1,
+            "showStepMarkers": false,
+            "toolTip": "",
+            "constraints": {
+              "required": false
+            },
+            "visible": true
+          },
+          {
+            "name": "KubernetesWindowsNodeSizeSection",
+            "type": "Microsoft.Common.Section",
+            "label": "Windows VM",
+            "elements": [
+              {
+                "name": "KubernetesWindowsNodeSize",
+                "type": "Microsoft.Compute.SizeSelector",
+                "label": "Size",
+                "toolTip": "",
+                "recommendedSizes": [
+                  "Standard_D4s_v3"
+                ],
+                "constraints": {
+                  "allowedSizes": []
+                },
+                "options": {
+                  "hideDiskTypeFilter": false
+                },
+                "osPlatform": "Windows",
+                "imageReference": {
+                  "publisher": "MicrosoftWindowsServer",
+                  "offer": "WindowsServer",
+                  "sku": "2019-Datacenter"
+                },
+                "count": 1,
+                "visible": true
+              }
+            ],
+            "visible": true
+          },
+          {
+            "name": "KubernetesWindowsNodeCount",
+            "type": "Microsoft.Common.Slider",
+            "min": 1,
+            "max": 12,
+            "label": "Windows node count",
+            "subLabel": "",
+            "defaultValue": 1,
+            "showStepMarkers": false,
+            "toolTip": "",
+            "constraints": {
+              "required": false
+            },
+            "visible": true
+          },
+          {
+            "name": "KubernetesAdvancedYesNo",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Configure advanced Kubernetes networking settings?",
+            "defaultValue": "No, use default settings",
+            "toolTip": "",
+            "constraints": {
+              "allowedValues": [
                 {
-                    "name": "UseKeyVault",
-                    "type": "Microsoft.Common.OptionsGroup",
-                    "label": "Use Key Vault?",
-                    "defaultValue": "No, I will supply them.",
-                    "toolTip": "",
-                    "constraints": {
-                      "allowedValues": [
-                        {
-                          "label": "Yes, pull sensitive information from Key Vault.",
-                          "value": "Yes"
-                        },
-                        {
-                          "label": "No, I will supply them.",
-                          "value": "No"
-                        }
-                      ],
-                      "required": true
-                    },
-                    "visible": true
+                  "label": "No, use default settings",
+                  "value": "No"
                 },
                 {
-                    "name": "KeyVault",
-                    "type": "Microsoft.Solutions.ResourceSelector",
-                    "label": "Key Vault",
-                    "resourceType": "Microsoft.KeyVault/vaults",
-                    "options": {
-                        "filter": {
-                            "subscription": "All",
-                            "location": "All"
-                        }
-                    },
-                    "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
-                },
-                {
-                    "name": "ProfiseeVersion",
-                    "type": "Microsoft.Common.DropDown",
-                    "label": "Version",
-                    "defaultValue": "2021R2.0",
-                    "toolTip": "Which release of the Profisee Platform to start with.",
-                    "constraints": {
-                        "required": true,
-                        "allowedValues": [
-                            {
-                                "label": "2020R1.0",
-                                "value": "profiseeplatform:2020r1.0"
-                            },
-                            {
-                                "label": "2020R1.1",
-                                "value": "profiseeplatform:2020r1.1"
-                            },
-                            {
-                                "label": "2020R2.0",
-                                "value": "profiseeplatform:2020r2.0"
-                            },
-                            {
-                                "label": "2021R1.0",
-                                "value": "profiseeplatform:2021r1.0"
-                            },
-                            {
-                                "label": "2021R2.0",
-                                "value": "profiseeplatform:2021r2.0"
-                            },
-                            {
-                                "label": "2021R2.PurviewPreview",
-                                "value": "profiseeplatform:2021r2.purviewpreview"
-                            },
-                            {
-                                "label": "2021R2.MachineLearningPreview",
-                                "value": "profiseeplatform:2021r3.mlpreview"
-                            }
-                        ]
-                    },
-                    "visible": true
-                },
-                {
-                    "name": "ProfiseeAdminUserAccount",
-                    "type": "Microsoft.Common.TextBox",
-                    "label": "Admin User Account",
-                    "defaultValue": "",
-                    "placeholder": "first.last@company.com",
-                    "toolTip": "The first Super User, who will be able to login and add other users.",
-                    "constraints": {
-                        "required": true,
-                        "regex": "",
-                        "validationMessage": ""
-                    },
-                    "visible": true
-                },
-                {
-                    "name": "ProfiseeLicense",
-                    "type": "Microsoft.Common.FileUpload",
-                    "label": "License",
-                    "toolTip": "",
-                    "constraints": {
-                      "required": true,
-                      "accept": ".txt"
-                    },
-                    "options": {
-                      "multiple": false,
-                      "uploadMode": "file",
-                      "openMode": "text",
-                      "encoding": "UTF-8"
-                    },
-                    "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
-                },
-                {
-                    "name": "ProfiseeLicenseSecret",
-                    "type": "Microsoft.Common.TextBox",
-                    "label": "License",
-                    "defaultValue": "",
-                    "placeholder": "License secret name in KeyVault",
-                    "toolTip": "",
-                    "constraints": {
-                        "required": true,
-                        "regex": "",
-                        "validationMessage": ""
-                    },
-                    "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
-                },
-                {
-                    "name": "ActiveDirectoryCreateApp",
-                    "type": "Microsoft.Common.OptionsGroup",
-                    "label": "Do you want the deployment to create a new Azure Active Directory app registration for you?",
-                    "defaultValue": "Yes, create and configure a new Azure Active Directory app registration",
-                    "toolTip": "",
-                    "constraints": {
-                      "allowedValues": [
-                        {
-                          "label": "Yes, create and configure a new Azure Active Directory app registration",
-                          "value": "Yes"
-                        },
-                        {
-                          "label": "No, I will specify the client ID for an existing Azure Active Directory app registration",
-                          "value": "No"
-                        }
-                      ],
-                      "required": true
-                    },
-                    "visible": true
-                },                  
-                {
-                    "name": "UserSuppliedClientyId",
-                    "type": "Microsoft.Common.Section",
-                    "label": "",
-                    "elements": [
-                        {
-                            "name": "ActiveDirectoryClientId",
-                            "type": "Microsoft.Common.TextBox",
-                            "label": "Application Registration Client Id",
-                            "defaultValue": "",
-                            "toolTip": "ClientId of existing Azure Active Directory App Registration which will be used by the Profisee platform for authentication.",
-                            "constraints": {
-                                "required": "[equals(steps('profisee').ActiveDirectoryCreateApp,'No')]",
-                                "regex": "",
-                                "validationMessage": ""
-                            },
-                            "visible": true
-                        }
-                    ],
-                    "visible": "[equals(steps('profisee').ActiveDirectoryCreateApp,'No')]"
-                },
-                {
-                    "name": "PurviewAPIBaseUrl",
-                    "type": "Microsoft.Common.TextBox",
-                    "label": "Purview API Url ",
-                    "defaultValue": "",
-                    "placeholder": "",
-                    "toolTip": "",
-                    "constraints": {
-                        "required": true,
-                        "regex": "",
-                        "validationMessage": ""
-                    },
-                    "visible": "[equals(steps('profisee').ProfiseeVersion,'profiseeplatform:2021r2.purviewpreview')]"                    
-                },
-                {
-                    "name": "PurviewClientID",
-                    "type": "Microsoft.Common.TextBox",
-                    "label": "Purview Service Principal ID",
-                    "defaultValue": "",
-                    "placeholder": "",
-                    "toolTip": "",
-                    "constraints": {
-                        "required": true,
-                        "regex": "",
-                        "validationMessage": ""
-                    },
-                    "visible": "[equals(steps('profisee').ProfiseeVersion,'profiseeplatform:2021r2.purviewpreview')]"                    
-                },
-                {
-                    "name": "PurviewClientSecret",
-                    "type": "Microsoft.Common.TextBox",
-                    "label": "Purview Service Principal Secret",
-                    "defaultValue": "",
-                    "placeholder": "",
-                    "toolTip": "",
-                    "constraints": {
-                        "required": true,
-                        "regex": "",
-                        "validationMessage": ""
-                    },
-                    "visible": "[equals(steps('profisee').ProfiseeVersion,'profiseeplatform:2021r2.purviewpreview')]"                    
+                  "label": "Yes, configure advanced settings",
+                  "value": "Yes"
                 }
-            ]
-        },        
-        {
-            "name": "kubernetes",
-            "label": "Kubernetes",
+              ],
+              "required": true
+            },
+            "visible": true
+          },
+          {
+            "name": "KubernetesAdvanced",
+            "type": "Microsoft.Common.Section",
+            "label": "Advanced kubernetes settings",
             "elements": [
-                {
-                    "name": "KubernetesClusterName",
-                    "type": "Microsoft.Common.TextBox",
-                    "label": "Cluster Name",
-                    "defaultValue": "ProfiseeAKSCluster",
-                    "toolTip": "Can only contain letters, numbers, underscores, and hyphens, must start and end with a letter or number, and must be unique in the current resource group",
-                    "constraints": {
-                        "required": true,
-                        "regex": "",
-                        "validationMessage": ""
-                    },
-                    "visible": true
+              {
+                "name": "KubernetesVnetName",
+                "type": "Microsoft.Network.VirtualNetworkCombo",
+                "label": {
+                  "virtualNetwork": "Virtual network",
+                  "subnets": "Subnets"
                 },
-                {
-                    "name": "KubernetesVersion",
-                    "type": "Microsoft.Common.TextBox",
-                    "label": "Version",
-                    "defaultValue": "",
-                    "toolTip": "Set blank for latest version, or enter the specific version you want to use.",
-                    "constraints": {
-                        "required": false,
-                        "regex": "",
-                        "validationMessage": ""
-                    },
-                    "visible": true
-                },               
-                {
-                    "name": "KubernetesLinuxNodeSizeSection",
-                    "type": "Microsoft.Common.Section",
-                    "label": "Linux VM",
-                    "elements": [
-                        {
-                            "name": "KubernetesLinuxNodeSize",
-                            "type": "Microsoft.Compute.SizeSelector",
-                            "label": "Size",
-                            "toolTip": "",
-                            "recommendedSizes": [
-                                "Standard_D2s_v3"
-                            ],
-                            "constraints": {
-                                "allowedSizes": []
-                            },
-                            "options": {
-                                "hideDiskTypeFilter": false
-                            },
-                            "osPlatform": "Linux",
-                            "count": 1,
-                            "visible": true
-                        }
-                    ],
-                    "visible": true
-                },   
-                {
-                    "name": "KubernetesLinuxNodeCount",
-                    "type": "Microsoft.Common.Slider",
-                    "min": 1,
-                    "max": 12,
-                    "label": "Linux node count",
-                    "subLabel": "",
-                    "defaultValue": 1,
-                    "showStepMarkers": false,
-                    "toolTip": "",
-                    "constraints": {
-                        "required": false
-                    },
-                    "visible": true
-                },           
-                {
-                    "name": "KubernetesWindowsNodeSizeSection",
-                    "type": "Microsoft.Common.Section",
-                    "label": "Windows VM",
-                    "elements": [
-                        {
-                            "name": "KubernetesWindowsNodeSize",
-                            "type": "Microsoft.Compute.SizeSelector",
-                            "label": "Size",
-                            "toolTip": "",
-                            "recommendedSizes": [
-                                "Standard_D4s_v3"
-                            ],
-                            "constraints": {
-                                "allowedSizes": []
-                            },
-                            "options": {
-                                "hideDiskTypeFilter": false
-                            },
-                            "osPlatform": "Windows",
-                            "imageReference": {
-                                "publisher": "MicrosoftWindowsServer",
-                                "offer": "WindowsServer",
-                                "sku": "2019-Datacenter"
-                            },
-                            "count": 1,
-                            "visible": true
-                        }
-                    ],
-                    "visible": true
+                "toolTip": {
+                  "virtualNetwork": "",
+                  "subnets": ""
                 },
-                {
-                    "name": "KubernetesWindowsNodeCount",
-                    "type": "Microsoft.Common.Slider",
-                    "min": 1,
-                    "max": 12,
-                    "label": "Windows node count",
-                    "subLabel": "",
-                    "defaultValue": 1,
-                    "showStepMarkers": false,
-                    "toolTip": "",
+                "defaultValue": {
+                  "name": "vnet01",
+                  "addressPrefixSize": "/24"
+                },
+                "constraints": {
+                  "minAddressPrefixSize": "/28"
+                },
+                "options": {
+                  "hideExisting": false
+                },
+                "subnets": {
+                  "subnet1": {
+                    "label": "Subnet",
+                    "defaultValue": {
+                      "name": "subnet-1",
+                      "addressPrefixSize": "/24"
+                    },
                     "constraints": {
-                        "required": false
-                    },
-                    "visible": true
-                },  
-                {
-                    "name": "KubernetesAdvancedYesNo",
-                    "type": "Microsoft.Common.OptionsGroup",
-                    "label": "Configure advanced Kubernetes networking settings?",
-                    "defaultValue": "No, use default settings",
-                    "toolTip": "",
-                    "constraints": {
-                      "allowedValues": [
-                        {
-                          "label": "No, use default settings",
-                          "value": "No"
-                        },
-                        {
-                          "label": "Yes, configure advanced settings",
-                          "value": "Yes"
-                        }
-                      ],
-                      "required": true
-                    },
-                    "visible": true
-                }, 
-                {
-                    "name": "KubernetesAdvanced",
-                    "type": "Microsoft.Common.Section",
-                    "label": "Advanced kubernetes settings",
-                    "elements": [
-                        {
-                            "name": "KubernetesVnetName",
-                            "type": "Microsoft.Network.VirtualNetworkCombo",
-                            "label": {
-                                "virtualNetwork": "Virtual network",
-                                "subnets": "Subnets"
-                            },
-                            "toolTip": {
-                                "virtualNetwork": "",
-                                "subnets": ""
-                            },
-                            "defaultValue": {
-                                "name": "vnet01",
-                                "addressPrefixSize": "/24"
-                            },
-                            "constraints": {
-                                "minAddressPrefixSize": "/28"
-                            },
-                            "options": {
-                                "hideExisting": false
-                            },
-                            "subnets": {
-                                "subnet1": {
-                                    "label": "Subnet",
-                                    "defaultValue": {
-                                        "name": "subnet-1",
-                                        "addressPrefixSize": "/24"
-                                    },
-                                    "constraints": {
-                                        "minAddressPrefixSize": "/24",
-                                        "minAddressCount": 12,
-                                        "requireContiguousAddresses": true
-                                    }
-                                }
-                            },
-                            "visible": true
-                        },
-                        {
-                            "name": "KubernetesServiceCidr",
-                            "type": "Microsoft.Common.TextBox",
-                            "label": "Service Cidr",
-                            "defaultValue": "10.0.0.0/16",
-                            "toolTip": "A CIDR notation IP range from which to assign service cluster IPs.",
-                            "constraints": {
-                                "required": false,
-                                "regex": "",
-                                "validationMessage": ""
-                            },
-                            "visible": true
-                        },
-                        {
-                            "name": "KubernetesDNSServiceIP",
-                            "type": "Microsoft.Common.TextBox",
-                            "label": "DNS Service IP",
-                            "defaultValue": "10.0.0.10",
-                            "toolTip": "Containers DNS server IP address.",
-                            "constraints": {
-                                "required": false,
-                                "regex": "",
-                                "validationMessage": ""
-                            },
-                            "visible": true
-                        },
-                        {
-                            "name": "KubernetesDockerBridgeCidr",
-                            "type": "Microsoft.Common.TextBox",
-                            "label": "Docker Bridge Cidr",
-                            "defaultValue": "172.17.0.1/16",
-                            "toolTip": "A CIDR notation IP for Docker bridge.",
-                            "constraints": {
-                                "required": false,
-                                "regex": "",
-                                "validationMessage": ""
-                            },
-                            "visible": true
-                        }
-                    ],
-                    "visible": "[equals(steps('kubernetes').KubernetesAdvancedYesNo,'Yes')]"
-                }         
-                
-            ]
-        },        
-        {
-            "name": "sql",
-            "label": "SQL",
-            "elements": [
-                {
-                    "name": "SQLServerCreateNew",
-                    "type": "Microsoft.Common.OptionsGroup",
-                    "label": "Create a new SQL Server? ",
-                    "defaultValue": "Yes, create a new SQL Server",
-                    "toolTip": "",
-                    "constraints": {
-                        "required": true,
-                        "allowedValues": [
-                            {
-                                "label": "Yes, create a new SQL Server",
-                                "value": "Yes"
-                            },
-                            {
-                                "label": "No, use an existing Azure SQL Server",
-                                "value": "No"
-                            }
-                        ]
-                    },
-                    "visible": true
-                },                
-                {
-                    "name": "SQLServerNameExisting",
-                    "type": "Microsoft.Solutions.ResourceSelector",
-                    "label": "Select SQL Server",
-                    "resourceType": "Microsoft.Sql/servers",
-                    "options": {
-                        "filter": {
-                            "subscription": "All",
-                            "location": "All"
-                        }
-                    },
-                    "visible": "[equals(steps('sql').SQLServerCreateNew,'No')]"
-                },  
-                {
-                    "name":"CheckSqlNameRestApiResponse",
-                    "type":"Microsoft.Solutions.ArmApiControl",
-                    "request":{
-                    "method": "POST",
-                    "path": "[concat(subscription().id,'/providers/Microsoft.Sql/checkNameAvailability?api-version=2014-04-01')]",
-                    "body": "[parse(concat('{\"name\":\"',steps('sql').SQLServerName,'\",\"type\":\"Microsoft.Sql/servers\"}'))]"
+                      "minAddressPrefixSize": "/24",
+                      "minAddressCount": 12,
+                      "requireContiguousAddresses": true
                     }
-                },              
-                {
-                    "name": "SQLServerName",
-                    "type": "Microsoft.Common.TextBox",
-                    "label": "Server Name",
-                    "toolTip": "Enter a globally unique Azure SQL Server name. Name can contain only lowercase letters, numbers, and hyphens. The name cannot start or end with a hyphen or contain more than 63 characters.",
-                    "constraints": {
-                        "required": true,
-                        "validations":[
-                            {
-                            "isValid":"[equals(steps('sql').CheckSqlNameRestApiResponse.available,true)]",
-                            "message":"[steps('sql').CheckSqlNameRestApiResponse.message]"
-                            }
-                            ]
-                    },
-                    "visible": "[equals(steps('sql').SQLServerCreateNew,'Yes')]"
-                },                
-                {
-                    "name": "SQLServerUser",
-                    "type": "Microsoft.Common.TextBox",
-                    "label": "User",
-                    "defaultValue": "sqladmin",
-                    "toolTip": "Administrator SQL login name to create with the new SQL Server or to use to connect to existing SQL Server.  Your login name must not contain a SQL Identifier or a typical system name (like admin, administrator, sa, root, dbmanager, loginmanager, etc.) or a built-in database user or role (like dbo, guest, public, etc.).  Your login name must not include non-alphanumeric characters.  Your login name must not start with numbers or symbols",
-                    "constraints": {
-                        "required": true,
-                        "regex": "",
-                        "validationMessage": ""
-                    },
-                    "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
+                  }
                 },
-                {
-                    "name": "SQLServerUserSecret",
-                    "type": "Microsoft.Common.TextBox",
-                    "label": "User",
-                    "placeholder": "SQL server username secret name in KeyVault",
-                    "toolTip": "Administrator SQL login name to create with the new SQL Server or to use to connect to existing SQL Server.  Your login name must not contain a SQL Identifier or a typical system name (like admin, administrator, sa, root, dbmanager, loginmanager, etc.) or a built-in database user or role (like dbo, guest, public, etc.).  Your login name must not include non-alphanumeric characters.  Your login name must not start with numbers or symbols",
-                    "constraints": {
-                        "required": true,
-                        "regex": "",
-                        "validationMessage": ""
-                    },
-                    "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
+                "visible": true
+              },
+              {
+                "name": "KubernetesServiceCidr",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Service Cidr",
+                "defaultValue": "10.0.0.0/16",
+                "toolTip": "A CIDR notation IP range from which to assign service cluster IPs.",
+                "constraints": {
+                  "required": false,
+                  "regex": "",
+                  "validationMessage": ""
                 },
-                {
-                    "name": "SQLServerPassword",
-                    "type": "Microsoft.Common.PasswordBox",
-                    "label": {
-                        "password": "Password",
-                        "confirmPassword": "Confirm password"
-                    },
-                    "toolTip": "",
-                    "constraints": {
-                        "required": true,
-                        "regex": "^((?=.*[A-Z])(?=.*\\d)(?=.*[~`!@#$%^&*()\\-_+={[}\\]|\\\\:;\"'<,>.?\\\/])|(?=.*[a-z])(?=.*\\d)(?=.*[~`!@#$%^&*()\\-_+={[}\\]|\\\\:;\"'<,>.?\\\/])|(?=.*[a-z])(?=.*\\d)(?=.*[A-Z])|(?=.*[a-z])(?=.*[~`!@#$%^&*()\\-_+={[}\\]|\\\\:;\"'<,>.?\\\/])(?=.*[A-Z]))[\\w~`!@#$%^&*()\\-+={[}\\]|\\\\:;\"'<,>.?\\\/]{8,128}$",
-                        "validationMessage": "Your password must be at least 8 characters in length.  Your password must be no more than 128 characters in length.  Your password must contain characters from three of the following categories – English uppercase letters, English lowercase letters, numbers (0-9), and non-alphanumeric characters (!, $, #, %, etc.).  Your password cannot contain all or part of the login name. Part of a login name is defined as three or more consecutive alphanumeric characters."
-                    },
-                    "options": {
-                        "hideConfirmation": false
-                    },
-                    "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
+                "visible": true
+              },
+              {
+                "name": "KubernetesDNSServiceIP",
+                "type": "Microsoft.Common.TextBox",
+                "label": "DNS Service IP",
+                "defaultValue": "10.0.0.10",
+                "toolTip": "Containers DNS server IP address.",
+                "constraints": {
+                  "required": false,
+                  "regex": "",
+                  "validationMessage": ""
                 },
-                {
-                    "name": "SQLServerPasswordSecret",
-                    "type": "Microsoft.Common.TextBox",
-                    "label": "Password",
-                    "defaultValue": "",
-                    "placeholder": "SQL server password secret name in KeyVault",
-                    "toolTip": "",
-                    "constraints": {
-                        "required": true,
-                        "regex": "",
-                        "validationMessage": ""
-                    },
-                    "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
+                "visible": true
+              },
+              {
+                "name": "KubernetesDockerBridgeCidr",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Docker Bridge Cidr",
+                "defaultValue": "172.17.0.1/16",
+                "toolTip": "A CIDR notation IP for Docker bridge.",
+                "constraints": {
+                  "required": false,
+                  "regex": "",
+                  "validationMessage": ""
                 },
-                {
-                    "name": "SQLServerDatabaseName",
-                    "type": "Microsoft.Common.TextBox",
-                    "label": "Database Name",
-                    "defaultValue": "Profisee",
-                    "toolTip": "Cannot contain special characters or reserved words. Should be less than 128 characters and unique within the SQL Server.",
-                    "constraints": {
-                        "required": true,
-                        "regex": "",
-                        "validationMessage": ""
-                    },
-                    "visible": true
-                } 
-                
+                "visible": true
+              }
+            ],
+            "visible": "[equals(steps('kubernetes').KubernetesAdvancedYesNo,'Yes')]"
+          }
 
-                               
-            ]
-        },  
-        {
-            "name": "storage",
-            "label": "Storage",
-            "elements": [
-                
+        ]
+      },
+      {
+        "name": "sql",
+        "label": "SQL",
+        "elements": [
+          {
+            "name": "SQLServerCreateNew",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Create a new SQL Server? ",
+            "defaultValue": "Yes, create a new SQL Server",
+            "toolTip": "",
+            "constraints": {
+              "required": true,
+              "allowedValues": [
                 {
-                    "name": "StorageAccountNameSection",
-                    "type": "Microsoft.Common.Section",
-                    "label": "Storage Account Name",
-                    "elements": [
-                        {
-                            "name": "StorageAccountName",
-                                "type": "Microsoft.Storage.StorageAccountSelector",
-                                "label": "Storage account",
-                                "toolTip": "",
-                                "defaultValue": {
-                                    "name": "",
-                                    "type": "Standard_LRS"
-                                },
-                                "constraints": {
-                                    "allowedTypes": []
-                                },
-                                "options": {
-                                    "hideExisting": false
-                                },
-                                "visible": true
-                        }
-                    ],
-                    "visible": true
+                  "label": "Yes, create a new SQL Server",
+                  "value": "Yes"
                 },
                 {
-                    "name":"GetStorageAccessKeysRestApiResponse",
-                    "type":"Microsoft.Solutions.ArmApiControl",
-                    "request":{
-                    "method": "POST",
-                    "path": "[concat(subscription().id,'/resourceGroups/',steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,'/providers/Microsoft.Storage/storageAccounts/',steps('storage').StorageAccountNameSection.StorageAccountName.name,'/listKeys?api-version=2019-06-01')]",
-                    "body": ""
-                    }
-                },              
-                {
-                    "name": "StorageAccountAccessKey",
-                    "type": "Microsoft.Common.DropDown",
-                    "label": "Access Keys",
-                    "toolTip": "",
-                    "constraints": {
-                        "allowedValues": "[map(steps('storage').GetStorageAccessKeysRestApiResponse.keys, (item) => parse(concat('{\"label\":\"', item.keyName, '\",\"value\":\"', item.value, '\"}')))]",
-                        "required": true
-                    },
-                    "visible": "[equals(steps('storage').StorageAccountNameSection.StorageAccountName.newOrExisting, 'existing')]"
-                },
-                {
-                    "name":"GetStorageFileSharesRestApiResponse",
-                    "type":"Microsoft.Solutions.ArmApiControl",
-                    "request":{
-                    "method": "GET",
-                    "path": "[concat(subscription().id,'/resourceGroups/',steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,'/providers/Microsoft.Storage/storageAccounts/',steps('storage').StorageAccountNameSection.StorageAccountName.name,'/fileServices/default/shares?api-version=2019-06-01')]",
-                    "body": ""
-                    }
-                },              
-                {
-                    "name": "StorageAccountFileShareName",
-                    "type": "Microsoft.Common.DropDown",
-                    "label": "File share",
-                    "toolTip": "",
-                    "constraints": {
-                        "allowedValues": "[map(steps('storage').GetStorageFileSharesRestApiResponse.value, (item) => parse(concat('{\"label\":\"', item.name, '\",\"value\":\"', item.name, '\"}')))]",
-                        "required": true
-                    },
-                    "visible": "[equals(steps('storage').StorageAccountNameSection.StorageAccountName.newOrExisting, 'existing')]"
+                  "label": "No, use an existing Azure SQL Server",
+                  "value": "No"
                 }
-            ]
-        },          
-        {
-            "name": "networking",
-            "label": "Networking",
+              ]
+            },
+            "visible": true
+          },
+          {
+            "name": "SQLServerNameExisting",
+            "type": "Microsoft.Solutions.ResourceSelector",
+            "label": "Select SQL Server",
+            "resourceType": "Microsoft.Sql/servers",
+            "options": {
+              "filter": {
+                "subscription": "All",
+                "location": "All"
+              }
+            },
+            "visible": "[equals(steps('sql').SQLServerCreateNew,'No')]"
+          },
+          {
+            "name": "CheckSqlNameRestApiResponse",
+            "type": "Microsoft.Solutions.ArmApiControl",
+            "request": {
+              "method": "POST",
+              "path": "[concat(subscription().id,'/providers/Microsoft.Sql/checkNameAvailability?api-version=2014-04-01')]",
+              "body": "[parse(concat('{\"name\":\"',steps('sql').SQLServerName,'\",\"type\":\"Microsoft.Sql/servers\"}'))]"
+            }
+          },
+          {
+            "name": "SQLServerName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Server Name",
+            "toolTip": "Enter a globally unique Azure SQL Server name. Name can contain only lowercase letters, numbers, and hyphens. The name cannot start or end with a hyphen or contain more than 63 characters.",
+            "constraints": {
+              "required": true,
+              "validations": [
+                {
+                  "isValid": "[equals(steps('sql').CheckSqlNameRestApiResponse.available,true)]",
+                  "message": "[steps('sql').CheckSqlNameRestApiResponse.message]"
+                }
+              ]
+            },
+            "visible": "[equals(steps('sql').SQLServerCreateNew,'Yes')]"
+          },
+          {
+            "name": "SQLServerUser",
+            "type": "Microsoft.Common.TextBox",
+            "label": "User",
+            "defaultValue": "sqladmin",
+            "toolTip": "Administrator SQL login name to create with the new SQL Server or to use to connect to existing SQL Server.  Your login name must not contain a SQL Identifier or a typical system name (like admin, administrator, sa, root, dbmanager, loginmanager, etc.) or a built-in database user or role (like dbo, guest, public, etc.).  Your login name must not include non-alphanumeric characters.  Your login name must not start with numbers or symbols",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
+          },
+          {
+            "name": "SQLServerUserSecret",
+            "type": "Microsoft.Common.TextBox",
+            "label": "User",
+            "placeholder": "SQL server username secret name in KeyVault",
+            "toolTip": "Administrator SQL login name to create with the new SQL Server or to use to connect to existing SQL Server.  Your login name must not contain a SQL Identifier or a typical system name (like admin, administrator, sa, root, dbmanager, loginmanager, etc.) or a built-in database user or role (like dbo, guest, public, etc.).  Your login name must not include non-alphanumeric characters.  Your login name must not start with numbers or symbols",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
+          },
+          {
+            "name": "SQLServerPassword",
+            "type": "Microsoft.Common.PasswordBox",
+            "label": {
+              "password": "Password",
+              "confirmPassword": "Confirm password"
+            },
+            "toolTip": "",
+            "constraints": {
+              "required": true,
+              "regex": "^((?=.*[A-Z])(?=.*\\d)(?=.*[~`!@#$%^&*()\\-_+={[}\\]|\\\\:;\"'<,>.?\\\/])|(?=.*[a-z])(?=.*\\d)(?=.*[~`!@#$%^&*()\\-_+={[}\\]|\\\\:;\"'<,>.?\\\/])|(?=.*[a-z])(?=.*\\d)(?=.*[A-Z])|(?=.*[a-z])(?=.*[~`!@#$%^&*()\\-_+={[}\\]|\\\\:;\"'<,>.?\\\/])(?=.*[A-Z]))[\\w~`!@#$%^&*()\\-+={[}\\]|\\\\:;\"'<,>.?\\\/]{8,128}$",
+              "validationMessage": "Your password must be at least 8 characters in length.  Your password must be no more than 128 characters in length.  Your password must contain characters from three of the following categories – English uppercase letters, English lowercase letters, numbers (0-9), and non-alphanumeric characters (!, $, #, %, etc.).  Your password cannot contain all or part of the login name. Part of a login name is defined as three or more consecutive alphanumeric characters."
+            },
+            "options": {
+              "hideConfirmation": false
+            },
+            "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
+          },
+          {
+            "name": "SQLServerPasswordSecret",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Password",
+            "defaultValue": "",
+            "placeholder": "SQL server password secret name in KeyVault",
+            "toolTip": "",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
+          },
+          {
+            "name": "SQLServerDatabaseName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Database Name",
+            "defaultValue": "Profisee",
+            "toolTip": "Cannot contain special characters or reserved words. Should be less than 128 characters and unique within the SQL Server.",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": true
+          }
+
+
+
+        ]
+      },
+      {
+        "name": "storage",
+        "label": "Storage",
+        "elements": [
+
+          {
+            "name": "StorageAccountNameSection",
+            "type": "Microsoft.Common.Section",
+            "label": "Storage Account Name",
             "elements": [
+              {
+                "name": "StorageAccountName",
+                "type": "Microsoft.Storage.StorageAccountSelector",
+                "label": "Storage account",
+                "toolTip": "",
+                "defaultValue": {
+                  "name": "",
+                  "type": "Standard_LRS"
+                },
+                "constraints": {
+                  "allowedTypes": []
+                },
+                "options": {
+                  "hideExisting": false
+                },
+                "visible": true
+              }
+            ],
+            "visible": true
+          },
+          {
+            "name":"GetStorageAccessKeysRestApiResponse",
+            "type":"Microsoft.Solutions.ArmApiControl",
+            "request":{
+              "method": "POST",
+              "path": "[concat(subscription().id,'/resourceGroups/',steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,'/providers/Microsoft.Storage/storageAccounts/',steps('storage').StorageAccountNameSection.StorageAccountName.name,'/listKeys?api-version=2019-06-01')]",
+              "body": ""
+            }
+          },
+          {
+            "name": "StorageAccountAccessKey",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Access Keys",
+            "toolTip": "",
+            "constraints": {
+              "allowedValues": "[map(steps('storage').GetStorageAccessKeysRestApiResponse.keys, (item) => parse(concat('{\"label\":\"', item.keyName, '\",\"value\":\"', item.value, '\"}')))]",
+              "required": true
+            },
+            "visible": "[equals(steps('storage').StorageAccountNameSection.StorageAccountName.newOrExisting, 'existing')]"
+          },
+          {
+            "name":"GetStorageFileSharesRestApiResponse",
+            "type":"Microsoft.Solutions.ArmApiControl",
+            "request":{
+              "method": "GET",
+              "path": "[concat(subscription().id,'/resourceGroups/',steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,'/providers/Microsoft.Storage/storageAccounts/',steps('storage').StorageAccountNameSection.StorageAccountName.name,'/fileServices/default/shares?api-version=2019-06-01')]",
+              "body": ""
+            }
+          },
+          {
+            "name": "StorageAccountFileShareName",
+            "type": "Microsoft.Common.DropDown",
+            "label": "File share",
+            "toolTip": "",
+            "constraints": {
+              "allowedValues": "[map(steps('storage').GetStorageFileSharesRestApiResponse.value, (item) => parse(concat('{\"label\":\"', item.name, '\",\"value\":\"', item.name, '\"}')))]",
+              "required": true
+            },
+            "visible": "[equals(steps('storage').StorageAccountNameSection.StorageAccountName.newOrExisting, 'existing')]"
+          }
+        ]
+      },
+      {
+        "name": "networking",
+        "label": "Networking",
+        "elements": [
+          {
+            "name": "DNSUpdate",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Use default Azure DNS?",
+            "defaultValue": "Yes, use default Azure DNS and Let’s Encrypt for certificates (ex. https://[profisee name].[region].cloudapp.azure.com/profisee)",
+            "toolTip": "",
+            "constraints": {
+              "allowedValues": [
                 {
-                    "name": "DNSUpdate",
-                    "type": "Microsoft.Common.OptionsGroup",
-                    "label": "Use default Azure DNS?",
-                    "defaultValue": "Yes, use default Azure DNS and Let’s Encrypt for certificates (ex. https://[profisee name].[region].cloudapp.azure.com/profisee)",
-                    "toolTip": "",
-                    "constraints": {
-                      "allowedValues": [
-                        {
-                          "label": "Yes, use default Azure DNS and Let’s Encrypt for certificates (ex. https://[profisee name].[region].cloudapp.azure.com/profisee)",
-                          "value": "No"
-                        },
-                        {
-                          "label": "No, I’ll use my own DNS host name and domain",
-                          "value": "Yes"
-                        }
-                      ],
-                      "required": true
+                  "label": "Yes, use default Azure DNS and Let’s Encrypt for certificates (ex. https://[profisee name].[region].cloudapp.azure.com/profisee)",
+                  "value": "No"
+                },
+                {
+                  "label": "No, I’ll use my own DNS host name and domain",
+                  "value": "Yes"
+                }
+              ],
+              "required": true
+            },
+            "visible": true
+          },
+          {
+            "name": "UserDefinedDNS",
+            "type": "Microsoft.Common.Section",
+            "label": "User Defined DNS",
+            "elements": [
+              {
+                "name": "DNSUpdate2",
+                "type": "Microsoft.Common.OptionsGroup",
+                "label": "Is your DNS in Azure?",
+                "defaultValue": "Yes, use new DNS hostname with existing domain name that is in Azure.",
+                "toolTip": "",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "Yes, use new DNS hostname with existing domain name that is in Azure.",
+                      "value": "Yes"
                     },
-                    "visible": true
+                    {
+                      "label": "No, use existing DNS hostname and domain name that is outside of Azure.",
+                      "value": "No"
+                    }
+                  ],
+                  "required": true
+                },
+                "visible": true
+              },
+              {
+                "name": "DNSHostName",
+                "type": "Microsoft.Common.TextBox",
+                "label": "DNS Host Name",
+                "defaultValue": "",
+                "placeholder": "myprofiseehostname",
+                "toolTip": "",
+                "constraints": {
+                  "required": true,
+                  "regex": "",
+                  "validationMessage": ""
+                },
+                "visible": true
+              },
+              {
+                "name": "DNSDomainName",
+                "type": "Microsoft.Common.TextBox",
+                "label": "DNS Domain Name",
+                "defaultValue": "",
+                "placeholder":"mydomain.com",
+                "toolTip": "",
+                "constraints": {
+                  "required": true,
+                  "regex": "",
+                  "validationMessage": ""
+                },
+                "visible": true
+              },
+              {
+                "name": "DNSDomainResourceGroup",
+                "type": "Microsoft.Common.TextBox",
+                "label": "DNS Domain Resource Group",
+                "defaultValue": "",
+                "placeholder": "mydnszoneresourcegroup",
+                "toolTip": "",
+                "constraints": {
+                  "required": true,
+                  "regex": "",
+                  "validationMessage": ""
+                },
+                "visible": "[equals(steps('networking').UserDefinedDNS.DNSUpdate2, 'Yes')]"
+              }
+            ],
+            "visible": "[equals(steps('networking').DNSUpdate,'Yes')]"
+          },
+          {
+            "name": "HttpsConfigure",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Use Let’s Encrypt?",
+            "defaultValue": "Yes, use Let’s Encrypt for certificates",
+            "toolTip": "",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Yes, use Let’s Encrypt for certificates",
+                  "value": "No"
                 },
                 {
-                    "name": "UserDefinedDNS",
-                    "type": "Microsoft.Common.Section",
-                    "label": "User Defined DNS",
-                    "elements": [
-                        {
-                            "name": "DNSUpdate2",
-                            "type": "Microsoft.Common.OptionsGroup",
-                            "label": "Is your DNS in Azure?",
-                            "defaultValue": "Yes, use new DNS hostname with existing domain name that is in Azure.",
-                            "toolTip": "",
-                            "constraints": {
-                              "allowedValues": [
-                                {
-                                  "label": "Yes, use new DNS hostname with existing domain name that is in Azure.",
-                                  "value": "Yes"
-                                },
-                                {
-                                  "label": "No, use existing DNS hostname and domain name that is outside of Azure.",
-                                  "value": "No"
-                                }
-                              ],
-                              "required": true
-                            },
-                            "visible": true
-                        },
-                        {
-                            "name": "DNSHostName",
-                            "type": "Microsoft.Common.TextBox",
-                            "label": "DNS Host Name",
-                            "defaultValue": "",
-                            "placeholder": "myprofiseehostname",
-                            "toolTip": "",
-                            "constraints": {
-                                "required": true,
-                                "regex": "",
-                                "validationMessage": ""
-                            },
-                            "visible": true
-                        },
-                        {
-                            "name": "DNSDomainName",
-                            "type": "Microsoft.Common.TextBox",
-                            "label": "DNS Domain Name",
-                            "defaultValue": "",
-                            "placeholder":"mydomain.com",
-                            "toolTip": "",
-                            "constraints": {
-                                "required": true,
-                                "regex": "",
-                                "validationMessage": ""
-                            },
-                            "visible": true
-                        },
-                        {
-                            "name": "DNSDomainResourceGroup",
-                            "type": "Microsoft.Common.TextBox",
-                            "label": "DNS Domain Resource Group",
-                            "defaultValue": "",
-                            "placeholder": "mydnszoneresourcegroup",
-                            "toolTip": "",
-                            "constraints": {
-                                "required": true,
-                                "regex": "",
-                                "validationMessage": ""
-                            },
-                            "visible": "[equals(steps('networking').UserDefinedDNS.DNSUpdate2, 'Yes')]"
-                        }
-                    ],
-                    "visible": "[equals(steps('networking').DNSUpdate,'Yes')]"
+                  "label": "No, I’ll use my own certificates",
+                  "value": "Yes"
+                }
+              ],
+              "required": true
+            },
+            "visible": "[equals(steps('networking').DNSUpdate,'Yes')]"
+          },
+          {
+            "name": "UserDefinedHTTPS",
+            "type": "Microsoft.Common.Section",
+            "label": "User defined https",
+            "elements": [
+              {
+                "name": "HttpsCertificate",
+                "type": "Microsoft.Common.FileUpload",
+                "label": "Https Certificate",
+                "toolTip": "",
+                "constraints": {
+                  "required": true,
+                  "accept": ".txt,.crt"
                 },
-                {
-                    "name": "HttpsConfigure",
-                    "type": "Microsoft.Common.OptionsGroup",
-                    "label": "Use Let’s Encrypt?",
-                    "defaultValue": "Yes, use Let’s Encrypt for certificates",
-                    "toolTip": "",
-                    "constraints": {
-                      "allowedValues": [
-                        {
-                          "label": "Yes, use Let’s Encrypt for certificates",
-                          "value": "No"
-                        },
-                        {
-                          "label": "No, I’ll use my own certificates",
-                          "value": "Yes"
-                        }
-                      ],
-                      "required": true
-                    },
-                    "visible": "[equals(steps('networking').DNSUpdate,'Yes')]"
+                "options": {
+                  "multiple": false,
+                  "uploadMode": "file",
+                  "openMode": "text",
+                  "encoding": "UTF-8"
                 },
-                {
-                    "name": "UserDefinedHTTPS",
-                    "type": "Microsoft.Common.Section",
-                    "label": "User defined https",
-                    "elements": [                        
-                        {
-                            "name": "HttpsCertificate",
-                            "type": "Microsoft.Common.FileUpload",
-                            "label": "Https Certificate",
-                            "toolTip": "",
-                            "constraints": {
-                              "required": true,
-                              "accept": ".txt,.crt"
-                            },
-                            "options": {
-                              "multiple": false,
-                              "uploadMode": "file",
-                              "openMode": "text",
-                              "encoding": "UTF-8"
-                            },
-                            "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
-                        },
-                        {
-                            "name": "HttpsCertificateSecret",
-                            "type": "Microsoft.Common.TextBox",
-                            "label": "Https Certificate",
-                            "defaultValue": "",
-                            "placeholder": "Https Certificate name in KeyVault",
-                            "toolTip": "",
-                            "constraints": {
-                                "required": true,
-                                "regex": "",
-                                "validationMessage": ""
-                            },
-                            "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
-                        },
-                        {
-                            "name": "HttpsCertificatePrivateKey",
-                            "type": "Microsoft.Common.FileUpload",
-                            "label": "Https Certificate Private Key",
-                            "toolTip": "",
-                            "constraints": {
-                              "required": true,
-                              "accept": ".txt,.key"
-                            },
-                            "options": {
-                              "multiple": false,
-                              "uploadMode": "file",
-                              "openMode": "text",
-                              "encoding": "UTF-8"
-                            },
-                            "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
-                        }
-                    ],
-                    "visible": "[equals(steps('networking').HttpsConfigure,'Yes')]"
-                }         
-                
-            ]
-        }],
-        "outputs": {
-            "ManagedIdentityName": "[basics('ManagedIdentityName')]",
+                "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
+              },
+              {
+                "name": "HttpsCertificateSecret",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Https Certificate",
+                "defaultValue": "",
+                "placeholder": "Https Certificate name in KeyVault",
+                "toolTip": "",
+                "constraints": {
+                  "required": true,
+                  "regex": "",
+                  "validationMessage": ""
+                },
+                "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
+              },
+              {
+                "name": "HttpsCertificatePrivateKey",
+                "type": "Microsoft.Common.FileUpload",
+                "label": "Https Certificate Private Key",
+                "toolTip": "",
+                "constraints": {
+                  "required": true,
+                  "accept": ".txt,.key"
+                },
+                "options": {
+                  "multiple": false,
+                  "uploadMode": "file",
+                  "openMode": "text",
+                  "encoding": "UTF-8"
+                },
+                "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
+              }
+            ],
+            "visible": "[equals(steps('networking').HttpsConfigure,'Yes')]"
+          }
 
-            "ProfiseeVersion": "[steps('profisee').ProfiseeVersion]",
-            "ProfiseeAdminUserAccount": "[steps('profisee').ProfiseeAdminUserAccount]",
-            "ProfiseeLicense": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('profisee').ProfiseeLicenseSecret, steps('profisee').ProfiseeLicense)]",
-            "ActiveDirectoryCreateApp": "[steps('profisee').ActiveDirectoryCreateApp]",
-            "ActiveDirectoryClientId": "[steps('profisee').UserSuppliedClientyId.ActiveDirectoryClientId]",
-                        
-            "KubernetesClusterName": "[steps('kubernetes').KubernetesClusterName]",
-            "KubernetesVersion": "[steps('kubernetes').KubernetesVersion]",
-            "KubernetesLinuxNodeSize": "[steps('kubernetes').KubernetesLinuxNodeSizeSection.KubernetesLinuxNodeSize]",
-            "KubernetesLinuxNodeCount": "[steps('kubernetes').KubernetesLinuxNodeCount]",
-            "KubernetesWindowsNodeSize": "[steps('kubernetes').KubernetesWindowsNodeSizeSection.KubernetesWindowsNodeSize]",
-            "KubernetesWindowsNodeCount": "[steps('kubernetes').KubernetesWindowsNodeCount]",
+        ]
 
-            "KubernetesVnetName": "[steps('kubernetes').KubernetesAdvanced.KubernetesVnetName.name]",
-            "KubernetesVnetResourceGroup": "[steps('kubernetes').KubernetesAdvanced.KubernetesVnetName.resourceGroup]",
-            "KubernetesSubnetName": "[steps('kubernetes').KubernetesAdvanced.KubernetesVnetName.subnets.subnet1.name]",
+      }
+    ],
+    "outputs": {
+      "ManagedIdentityName": "[basics('ManagedIdentityName')]",
 
-            "KubernetesServiceCidr": "[steps('kubernetes').KubernetesAdvanced.KubernetesServiceCidr]",
-            "KubernetesDNSServiceIP": "[steps('kubernetes').KubernetesAdvanced.KubernetesDNSServiceIP]",
-            "KubernetesDockerBridgeCidr": "[steps('kubernetes').KubernetesAdvanced.KubernetesDockerBridgeCidr]",
+      "ProfiseeVersion": "[steps('profisee').ProfiseeVersion]",
+      "ProfiseeAdminUserAccount": "[steps('profisee').ProfiseeAdminUserAccount]",
+      "ProfiseeLicense": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('profisee').ProfiseeLicenseSecret, steps('profisee').ProfiseeLicense)]",
+      "ActiveDirectoryCreateApp": "[steps('profisee').ActiveDirectoryCreateApp]",
+      "ActiveDirectoryClientId": "[steps('profisee').UserSuppliedClientyId.ActiveDirectoryClientId]",
 
-            "SQLServerCreateNew": "[steps('sql').SQLServerCreateNew]",
-            "SQLServerName": "[if(equals(steps('sql').SQLServerCreateNew, 'Yes'), steps('sql').SQLServerName, steps('sql').SQLServerNameExisting.name)]",
-            "SQLServerUser": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('sql').SQLServerUserSecret, steps('sql').SQLServerUser)]",
-            "SQLServerPassword": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('sql').SQLServerPasswordSecret, steps('sql').SQLServerPassword)]",
-            "SQLServerDatabaseName": "[steps('sql').SQLServerDatabaseName]",
-            "StorageAccountCreateNew": "[if(equals(steps('storage').StorageAccountNameSection.StorageAccountName.newOrExisting, 'new'), 'Yes', 'No')]",
-            "StorageAccountName": "[steps('storage').StorageAccountNameSection.StorageAccountName.name]",
-            "StorageAccountResourceGroupName": "[coalesce(steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,resourceGroup().name)]",
-            "StorageAccountAccessKey": "[steps('storage').StorageAccountAccessKey]",
-            "StorageAccountType": "[steps('storage').StorageAccountNameSection.StorageAccountName.type]",
-            "StorageAccountFileShareName": "files",
+      "KubernetesClusterName": "[steps('kubernetes').KubernetesClusterName]",
+      "KubernetesVersion": "[steps('kubernetes').KubernetesVersion]",
+      "KubenetesInfrastructureResourceGroupName": "[steps('kubernetes').KubenetesInfrastructureResourceGroupName]",
+      "KubernetesLinuxNodeSize": "[steps('kubernetes').KubernetesLinuxNodeSizeSection.KubernetesLinuxNodeSize]",
+      "KubernetesLinuxNodeCount": "[steps('kubernetes').KubernetesLinuxNodeCount]",
+      "KubernetesWindowsNodeSize": "[steps('kubernetes').KubernetesWindowsNodeSizeSection.KubernetesWindowsNodeSize]",
+      "KubernetesWindowsNodeCount": "[steps('kubernetes').KubernetesWindowsNodeCount]",
 
-            "DNSUpdate": "[if(equals(steps('networking').DNSUpdate, 'No'), 'No', steps('networking').UserDefinedDNS.DNSUpdate2)]",
-            "DNSHostName": "[steps('networking').UserDefinedDNS.DNSHostName]",
-            "DNSDomainName": "[steps('networking').UserDefinedDNS.DNSDomainName]",
-            "DNSDomainResourceGroup": "[steps('networking').UserDefinedDNS.DNSDomainResourceGroup]",
-            "HttpsConfigure": "[coalesce(steps('networking').HttpsConfigure,'No')]",
-            "UseLetsEncrypt": "[if(equals(coalesce(steps('networking').HttpsConfigure,'No'),'No'),'Yes','No')]",
-            "HttpsCertificate": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('networking').UserDefinedHTTPS.HttpsCertificateSecret, steps('networking').UserDefinedHTTPS.HttpsCertificate)]",
+      "KubernetesVnetName": "[steps('kubernetes').KubernetesAdvanced.KubernetesVnetName.name]",
+      "KubernetesVnetResourceGroup": "[steps('kubernetes').KubernetesAdvanced.KubernetesVnetName.resourceGroup]",
+      "KubernetesSubnetName": "[steps('kubernetes').KubernetesAdvanced.KubernetesVnetName.subnets.subnet1.name]",
 
-            "HttpsCertificatePrivateKey": "[steps('networking').UserDefinedHTTPS.HttpsCertificatePrivateKey]",
-            "UseKeyVault":"[steps('profisee').UseKeyVault]",
-            "KeyVault":"[steps('profisee').KeyVault.id]",
-            "PurviewUrl":"[steps('profisee').PurviewAPIBaseUrl]",
-            "PurviewClientId":"[steps('profisee').PurviewClientID]",
-            "PurviewClientSecret":"[steps('profisee').PurviewClientSecret]"
-        }
+      "KubernetesServiceCidr": "[steps('kubernetes').KubernetesAdvanced.KubernetesServiceCidr]",
+      "KubernetesDNSServiceIP": "[steps('kubernetes').KubernetesAdvanced.KubernetesDNSServiceIP]",
+      "KubernetesDockerBridgeCidr": "[steps('kubernetes').KubernetesAdvanced.KubernetesDockerBridgeCidr]",
+
+      "SQLServerCreateNew": "[steps('sql').SQLServerCreateNew]",
+      "SQLServerName": "[if(equals(steps('sql').SQLServerCreateNew, 'Yes'), steps('sql').SQLServerName, steps('sql').SQLServerNameExisting.name)]",
+      "SQLServerUser": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('sql').SQLServerUserSecret, steps('sql').SQLServerUser)]",
+      "SQLServerPassword": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('sql').SQLServerPasswordSecret, steps('sql').SQLServerPassword)]",
+      "SQLServerDatabaseName": "[steps('sql').SQLServerDatabaseName]",
+      "StorageAccountCreateNew": "[if(equals(steps('storage').StorageAccountNameSection.StorageAccountName.newOrExisting, 'new'), 'Yes', 'No')]",
+      "StorageAccountName": "[steps('storage').StorageAccountNameSection.StorageAccountName.name]",
+      "StorageAccountResourceGroupName": "[coalesce(steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,resourceGroup().name)]",
+      "StorageAccountAccessKey": "[steps('storage').StorageAccountAccessKey]",
+      "StorageAccountType": "[steps('storage').StorageAccountNameSection.StorageAccountName.type]",
+      "StorageAccountFileShareName": "files",
+
+      "DNSUpdate": "[if(equals(steps('networking').DNSUpdate, 'No'), 'No', steps('networking').UserDefinedDNS.DNSUpdate2)]",
+      "DNSHostName": "[steps('networking').UserDefinedDNS.DNSHostName]",
+      "DNSDomainName": "[steps('networking').UserDefinedDNS.DNSDomainName]",
+      "DNSDomainResourceGroup": "[steps('networking').UserDefinedDNS.DNSDomainResourceGroup]",
+      "HttpsConfigure": "[coalesce(steps('networking').HttpsConfigure,'No')]",
+      "UseLetsEncrypt": "[if(equals(coalesce(steps('networking').HttpsConfigure,'No'),'No'),'Yes','No')]",
+      "HttpsCertificate": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('networking').UserDefinedHTTPS.HttpsCertificateSecret, steps('networking').UserDefinedHTTPS.HttpsCertificate)]",
+
+      "HttpsCertificatePrivateKey": "[steps('networking').UserDefinedHTTPS.HttpsCertificatePrivateKey]",
+      "UseKeyVault":"[steps('profisee').UseKeyVault]",
+      "KeyVault":"[steps('profisee').KeyVault.id]",
+      "UsePurview":"[steps('profisee').UsePurview]",
+      "PurviewUrl":"[steps('profisee').GetPurviewUrlRestApiResponse.properties.endpoints.catalog]",
+      "PurviewClientId":"[steps('profisee').PurviewClientID]",
+      "PurviewClientSecret":"[steps('profisee').PurviewClientSecret]",
+      "PurviewAccountResourceGroup":"[last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5))]"
     }
+  }
 }

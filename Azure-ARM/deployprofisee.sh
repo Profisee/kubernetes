@@ -30,8 +30,7 @@ fi
 printenv;
 
 #az login --identity
-#install the aks cli since this script runs in az 2.0.80 and the az aks was not added until 2.5
-az aks install-cli;
+
 #get the aks creds, this allows us to use kubectl commands if needed
 az aks get-credentials --resource-group $RESOURCEGROUPNAME --name $CLUSTERNAME --overwrite-existing;
 
@@ -93,12 +92,21 @@ echo $"ACRUSERPASSWORD is $ACRUSERPASSWORD";
 echo $"Getting values from license finished";
 
 #install helm
+echo $"Installing helm started";
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3;
 chmod 700 get_helm.sh;
 ./get_helm.sh;
+echo $"Installing helm finished";
+
+echo $"Installing kubectl started";
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+echo $"Installing kubectl finished";
 
 #create profisee namespace
+echo $"Creating profisee namespace in kubernetes started";
 kubectl create namespace profisee
+echo $"Creating profisee namespace in kubernetes finished";
 
 #download the settings.yaml
 curl -fsSL -o Settings.yaml "$REPOURL/Azure-ARM/Settings.yaml";
@@ -113,6 +121,7 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	#The behavior changed so now you have to enable the secrets-store-csi-driver.syncSecret.enabled=true
 	#We are not but if this is to run on a windows node, then you use this --set windows.enabled=true --set secrets-store-csi-driver.windows.enabled=true
 	helm install --namespace profisee csi-secrets-store-provider-azure csi-secrets-store-provider-azure/csi-secrets-store-provider-azure --set secrets-store-csi-driver.syncSecret.enabled=true
+
 	echo $"Installing keyvault csi driver - finished"
 
 	echo $"Installing keyvault aad pod identity - started"
@@ -133,36 +142,43 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	#Create AD Identity, get clientid and principalid to assign the reader role to (next command)
 	echo $"Managing Identity configuration for KV access - step 2 started"
 	identityName="AKSKeyVaultUser"
-	az identity create -g $AKSINFRARESOURCEGROUPNAME -n $identityName
+	akskvidentityClientId=$(az identity create -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'clientId' -o tsv);
+	akskvidentityClientResourceId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'id' -o tsv)
+	principalId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'principalId' -o tsv)
 	echo $"Managing Identity configuration for KV access - step 2 finished"
 
 	echo $"Managing Identity configuration for KV access - step 3 started"
-	akskvidentityClientId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'clientId')
-	akskvidentityClientId=$(echo "$akskvidentityClientId" | tr -d '"')
-	akskvidentityClientResourceId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'id')
-	akskvidentityClientResourceId=$(echo "$akskvidentityClientResourceId" | tr -d '"')
-	principalId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'principalId')
-	principalId=$(echo "$principalId" | tr -d '"')
-    echo $"principalid is $principalId"
-	echo $"Managing Identity configuration for KV access - step 3 finished"
+	echo "Sleeping for 30 seconds to wait for MI to be ready"
+	sleep 30;
 	#KEYVAULT looks like this this /subscriptions/$SUBID/resourceGroups/$kvresourceGroup/providers/Microsoft.KeyVault/vaults/$kvname
-
-	echo $"Managing Identity configuration for KV access - step 4 started"
 	IFS='/' read -r -a kv <<< "$KEYVAULT" #splits the KEYVAULT on slashes and gets last one
 	keyVaultName=${kv[-1]}
 	keyVaultResourceGroup=${kv[4]}
 	keyVaultSubscriptionId=${kv[2]}
+	echo $"principalId is $principalId"
 	echo $"KEYVAULT is $KEYVAULT"
 	echo $"keyVaultName is $keyVaultName"
 	echo $"akskvidentityClientId is $akskvidentityClientId"
-	echo $"Managing Identity configuration for KV access - step 4a started"
-	az role assignment create --role "Reader" --assignee $principalId --scope $KEYVAULT
-	echo $"Managing Identity configuration for KV access - step 4b started"
-	az keyvault set-policy -n $keyVaultName --secret-permissions get --spn $akskvidentityClientId
-	echo $"Managing Identity configuration for KV access - step 4c started"
-	az keyvault set-policy -n $keyVaultName --key-permissions get --spn $akskvidentityClientId
-	echo $"Managing Identity configuration for KV access - step 4 finished"
+
+	#echo $"Managing Identity configuration for KV access - step 4a started"
+	#az role assignment create --role "Reader" --assignee $principalId --scope $KEYVAULT
+
+	echo $"Managing Identity configuration for KV access - step 3a started"
+	az keyvault set-policy -n $keyVaultName --secret-permissions get --spn $akskvidentityClientId --query id
+
+	echo $"Managing Identity configuration for KV access - step 3b started"
+	az keyvault set-policy -n $keyVaultName --key-permissions get --spn $akskvidentityClientId --query id
+
+	echo $"Managing Identity configuration for KV access - step 3c started"
+	az keyvault set-policy -n $keyVaultName --certificate-permissions get --spn $akskvidentityClientId --query id
+
+	echo $"Managing Identity configuration for KV access - step 3 finished"
     echo $"Managing Identity configuration for KV access - finished"
+fi
+
+if [ "$USEPURVIEW" = "Yes" ]; then
+	echo $"Assigning Purview Data Curator role to Purview service client."
+	az role assignment create --role "Purview Data Curator" --assignee $PURVIEWCLIENTID --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$PURVIEWACCOUNTRESOURCEGROUP
 fi
 
 #install nginx
@@ -176,13 +192,16 @@ helm repo add stable https://charts.helm.sh/stable;
 curl -fsSL -o nginxSettings.yaml "$REPOURL/Azure-ARM/nginxSettings.yaml";
 helm uninstall --namespace profisee nginx
 
-staticIpInName="kubernetes-nginx"
-az network public-ip create --resource-group $AKSINFRARESOURCEGROUPNAME --name $staticIpInName --sku Standard --allocation-method static --dns-name $DNSHOSTNAME;
-nginxip=$(az network public-ip show -g $AKSINFRARESOURCEGROUPNAME -n $staticIpInName --query ipAddress --output tsv)
+# staticipinname="kubernetes-nginx"
+# echo $"creatign ip address $staticipinname started.";
+# az network public-ip create --resource-group $aksinfraresourcegroupname --name $staticipinname --sku standard --allocation-method static --dns-name $dnshostname;
+# echo $"creatign ip address $staticipinname finished.";
+# nginxip=$(az network public-ip show -g $aksinfraresourcegroupname -n $staticipinname --query ipaddress --output tsv)
+# echo $"ip address is $nginxip.";
 
 if [ "$USELETSENCRYPT" = "Yes" ]; then
 	echo $"Installing nginx for Lets Encrypt and setting the dns name for its IP."
-	helm install --namespace profisee nginx stable/nginx-ingress --values nginxSettings.yaml --set controller.service.loadBalancerIP=$nginxip #--set controller.service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=$DNSHOSTNAME;
+	helm install --namespace profisee nginx stable/nginx-ingress --values nginxSettings.yaml --set controller.service.loadBalancerIP=$nginxip --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=$DNSHOSTNAME;
 	#helm install --namespace profisee nginx ingress-nginx/ingress-nginx --values nginxSettings.yaml --set controller.service.loadBalancerIP=$nginxip #--set controller.service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=$DNSHOSTNAME;
 else
 	echo $"Installing nginx not for Lets Encrypt and not setting the dns name for its IP."
@@ -190,12 +209,12 @@ else
 	#helm install --namespace profisee nginx ingress-nginx/ingress-nginx --values nginxSettings.yaml --set controller.service.loadBalancerIP=$nginxip
 fi
 
-#echo $"Installing nginx finished, sleeping for 30s to wait for its IP";
-#
+echo $"Installing nginx finished, sleeping for 30s to wait for its IP";
+
 ##wait for the ip to be available.  usually a few seconds
-#sleep 30;
+sleep 30;
 ##get ip for nginx
-#nginxip=$(kubectl --namespace profisee get services nginx-nginx-ingress-controller --output="jsonpath={.status.loadBalancer.ingress[0].ip}");
+nginxip=$(kubectl --namespace profisee get services nginx-nginx-ingress-controller --output="jsonpath={.status.loadBalancer.ingress[0].ip}");
 #
 if [ -z "$nginxip" ]; then
 	#try again
@@ -232,8 +251,12 @@ rm -f a.key
 #set dns
 if [ "$UPDATEDNS" = "Yes" ]; then
 	echo "Update DNS started";
+	echo "Delete existing A record - started";
 	az network dns record-set a delete -g $DOMAINNAMERESOURCEGROUP -z $DNSDOMAINNAME -n $DNSHOSTNAME --yes;
+	echo "Delete existing A record - finished"
+	echo "Create new A record - started";
 	az network dns record-set a add-record -g $DOMAINNAMERESOURCEGROUP -z $DNSDOMAINNAME -n $DNSHOSTNAME -a $nginxip --ttl 5;
+	echo "Create new A record - finished";
 	echo "Update DNS finished";
 fi
 echo $"fix tls variables finished";
@@ -259,13 +282,26 @@ if [ "$UPDATEAAD" = "Yes" ]; then
 	azureClientName="${RESOURCEGROUPNAME}_${CLUSTERNAME}";
 	echo $"azureClientName is $azureClientName";
 	echo $"azureAppReplyUrl is $azureAppReplyUrl";
-	CLIENTID=$(az ad app create --display-name $azureClientName --reply-urls $azureAppReplyUrl --query 'appId');
-	#clean client id - remove quotes
-	CLIENTID=$(echo "$CLIENTID" | tr -d '"')
+
+	echo "Creating app registration started"
+	CLIENTID=$(az ad app create --display-name $azureClientName --reply-urls $azureAppReplyUrl --query 'appId' -o tsv);
 	echo $"CLIENTID is $CLIENTID";
+	if [ -z "$CLIENTID" ]; then
+		echo $"CLIENTID is null fetching";
+		CLIENTID=$(az ad app list --display-name $azureClientName --query [0].appId -o tsv)
+		echo $"CLIENTID is $CLIENTID";
+	fi
+	echo "Creating app registration finished"
+
+	echo "Updating app registration permissions step 1 started"
 	#add a Graph API permission of "Sign in and read user profile"
 	az ad app permission add --id $CLIENTID --api 00000003-0000-0000-c000-000000000000 --api-permissions e1fe6dd8-ba31-4d61-89e7-88639da4683d=Scope
+	echo "Updating app registration permissions step 1 finished"
+
+	echo "Updating app registration permissions step 2 started"
 	az ad app permission grant --id $CLIENTID --api 00000003-0000-0000-c000-000000000000
+
+	echo "Updating app registration permissions step 2 finished"
 	echo "Update AAD finished";
 fi
 
@@ -285,10 +321,13 @@ if [ "$SQLSERVERCREATENEW" = "Yes" ]; then
 	echo "Adding firewall rule to sql started";
 	#strip off .database.windows.net
 	IFS='.' read -r -a sqlString <<< "$SQLNAME"
+	echo "SQLNAME is $SQLNAME"
 	sqlServerName=${sqlString[0],,}; #lowercase is the ,,
-	OutIP=$(az network public-ip list -g $AKSINFRARESOURCEGROUPNAME --query "[0].ipAddress");
-	#clean OutIP - remove quotes
-	OutIP=$(echo "$OutIP" | tr -d '"')
+	echo "sqlServerName is $sqlServerName"
+
+	echo "Getting ip address from  $AKSINFRARESOURCEGROUPNAME"
+	OutIP=$(az network public-ip list -g $AKSINFRARESOURCEGROUPNAME --query "[0].ipAddress" -o tsv);
+	echo "OutIP is $OutIP"
 	az sql server firewall-rule create --resource-group $RESOURCEGROUPNAME --server $sqlServerName --name "aks lb ip" --start-ip-address $OutIP --end-ip-address $OutIP
 	echo "Adding firewall rule to sql finished";
 fi
@@ -387,6 +426,9 @@ helm repo add profisee $HELMREPOURL
 helm repo update
 helm uninstall --namespace profisee profiseeplatform
 helm install --namespace profisee profiseeplatform profisee/profisee-platform --values Settings.yaml
+
+kubectl delete secret profisee-deploymentlog --namespace profisee --ignore-not-found
+kubectl create secret generic profisee-deploymentlog --namespace profisee --from-file=$logfile
 
 #Make sure it installed, if not return error
 profiseeinstalledname=$(echo $(helm list --filter 'profisee+' --namespace profisee -o json)| jq '.[].name')
