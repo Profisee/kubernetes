@@ -149,5 +149,3 @@ result="{\"Result\":[\
 {\"SUCCESS\":\"$success\"}
 ]}"
 echo $result > $AZ_SCRIPTS_OUTPUT_PATH
-
-
