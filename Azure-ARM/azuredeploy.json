@@ -759,7 +759,7 @@
                       "value": "[variables('PurviewAccountResourceGroup')]"
                     }
                 ],
-                "primaryScriptUri": "[variables('ScriptURL')]"            
+                "primaryScriptUri": "[variables('ScriptURL')]"         
             }
         },
         {
