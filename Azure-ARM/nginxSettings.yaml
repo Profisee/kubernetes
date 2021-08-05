@@ -2,10 +2,12 @@ controller:
   extraArgs: 
     default-ssl-certificate: profisee/profisee-tls-ingress
   nodeSelector: 
-    beta.kubernetes.io/os: linux
+    kubernetes.io/os: linux
   replicaCount: 1
-  #service: 
-  #  loadBalancerIP: 0.0.0.0
+  admissionWebhooks:
+    patch:
+      nodeSelector:
+        kubernetes.io/os: linux
   config:
     proxy-buffering: "off"
     proxy-buffer-size: "512k"
@@ -24,5 +26,5 @@ controller:
     
 defaultBackend: 
   nodeSelector: 
-    beta.kubernetes.io/os: linux
+    kubernetes.io/os: linux
 
