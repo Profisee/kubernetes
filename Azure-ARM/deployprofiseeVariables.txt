@@ -6,7 +6,7 @@
 #ACRUSERPASSWORD=
 
 ADMINACCOUNTNAME=chuck.thompson@profisee.com
-AKSINFRARESOURCEGROUPNAME=MC_chuckthompsonprofisee_08052021113052_ProfiseeAKSCluster_eastus2
+AKSINFRARESOURCEGROUPNAME=MC_MainResourceGroupName_ClusterName_location
 
 UPDATEAAD=Yes
 #If UPDATEAAD=No, then set this
@@ -18,7 +18,7 @@ CLUSTERNAME=ProfiseeAKSCluster
 #ClientID used by kubernetes
 #run this to get it
 #az aks show -g <AKSResourceGroup> -n <AKSClusterName> --query identityProfile.kubeletidentity.clientId -o tsv
-KUBERNETESCLIENTID=1f481df3-cccc-4beb-b7d4-02320de1db59
+KUBERNETESCLIENTID=aksClientIdGuid
 
 UPDATEDNS=Yes
 #If UPDATEDNS=Yes, then set these, if not then leave blank but you have to manually update the dns to the inbound ip of the cluster
@@ -38,7 +38,7 @@ KEYVAULT=/subscriptions/MyAzureSubscriptionId/resourceGroups/KVResourceGroupName
 #If using not using keyvault, the set to license string
 LICENSEDATA=
 #If using keyvault, the set to secret name in vault
-LICENSEDATASECRETNAME=profisee-emptydns-license
+LICENSEDATASECRETNAME=profiseeLicense-keyvault-secret-name
 
 OIDCURL=https://login.microsoftonline.com/MyAzureTennantId
 PROFISEEVERSION=profiseeplatform:2021r2.0
