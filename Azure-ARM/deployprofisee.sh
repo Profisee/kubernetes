@@ -389,24 +389,21 @@ else
 fi
 
 if [ "$USELETSENCRYPT" = "Yes" ]; then
-	#################################Lets Encrypt Part 1 Start #####################################
-	# Label the ingress-basic namespace to disable resource validation
-	echo "Lets Encrypt Part 1 started";
-	kubectl label namespace default cert-manager.io/disable-validation=true
+	#################################Lets Encrypt Start #####################################
+	# Label the namespace to disable resource validation
+	echo "Lets Encrypt started";
+	kubectl label namespace profisee cert-manager.io/disable-validation=true
 	helm repo add jetstack https://charts.jetstack.io
 	# Update your local Helm chart repository cache
 	helm repo update
 	# Install the cert-manager Helm chart
-	helm install --namespace profisee cert-manager jetstack/cert-manager --namespace default --set installCRDs=true --set nodeSelector."kubernetes\.io/os"=linux --set webhook.nodeSelector."kubernetes\.io/os"=linux --set cainjector.nodeSelector."kubernetes\.io/os"=linux
+	helm install cert-manager jetstack/cert-manager --namespace profisee --set installCRDs=true --set nodeSelector."kubernetes\.io/os"=linux --set webhook.nodeSelector."kubernetes\.io/os"=linux --set cainjector.nodeSelector."kubernetes\.io/os"=linux
 	#wait for the cert manager to be ready
 	echo $"Lets Encrypt, waiting for certificate manager to be ready, sleeping for 30s";
 	sleep 30;
-	#create the CA cluster issuer - now in profisee helm chart
-	#curl -fsSL -o clusterissuer.yaml "$REPOURL/Azure-ARM/clusterissuer.yaml";
-	#kubectl apply -f clusterissuer.yaml
 	sed -i -e 's/$USELETSENCRYPT/'true'/g' Settings.yaml
-	echo "Lets Encrypt Part 1 finshed";
-	#################################Lets Encrypt Part 1 End #######################################
+	echo "Lets Encrypt finshed";
+	#################################Lets Encrypt End #######################################
 else
 	sed -i -e 's/$USELETSENCRYPT/'false'/g' Settings.yaml
 fi
