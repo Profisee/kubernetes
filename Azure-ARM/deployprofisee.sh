@@ -167,16 +167,16 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	#az role assignment create --role "Reader" --assignee $principalId --scope $KEYVAULT
 
 	echo $"Managing Identity configuration for KV access - step 3a started"
-	echo "Running az keyvault set-policy -n $keyVaultName --secret-permissions get --spn $akskvidentityClientId --query id"
-	az keyvault set-policy -n $keyVaultName --secret-permissions get --spn $akskvidentityClientId --query id
+	echo "Running az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --secret-permissions get --spn $akskvidentityClientId --query id"
+	az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --secret-permissions get --spn $akskvidentityClientId --query id
 
 	echo $"Managing Identity configuration for KV access - step 3b started"
-	echo "Running az keyvault set-policy -n $keyVaultName --key-permissions get --spn $akskvidentityClientId --query id"
-	az keyvault set-policy -n $keyVaultName --key-permissions get --spn $akskvidentityClientId --query id
+	echo "Running az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --key-permissions get --spn $akskvidentityClientId --query id"
+	az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --key-permissions get --spn $akskvidentityClientId --query id
 
 	echo $"Managing Identity configuration for KV access - step 3c started"
-	echo "Running az keyvault set-policy -n $keyVaultName --certificate-permissions get --spn $akskvidentityClientId --query id"
-	az keyvault set-policy -n $keyVaultName --certificate-permissions get --spn $akskvidentityClientId --query id
+	echo "Running az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --certificate-permissions get --spn $akskvidentityClientId --query id"
+	az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --certificate-permissions get --spn $akskvidentityClientId --query id
 
 	echo $"Managing Identity configuration for KV access - step 3 finished"
     echo $"Managing Identity configuration for KV access - finished"
