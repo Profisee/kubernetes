@@ -90,10 +90,10 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 
 5.  Install nginx for AWS
 
-            helm repo add stable https://charts.helm.sh/stable;
+            helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
             curl -o nginxSettingsAWS.yaml https://raw.githubusercontent.com/Profisee/kubernetes/master/AWS-EKS-CLI/nginxSettingsAWS.yaml;
             kubectl create namespace profisee
-	    	helm install nginx stable/nginx-ingress --values nginxSettingsAWS.yaml --namespace profisee
+	    helm install --namespace profisee nginx ingress-nginx/ingress-nginx --values nginxSettings.yaml
 	    
 	- Wait for the load balancer to be provisioned.  goto aws ec2/load balancing console and wait for the state to go from provisioning to active (3ish minutes)
     
@@ -108,7 +108,7 @@ This explains the process to deploy the Profisee platform onto a new AWS EKS clu
 	
 	helm repo add jetstack https://charts.jetstack.io
 	
-	helm install --namespace profisee cert-manager jetstack/cert-manager --version v0.16.1 --set installCRDs=true --set nodeSelector."beta\.kubernetes\.io/os"=linux --set webhook.nodeSelector."beta\.kubernetes\.io/os"=linux --set cainjector.nodeSelector."beta\.kubernetes\.io/os"=linux
+	helm install cert-manager jetstack/cert-manager --namespace profisee --set installCRDs=true --set nodeSelector."kubernetes\.io/os"=linux --set webhook.nodeSelector."kubernetes\.io/os"=linux --set cainjector.nodeSelector."kubernetes\.io/os"=linux --set startupapicheck.nodeSelector."kubernetes\.io/os"=linux
 	
 
 	update Settings.yaml useLetsEncrypt flag to true
