@@ -1,12 +1,9 @@
 {
   "$schema": "https://aka.ms/azure-quickstart-templates-metadata-schema#",
   "type": "QuickStart",
-  "environments": [
-    "AzureCloud"
-  ],
-  "itemDisplayName": "Deploy the Profisee platform to a managed Kubernetes Cluster (AKS).",
-  "description": "This ARM template demonstrates the deployment of an AKS instance with Profisee platofrm pre-configured on it.",
-  "summary": "This ARM template demonstrates the deployment of an AKS instance with Profisee platofrm pre-configured on it",
+  "itemDisplayName": "Profisee Platform",
+  "description": "Deploy the Profisee platform to a managed Kubernetes Cluster (AKS).",
+  "summary": "A template that deploys the Profisee platform into AKS.",
   "githubUsername": "chuckthompsonprofisee",
-  "dateUpdated": "2020-06-03"
+  "dateUpdated": "2021-02-10"
 }
