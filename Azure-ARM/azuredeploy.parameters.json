@@ -1,133 +1,133 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "ProfiseeVersion": {
-            "value": "profiseeplatform:2021R2.0"
-        },
-        "ProfiseeAdminUserAccount": {
-            "value": ""
-        },
-        "ProfiseeLicense": {
-            "value": ""
-        },
-        "ActiveDirectoryCreateApp": {
-            "value": "Yes"
-        },
-        "ActiveDirectoryClientId": {
-            "value": ""
-        },
-        "PurviewUrl": {
-            "value": ""
-        },
-        "PurviewClientId": {
-            "value": ""
-        },
-        "PurviewClientSecret": {
-            "value": ""
-        },
-        "ManagedIdentityName": {
-            "value": {              
-            }
-        },
-        "KubernetesClusterName": {
-            "value": "ProfiseeAKSCluster"
-        },
-        "KubernetesLinuxNodeSize": {
-            "value": "Standard_D2s_v3"
-        },
-        "KubernetesLinuxNodeCount": {
-            "value": 1
-        },
-        "KubernetesWindowsNodeSize": {
-            "value": "Standard_D4s_v3"
-        },
-        "KubernetesWindowsNodeCount": {
-            "value": 1
-        },
-        "KubernetesVersion": {
-            "value": ""
-        },
-        "KubernetesVnetName": {
-            "value": ""
-        },
-        "KubernetesVnetResourceGroup": {
-            "value": ""
-        },
-        "KubernetesSubnetName": {
-            "value": ""
-        },
-        "KubernetesServiceCidr": {
-            "value": ""
-        },
-        "KubernetesDNSServiceIP": {
-            "value": ""
-        },
-        "KubernetesDockerBridgeCidr": {
-            "value": ""
-        },
-        "SQLServerCreateNew": {
-            "value": "Yes"
-        },
-        "SQLServerName": {
-            "value": ""
-        },
-        "SQLServerUser": {
-            "value": "sqladmin"
-        },
-        "SQLServerPassword": {
-            "value": ""
-        },
-        "SQLServerDatabaseName": {
-            "value": "Profisee"
-        },
-        "StorageAccountCreateNew": {
-            "value": "Yes"
-        },
-        "StorageAccountName": {
-            "value": ""
-        },
-        "StorageAccountType": {
-            "value": "Standard_LRS"
-        },
-        "StorageAccountAccessKey": {
-            "value": ""
-        },
-        "StorageAccountFileShareName": {
-            "value": "files"
-        },
-        "DNSUpdate": {
-            "value": "No"
-        },
-        "DNSHostName": {
-            "value": ""
-        },
-        "DNSDomainName": {
-            "value": ""
-        },
-        "DNSDomainResourceGroup": {
-            "value": ""
-        },
-        "HttpsConfigure": {
-            "value": "No"
-        },
-        "HttpsCertificate": {
-            "value": ""
-        },
-        "HttpsCertificatePrivateKey": {
-            "value": ""
-        },
-        "UseLetsEncrypt": {
-            "value": "Yes"
-        },
-        "UseKeyVault": {
-            "value": "No"
-        },
-        "KeyVault": {
-            "value": ""
-        },
-        "KubenetesInfrastructureResourceGroupName": {
-            "value": ""
-        }
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "ProfiseeVersion": {
+      "value": "profiseeplatform:2021R3.0"
+    },
+    "ProfiseeAdminUserAccount": {
+      "value": ""
+    },
+    "ProfiseeLicense": {
+      "value": ""
+    },
+    "ActiveDirectoryCreateApp": {
+      "value": "Yes"
+    },
+    "ActiveDirectoryClientId": {
+      "value": ""
+    },
+    "PurviewUrl": {
+      "value": ""
+    },
+    "PurviewClientId": {
+      "value": ""
+    },
+    "PurviewClientSecret": {
+      "value": ""
+    },
+    "ManagedIdentityName": {
+      "value": {
+      }
+    },
+    "KubernetesClusterName": {
+      "value": "ProfiseeAKSCluster"
+    },
+    "KubernetesLinuxNodeSize": {
+      "value": "Standard_D2s_v3"
+    },
+    "KubernetesLinuxNodeCount": {
+      "value": 1
+    },
+    "KubernetesWindowsNodeSize": {
+      "value": "Standard_D4s_v3"
+    },
+    "KubernetesWindowsNodeCount": {
+      "value": 1
+    },
+    "KubernetesVersion": {
+      "value": ""
+    },
+    "KubernetesVnetName": {
+      "value": ""
+    },
+    "KubernetesVnetResourceGroup": {
+      "value": ""
+    },
+    "KubernetesSubnetName": {
+      "value": ""
+    },
+    "KubernetesServiceCidr": {
+      "value": ""
+    },
+    "KubernetesDNSServiceIP": {
+      "value": ""
+    },
+    "KubernetesDockerBridgeCidr": {
+      "value": ""
+    },
+    "SQLServerCreateNew": {
+      "value": "Yes"
+    },
+    "SQLServerName": {
+      "value": ""
+    },
+    "SQLServerUser": {
+      "value": "sqladmin"
+    },
+    "SQLServerPassword": {
+      "value": ""
+    },
+    "SQLServerDatabaseName": {
+      "value": "Profisee"
+    },
+    "StorageAccountCreateNew": {
+      "value": "Yes"
+    },
+    "StorageAccountName": {
+      "value": ""
+    },
+    "StorageAccountType": {
+      "value": "Standard_LRS"
+    },
+    "StorageAccountAccessKey": {
+      "value": ""
+    },
+    "StorageAccountFileShareName": {
+      "value": "files"
+    },
+    "DNSUpdate": {
+      "value": "No"
+    },
+    "DNSHostName": {
+      "value": ""
+    },
+    "DNSDomainName": {
+      "value": ""
+    },
+    "DNSDomainResourceGroup": {
+      "value": ""
+    },
+    "HttpsConfigure": {
+      "value": "No"
+    },
+    "HttpsCertificate": {
+      "value": ""
+    },
+    "HttpsCertificatePrivateKey": {
+      "value": ""
+    },
+    "UseLetsEncrypt": {
+      "value": "Yes"
+    },
+    "UseKeyVault": {
+      "value": "No"
+    },
+    "KeyVault": {
+      "value": ""
+    },
+    "KubenetesInfrastructureResourceGroupName": {
+      "value": ""
     }
+  }
 }

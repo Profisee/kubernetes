@@ -179,12 +179,7 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --certificate-permissions get --spn $akskvidentityClientId --query id
 
 	echo $"Managing Identity configuration for KV access - step 3 finished"
-    echo $"Managing Identity configuration for KV access - finished"
-fi
-
-if [ "$USEPURVIEW" = "Yes" ]; then
-	echo $"Assigning Purview Data Curator role to Purview service client."
-	az role assignment create --role "Purview Data Curator" --assignee $PURVIEWCLIENTID --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$PURVIEWACCOUNTRESOURCEGROUP
+    	echo $"Managing Identity configuration for KV access - finished"
 fi
 
 #install nginx

@@ -1,7 +1,7 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
-    "handler": "Microsoft.Azure.CreateUIDef",
-    "version": "0.1.2-preview",
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+  "handler": "Microsoft.Azure.CreateUIDef",
+  "version": "0.1.2-preview",
   "parameters": {
     "resourceTypes": [
       "microsoft.containerservice/managedclusters",
@@ -99,7 +99,7 @@
             "name": "ProfiseeVersion",
             "type": "Microsoft.Common.DropDown",
             "label": "Version",
-            "defaultValue": "2021R2.1",
+            "defaultValue": "2021R3.0",
             "toolTip": "Which release of the Profisee Platform to start with.",
             "constraints": {
               "required": true,
@@ -124,17 +124,17 @@
                   "label": "2021R2.0",
                   "value": "profiseeplatform:2021r2.0"
                 },
-                  {
+                {
                   "label": "2021R2.1",
                   "value": "profiseeplatform:2021r2.1"
                 },
                 {
-                  "label": "2021R2.PurviewPreview",
-                  "value": "profiseeplatform:2021r2.purviewpreview"
+                  "label": "2021R3.0",
+                  "value": "profiseeplatform:2021r3.0"
                 },
                 {
-                  "label": "2021R2.MachineLearningPreview",
-                  "value": "profiseeplatform:2021r3.mlpreview"
+                  "label": "2021R2.PurviewPreview",
+                  "value": "profiseeplatform:2021r2.purviewpreview"
                 }
               ]
             },

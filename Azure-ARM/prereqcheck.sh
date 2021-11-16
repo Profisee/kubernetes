@@ -36,6 +36,9 @@ echo $"UPDATEDNS is $UPDATEDNS"
 echo $"UPDATEAAD is $UPDATEAAD"
 echo $"USEKEYVAULT is $USEKEYVAULT"
 echo $"KEYVAULT is $KEYVAULT"
+echo $"USEPURVIEW is $USEPURVIEW"
+echo $"PURVIEWURL is $PURVIEWURL"
+echo $"PURVIEWCLIENTID is $PURVIEWCLIENTID"
 
 IFS='/' read -r -a miparts <<< "$AZ_SCRIPTS_USER_ASSIGNED_IDENTITY" #splits the mi on slashes
 mirg=${miparts[4]}
@@ -101,6 +104,33 @@ if [ -z "$subscriptionContributor" ]; then
 else
 	echo "Managed Identity is Contributor at subscription level."
 fi
+
+# If using Purview, check for the following: 
+# 1. For the Purview client to have the Data Curator role. If not, error out.
+# 2. That the Purview client has proper permissions. If not, output warnings and continue.
+if [ "$USEPURVIEW" = "Yes" ]; then
+	purviewClientPermissions=$(az ad app permission list --id $PURVIEWCLIENTID --output tsv --query [].resourceAccess[].id)
+	
+	#User.Read
+	if [[ $purviewClientPermissions != *"e1fe6dd8-ba31-4d61-89e7-88639da4683d"* ]]; then
+		echo "Missing User.Read application permission. Some governance features may not function until this permission is added."
+	fi
+
+	#User.Read.All
+	if [[ $purviewClientPermissions != *"df021288-bdef-4463-88db-98f22de89214"* ]]; then
+		echo "Missing User.Read.All application permission. Some governance features may not function until this permission is added."
+	fi
+
+	#Group.Read.All
+	if [[ $purviewClientPermissions != *"5b567255-7703-4780-807c-7be8301ae99b"* ]]; then
+		echo "Missing Group.Read.All application permission. Some governance features may not function until this permission is added."
+	fi
+
+	#GroupMember.Read.All
+	if [[ $purviewClientPermissions != *"98830695-27a2-44f7-8c18-0c3ebc9698f6"* ]]; then
+		echo "Missing GroupMember.Read.All application permission. Some governance features may not function until this permission is added."
+	fi
+fi 
 
 #If using keyvault, check to make sure you have Managed Identity Contributor role AND User Access Administrator
 if [ "$USEKEYVAULT" = "Yes" ]; then
