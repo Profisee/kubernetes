@@ -159,7 +159,7 @@ fi
 #If updating AAD, make sure you have Application Administrator role
 if [ "$UPDATEAAD" = "Yes" ]; then
 	echo "Checking Application Administrator Role"
-	appDevRoleId=$(az rest --method get --url https://graph.microsoft.com/v1.0/directoryRoles/ | jq -r '.value[] | select(.displayName | contains("Application Administrator")).id')
+	appDevRoleId=$(az rest --method get --url https://graph.microsoft.com/v1.0/directoryRoles/ | jq -r '.value[] | select(.displayName=="Application Administrator").id')
 	minameinrole=$(az rest --method GET --uri "https://graph.microsoft.com/beta/directoryRoles/$appDevRoleId/members" | jq -r '.value[] | select(.displayName | contains("'"$miname"'")).displayName')
 	if [ -z "$minameinrole" ]; then
 		err="Managed Identity is not in Application Administrator role.  Exiting with error."
