@@ -1,4 +1,4 @@
-# Deploy Profisee Platform on AKS using the ARM template
+# Deploying Profisee Platform on AKS using the ARM template
 
 
 ## Prerequisites
