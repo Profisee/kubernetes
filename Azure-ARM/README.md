@@ -17,6 +17,7 @@ Here's **what** will be deployed, or used if available, by the ARM template:
 4. A SQL Server, or use one that you already have. You can either pre-create the database or let the Managed Identity create one for you.
 5. A Storage account, or use one that you already have.
 6. A DNS entry into a zone, assuming the necessary permissions are there. If using external DNS, you'd have to update/create the record with the Egress IP.
+7. A free Let's Encrypt certificate, if you choose that option. Please be aware that if you plan to use your own domain with Let's Encrypt you'll need to make sure that if there is a [CAA record set](https://letsencrypt.org/docs/caa/) on your domain it allows Let's Encrypt as the Issuing Authority.
 
 Here's **how** it will be deployed. You must have a Managed Identity created to run the deployment. This Managed Identity must have the following permissions ONLY when running a deployment. After it is done, the Managed Identity can be deleted. Based on your ARM template choices, you will need some or all of the following permissions assigned to your Managed Identity:
 1. **Contributor** role to the Resource Group where AKS will be deployed. This can either be assigned directly to the Resource Group OR at Subscription level down.
