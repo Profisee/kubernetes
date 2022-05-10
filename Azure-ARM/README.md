@@ -14,7 +14,7 @@ Here's **what** will be deployed, or used if available, by the ARM template:
 1. An AKS Cluster with a **publicly** accessible Management API.
 2. Two Public IPs for Ingress and Egress
 3. A Load Balancer needed for Nginx
-4. A SQL Server, or use one that you already have. You can either pre-create the database or let the MI create one for you.
+4. A SQL Server, or use one that you already have. You can either pre-create the database or let the Managed Identity create one for you.
 5. A Storage account, or use one that you already have.
 6. A DNS entry into a zone, assuming the necessary permissions are there. If using external DNS, you'd have to update/create the record with the Egress IP.
 
