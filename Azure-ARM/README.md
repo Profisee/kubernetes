@@ -5,7 +5,7 @@
 
 Please **DO** review the guide and links below **before** you run the Azure ARM template. We have a pre-requisites script that runs before the deployment to check on the permissions needed.
 
-Click [here](https://support.profisee.com/wikis/2021_r3_support/deploying_the_AKS_cluster_with_the_arm_template) for a detailed deployment guide for Profisee ver. 2021R3 and [here](https://support.profisee.com/lms/courseinfo?id=00u00000000002b00aM&mode=browsecourses) for video training course and slide deck.
+Click [here](https://support.profisee.com/wikis/2022_r1_support/deploying_the_AKS_cluster_with_the_arm_template) for a detailed deployment guide for Profisee ver. 2022R1 and [here](https://support.profisee.com/lms/courseinfo?id=00u00000000002b00aM&mode=browsecourses) for video training course and slide deck.
 
 
 Here's **what** you will need. You will need a license tied to the DNS URL that will be used by the environment (ex. customer.eastus2.cloudapp.azure.com OR YourOwnEnvironment.Customer.com) This license can be acquired from [Profisee Support](https://support.profisee.com/aspx/ProfiseeCustomerHome). 
