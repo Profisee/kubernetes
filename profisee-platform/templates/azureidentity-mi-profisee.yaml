@@ -1,0 +1,10 @@
+{{- if .Values.cloud.azure.useManagedIdentity -}}
+apiVersion: aadpodidentity.k8s.io/v1
+kind: AzureIdentity
+metadata:
+    name: {{.Values.cloud.azure.managedIdentity.name }}
+spec:
+    type: 0
+    resourceID: {{.Values.cloud.azure.managedIdentity.resourceId }}
+    clientID: {{.Values.cloud.azure.managedIdentity.clientId }}
+{{- end }}

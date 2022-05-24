@@ -165,21 +165,30 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 
 	#echo $"Managing Identity configuration for KV access - step 4a started"
 	#az role assignment create --role "Reader" --assignee $principalId --scope $KEYVAULT
+    rbacEnabled=$(az keyvault show --name $keyVaultName --subscription $keyVaultSubscriptionId --query "properties.enableRbacAuthorization")
 
-	echo $"Managing Identity configuration for KV access - step 3a started"
-	echo "Running az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --secret-permissions get --spn $akskvidentityClientId --query id"
-	az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --secret-permissions get --spn $akskvidentityClientId --query id
+    #if rabc, add to rile, if not (policy based) - add policies
+    if [ "$rbacEnabled" = true ]; then
+		echo $"Setting rbac role."
+		az role assignment create --role "Key Vault Secrets Officer" --assignee $akskvidentityClientId --scope $KEYVAULT
+	else
+		echo $"Setting policies."
+		echo $"Managing Identity configuration for KV access - step 3a started"
+		echo "Running az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --secret-permissions get --spn $akskvidentityClientId --query id"
+		az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --secret-permissions get --spn $akskvidentityClientId --query id
 
-	echo $"Managing Identity configuration for KV access - step 3b started"
-	echo "Running az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --key-permissions get --spn $akskvidentityClientId --query id"
-	az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --key-permissions get --spn $akskvidentityClientId --query id
+		echo $"Managing Identity configuration for KV access - step 3b started"
+		echo "Running az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --key-permissions get --spn $akskvidentityClientId --query id"
+		az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --key-permissions get --spn $akskvidentityClientId --query id
 
-	echo $"Managing Identity configuration for KV access - step 3c started"
-	echo "Running az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --certificate-permissions get --spn $akskvidentityClientId --query id"
-	az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --certificate-permissions get --spn $akskvidentityClientId --query id
+		echo $"Managing Identity configuration for KV access - step 3c started"
+		echo "Running az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --certificate-permissions get --spn $akskvidentityClientId --query id"
+		az keyvault set-policy -n $keyVaultName --subscription $keyVaultSubscriptionId --certificate-permissions get --spn $akskvidentityClientId --query id
 
-	echo $"Managing Identity configuration for KV access - step 3 finished"
-    	echo $"Managing Identity configuration for KV access - finished"
+		echo $"Managing Identity configuration for KV access - step 3 finished"
+		echo $"Managing Identity configuration for KV access - finished"
+	fi
+	
 fi
 
 #install nginx
@@ -265,8 +274,12 @@ sed -e '/$TLSKEY/ {' -e 'r tls.key' -e 'd' -e '}' -i Settings.yaml
 rm -f tls.cert
 rm -f tls.key
 
+echo $"WEBAPPNAME is $WEBAPPNAME";
+WEBAPPNAME="${WEBAPPNAME,,}"
+echo $"WEBAPPNAME is now lower $WEBAPPNAME";
+
 #create the azure app id (clientid)
-azureAppReplyUrl="${EXTERNALDNSURL}/profisee/auth/signin-microsoft"
+azureAppReplyUrl="${EXTERNALDNSURL}/${WEBAPPNAME}/auth/signin-microsoft"
 if [ "$UPDATEAAD" = "Yes" ]; then
 	echo "Update AAD started";
 	azureClientName="${RESOURCEGROUPNAME}_${CLUSTERNAME}";
@@ -322,7 +335,7 @@ if [ "$SQLSERVERCREATENEW" = "Yes" ]; then
 	echo "Adding firewall rule to sql finished";
 fi
 
-
+echo "about to set vars in settings.yaml"
 #storage vars
 FILEREPOUSERNAME="Azure\\\\\\\\${STORAGEACCOUNTNAME}"
 FILEREPOURL="\\\\\\\\\\\\\\\\${STORAGEACCOUNTNAME}.file.core.windows.net\\\\\\\\${STORAGEACCOUNTFILESHARENAME}"
@@ -360,6 +373,7 @@ sed -i -e 's~$PURVIEWURL~'"$PURVIEWURL"'~g' Settings.yaml
 sed -i -e 's/$PURVIEWTENANTID/'"$TENANTID"'/g' Settings.yaml
 sed -i -e 's/$PURVIEWCLIENTID/'"$PURVIEWCLIENTID"'/g' Settings.yaml
 sed -i -e 's/$PURVIEWCLIENTSECRET/'"$PURVIEWCLIENTSECRET"'/g' Settings.yaml
+sed -i -e 's/$WEBAPPNAME/'"$WEBAPPNAME"'/g' Settings.yaml
 if [ "$USEKEYVAULT" = "Yes" ]; then
 	sed -i -e 's/$USEKEYVAULT/'true'/g' Settings.yaml
 
@@ -436,7 +450,7 @@ echo $"Profisee deploymented finished $(date +"%Y-%m-%d %T")";
 
 result="{\"Result\":[\
 {\"IP\":\"$nginxip\"},\
-{\"WEBURL\":\"${EXTERNALDNSURL}/Profisee\"},\
+{\"WEBURL\":\"${EXTERNALDNSURL}/${WEBAPPNAME}\"},\
 {\"FILEREPOUSERNAME\":\"$FILEREPOUSERNAME\"},\
 {\"FILEREPOURL\":\"$FILEREPOURL\"},\
 {\"AZUREAPPCLIENTID\":\"$CLIENTID\"},\

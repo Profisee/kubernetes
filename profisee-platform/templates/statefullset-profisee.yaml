@@ -15,10 +15,13 @@ spec:
       name: profisee
       labels:
         app: profisee
+        {{- if .Values.cloud.azure.useManagedIdentity}}
+        aadpodidbinding: {{.Values.cloud.azure.managedIdentity.name | lower}}
+        {{- end}}
     spec:
-      terminationGracePeriodSeconds: 60 #How long kubernetes will wait for a pod to shut down before force deleting it
+      terminationGracePeriodSeconds: 60
       nodeSelector:
-        "beta.kubernetes.io/os": windows 
+        "kubernetes.io/os": windows 
       volumes:
       - name: data-volume
         secret:
@@ -27,11 +30,17 @@ spec:
         secret:
           secretName: profisee-initscripts 
       {{- if .Values.cloud.azure.isProvider }}
-      - name: fileshare
+      - name: fileshareold
         azureFile:
           secretName: profisee-fileshare
           shareName: {{.Values.profiseeRunTime.fileRepository.fileShareName}}
           readOnly: false
+      - name: fileshare
+        csi:
+          driver: file.csi.azure.com
+          volumeAttributes:
+            secretName: profisee-fileshare
+            shareName: {{.Values.profiseeRunTime.fileRepository.fileShareName}}
       {{- end }}
       {{- if .Values.cloud.aws.isProvider }}
       - name: fileshare
@@ -59,7 +68,7 @@ spec:
               - >-
                 if((Get-Service profisee).Status -eq 'Running'){return
                 0}else{throw 'Profisee service is down'}
-          initialDelaySeconds: 60
+          initialDelaySeconds: 600
           timeoutSeconds: 1
           periodSeconds: 60
         volumeMounts:

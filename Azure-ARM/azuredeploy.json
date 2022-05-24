@@ -1,6 +1,6 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.0",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
   "parameters": {
     "ProfiseeVersion": {
       "type": "String"
@@ -9,6 +9,9 @@
       "type": "String"
     },
     "ProfiseeLicense": {
+      "type": "String"
+    },
+    "ProfiseeWebAppName": {
       "type": "String"
     },
     "ActiveDirectoryCreateApp": {
@@ -162,13 +165,14 @@
   },
   "variables": 
   {
-    "ScriptURL":"https://raw.githubusercontent.com/profisee/kubernetes/master/Azure-ARM/deployprofisee.sh",
-    "PreReqCheckScriptURL":"https://raw.githubusercontent.com/profisee/kubernetes/master/Azure-ARM/prereqcheck.sh",
+    "ScriptURL":"https://raw.githubusercontent.com/profiseedev/kubernetes/master/Azure-ARM/deployprofisee.sh",
+    "PreReqCheckScriptURL":"https://raw.githubusercontent.com/profiseedev/kubernetes/master/Azure-ARM/prereqcheck.sh",
     "KubernetesVnetResourceGroup":"[parameters('KubernetesVnetResourceGroup')]",
     "vnetId":"[resourceId(parameters('KubernetesVnetResourceGroup'),'Microsoft.Network/virtualNetworks/subnets',parameters('KubernetesVnetName'),parameters('KubernetesSubnetName'))]",
     "PROFISEEVERSION":"[parameters('ProfiseeVersion')]",
     "ADMINACCOUNTNAME":"[parameters('ProfiseeAdminUserAccount')]",
     "LICENSEDATA":"[parameters('ProfiseeLicense')]",
+    "WEBAPPNAME":"[parameters('ProfiseeWebAppName')]",
     "ACRUSER":"",
     "ACRUSERPASSWORD":"",
 
@@ -226,571 +230,575 @@
     "PurviewClientSecret":"[parameters('PurviewClientSecret')]",
     "PurviewAccountResourceGroup":"[parameters('PurviewAccountResourceGroup')]"
   },
-  "resources": 
-  [
-    {
-      "type": "Microsoft.Resources/deploymentScripts",
-      "apiVersion": "2020-10-01",
-      "name": "PreReqChecks",
-      "location": "[resourceGroup().location]",
-      "kind": "AzureCLI",
-      "identity": "[variables('ManagedIdentity')]",
-      "properties": {
-        "forceUpdateTag": "[parameters('NewGuid')]",
-        "azCliVersion": "2.26.0",
-        "timeout": "PT1H",
-        "cleanupPreference": "OnExpiration",
-        "retentionInterval": "P1D",
-        "primaryScriptUri": "[variables('PreReqCheckScriptURL')]",
-        "environmentVariables": [
-          {
-            "name": "RESOURCEGROUPNAME",
-            "value": "[resourceGroup().name]"
-          },
-          {
-            "name": "SUBSCRIPTIONID",
-            "value": "[subscription().subscriptionId]"
-          },
-          {
-            "name": "DOMAINNAMERESOURCEGROUP",
-            "value": "[variables('DOMAINNAMERESOURCEGROUP')]"
-          },
-          {
-            "name": "UPDATEDNS",
-            "value": "[variables('DNSUpdate')]"
-          },
-          {
-            "name": "UPDATEAAD",
-            "value": "[variables('UPDATEAAD')]"
-          },
-          {
-            "name": "USEKEYVAULT",
-            "value": "[variables('UseKeyVault')]"
-          },
-          {
-            "name": "KEYVAULT",
-            "value": "[variables('KeyVault')]"
-          },
-          {
-            "name": "USEPURVIEW",
-            "value": "[variables('UsePurview')]"
-          },
-          {
-            "name": "PURVIEWURL",
-            "value": "[variables('PurviewUrl')]"
-          },
-          {
-            "name": "PURVIEWCLIENTID",
-            "value": "[variables('PurviewClientId')]"
-          }
-        ]
-      }
-    },
-    {
-      "apiVersion": "2015-01-01",
-      "name": "License",
-      "type": "Microsoft.Resources/deployments",
-      "condition": "[equals(tolower(parameters('UseKeyVault')),tolower('Yes'))]",
-      "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
-      "properties": {
-        "mode": "Incremental",
-        "expressionEvaluationOptions": 
+    "resources": 
+    [
         {
-          "scope": "inner"
-        },
-        "template": 
-        {
-          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-          "contentVersion": "1.0.0.0",
-          "resources": [
-          ],
-          "parameters": {
-            "LicenseFromVault": {
-              "type": "securestring"
+            "type": "Microsoft.Resources/deploymentScripts",
+            "apiVersion": "2020-10-01",
+            "name": "PreReqChecks",
+            "location": "[resourceGroup().location]",
+            "kind": "AzureCLI",
+            "identity": "[variables('ManagedIdentity')]",
+            "properties": {
+                "forceUpdateTag": "[parameters('NewGuid')]",
+                "azCliVersion": "2.26.0",
+                "timeout": "PT1H",
+                "cleanupPreference": "OnExpiration",
+                "retentionInterval": "P1D",
+                "primaryScriptUri": "[variables('PreReqCheckScriptURL')]",
+                "environmentVariables": [
+                    {
+                        "name": "RESOURCEGROUPNAME",
+                        "value": "[resourceGroup().name]"
+                    },
+                    {
+                        "name": "SUBSCRIPTIONID",
+                        "value": "[subscription().subscriptionId]"
+                    },
+                    {
+                        "name": "DOMAINNAMERESOURCEGROUP",
+                        "value": "[variables('DOMAINNAMERESOURCEGROUP')]"
+                    },
+                    {
+                        "name": "UPDATEDNS",
+                        "value": "[variables('DNSUpdate')]"
+                    },
+                    {
+                        "name": "UPDATEAAD",
+                        "value": "[variables('UPDATEAAD')]"
+                    },
+                    {
+                        "name": "USEKEYVAULT",
+                        "value": "[variables('UseKeyVault')]"
+                    },
+                    {
+                        "name": "KEYVAULT",
+                        "value": "[variables('KeyVault')]"
+                    },
+                    {
+                        "name": "USEPURVIEW",
+                        "value": "[variables('UsePurview')]"
+                    },
+                    {
+                        "name": "PURVIEWURL",
+                        "value": "[variables('PurviewUrl')]"
+                    },
+                    {
+                        "name": "PURVIEWCLIENTID",
+                        "value": "[variables('PurviewClientId')]"
+                    }
+                ]           
             }
-          },
-          "outputs": {
-            "ValueInVault": {
-              "value": "[parameters('LicenseFromVault')]",
-              "type": "string"
-            }
-          }
         },
-        "parameters": {
-          "LicenseFromVault": {
-            "reference": {
-              "keyVault": {
-                "id": "[parameters('KeyVault')]"
-              },
-              "secretName": "[parameters('ProfiseeLicense')]"
-            }
-          }
-        }
-      }
-    },
-
-    {
-      "apiVersion": "2015-01-01",
-      "name": "Sql",
-      "type": "Microsoft.Resources/deployments",
-      "condition": "[equals(tolower(parameters('UseKeyVault')),tolower('Yes'))]",
-      "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
-      "properties": {
-        "mode": "Incremental",
-        "expressionEvaluationOptions": 
         {
-          "scope": "inner"
-        },
-        "template": 
-        {
-          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-          "contentVersion": "1.0.0.0",
-          "resources": [
-            {
-              "condition": "[equals(tolower(parameters('SQLServerCreateNew')),tolower('Yes'))]",
-              "name": "[tolower(parameters('SQLServerName'))]",
-              "type": "Microsoft.Sql/servers",
-              "location": "[resourceGroup().location]",
-              "apiVersion": "2019-06-01-preview",
-              "dependsOn": [],
-              "tags": {
-                "displayName": "SQLServer"
-              },
-              "properties": {
-                "administratorLogin": "[if(equals(tolower(parameters('UseKeyVault')),tolower('Yes')),parameters('SQLServerUserFromVault'),parameters('SQLServerUser'))]",
-                "administratorLoginPassword": "[if(equals(tolower(parameters('UseKeyVault')),tolower('Yes')),parameters('SQLServerPasswordFromVault'),parameters('SQLServerPassword'))]"
-              },
-              "resources": [
+            "apiVersion": "2015-01-01",
+            "name": "License",
+            "type": "Microsoft.Resources/deployments",
+            "condition": "[equals(tolower(parameters('UseKeyVault')),tolower('Yes'))]",
+            "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
+            "properties": {
+                "mode": "Incremental",
+                "expressionEvaluationOptions": 
                 {
-                  "condition": "[equals(tolower(parameters('SQLServerCreateNew')),tolower('Yes'))]",
-                  "name": "AllowAllWindowsAzureIps",
-                  "type": "firewallrules",
-                  "location": "[resourceGroup().location]",
-                  "apiVersion": "2015-05-01-preview",
-                  "dependsOn": [
-                    "[concat('Microsoft.Sql/servers/', tolower(parameters('SQLServerName')))]"
-                  ],
-                  "properties": {
-                    "startIpAddress": "0.0.0.0",
-                    "endIpAddress": "0.0.0.0"
-                  }
+                "scope": "inner"
+                },
+                "template": 
+                    {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                    ],
+                    "parameters": {
+                        "LicenseFromVault": {
+                        "type": "securestring"
+                        }
+                        },
+                        "outputs": {
+                            "ValueInVault": {
+                            "value": "[parameters('LicenseFromVault')]",
+                            "type": "string"
+                            }
+                        }
+                    },
+                "parameters": {
+                    "LicenseFromVault": {
+                        "reference": {
+                        "keyVault": {
+                            "id": "[parameters('KeyVault')]"
+                        },
+                        "secretName": "[parameters('ProfiseeLicense')]"
+                        }
+                    }
+                }
+            }
+        },
+
+        {
+            "apiVersion": "2015-01-01",
+            "name": "Sql",
+            "type": "Microsoft.Resources/deployments",
+            "condition": "[equals(tolower(parameters('UseKeyVault')),tolower('Yes'))]",
+            "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
+            "properties": {
+                "mode": "Incremental",
+                "expressionEvaluationOptions": 
+                {
+                "scope": "inner"
+                },
+                "template": 
+                    {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                        "condition": "[equals(tolower(parameters('SQLServerCreateNew')),tolower('Yes'))]",
+                        "name": "[tolower(parameters('SQLServerName'))]",
+                        "type": "Microsoft.Sql/servers",
+                        "location": "[resourceGroup().location]",
+                        "apiVersion": "2019-06-01-preview",
+                        "dependsOn": [],
+                        "tags": {
+                            "displayName": "SQLServer"
+                        },
+                        "properties": {
+                            "administratorLogin": "[if(equals(tolower(parameters('UseKeyVault')),tolower('Yes')),parameters('SQLServerUserFromVault'),parameters('SQLServerUser'))]",
+                            "administratorLoginPassword": "[if(equals(tolower(parameters('UseKeyVault')),tolower('Yes')),parameters('SQLServerPasswordFromVault'),parameters('SQLServerPassword'))]"
+                        },
+                        "resources": [
+                            {
+                                "condition": "[equals(tolower(parameters('SQLServerCreateNew')),tolower('Yes'))]",
+                                "name": "AllowAllWindowsAzureIps",
+                                "type": "firewallrules",
+                                "location": "[resourceGroup().location]",
+                                "apiVersion": "2015-05-01-preview",
+                                "dependsOn": [
+                                    "[concat('Microsoft.Sql/servers/', tolower(parameters('SQLServerName')))]"
+                                ],
+                                "properties": {
+                                    "startIpAddress": "0.0.0.0",
+                                    "endIpAddress": "0.0.0.0"
+                                }
+                            },
+                            {
+                            "condition": "[equals(tolower(parameters('SQLServerCreateNew')),tolower('Yes'))]",
+                            "type": "databases",
+                            "apiVersion": "2020-08-01-preview",
+                            "name": "[parameters('SQLServerDatabaseName')]",
+                            "location": "[resourceGroup().location]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Sql/servers', concat(parameters('SQLServerName')))]"
+                            ]
+                            }
+                        ]
+                    }
+                    ],
+                    "parameters": {
+                        "UseKeyVault": {
+                        "type": "string"
+                        },
+                        "SQLServerUser": {
+                        "type": "string"
+                        },
+                        "SQLServerPassword": {
+                        "type": "string"
+                        },
+                        "SQLServerUserFromVault": {
+                        "type": "securestring"
+                        },
+                        "SQLServerPasswordFromVault": {
+                        "type": "securestring"
+                        },
+                        "SQLServerCreateNew": {
+                        "type": "string"
+                        },
+                        "SQLServerName": {
+                        "type": "string"
+                        },
+                        "SQLServerDatabaseName": {
+                        "type": "string"
+                        }
+                        }
+                    },
+                "parameters": {
+                    "SQLServerCreateNew":{
+                        "value":"[variables('SQLServerCreateNew')]"
+                    },
+                    "SQLServerDatabaseName":{
+                        "value":"[variables('SQLServerDatabaseName')]"
+                    },
+                    "SQLServerName":{
+                        "value":"[variables('SQLServerName')]"
+                    },
+                    "UseKeyVault":{
+                        "value":"[parameters('UseKeyVault')]"
+                    },
+                    "SQLServerUser":{
+                        "value":"[variables('SQLServerName')]"
+                    },
+                    "SQLServerPassword":{
+                        "value":"[parameters('SQLServerPassword')]"
+                    },
+                    "SQLServerUserFromVault": {
+                        "reference": {
+                        "keyVault": {
+                            "id": "[parameters('KeyVault')]"
+                        },
+                        "secretName": "[parameters('SQLServerUser')]"
+                        }
+                    },
+                    "SQLServerPasswordFromVault": {
+                        "reference": {
+                        "keyVault": {
+                            "id": "[parameters('KeyVault')]"
+                        },
+                        "secretName": "[parameters('SQLServerPassword')]"
+                        }
+                    }
+                }      
+            }
+        },   
+        {
+            "type": "Microsoft.ContainerService/managedClusters",
+            "apiVersion": "2020-07-01",
+            "name": "[variables('KubernetesClusterName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
+            "sku": {
+                "name": "Basic",
+                "tier": "Free"
+            },
+            "properties": {
+                "kubernetesVersion": "[variables('KubernetesVersion')]",
+                "dnsPrefix": "profisee",
+                "agentPoolProfiles": [
+                    {
+                        "name": "nplinux1",
+                        "count": "[variables('KubernetesLinuxNodeCount')]",
+                        "vmSize": "[variables('KubernetesLinuxNodeSize')]",
+                        "osDiskSizeGB": 100,
+                        "maxPods": 30,
+                        "type": "VirtualMachineScaleSets",
+                        "orchestratorVersion": "[variables('KubernetesVersion')]",
+                        "enableNodePublicIP": false,
+                        "nodeLabels": {},
+                        "mode": "System",
+                        "osType": "Linux",
+                        "vnetSubnetID": "[if(not(empty(variables('KubernetesVnetResourceGroup'))),variables('vnetId'),json('null'))]"
+                    },
+                    {
+                        "name": "npwin1",
+                        "count": "[variables('KubernetesWindowsNodeCount')]",
+                        "vmSize": "[variables('KubernetesWindowsNodeSize')]",
+                        "osDiskSizeGB": 100,
+                        "maxPods": 30,
+                        "type": "VirtualMachineScaleSets",
+                        "orchestratorVersion": "[variables('KubernetesVersion')]",
+                        "enableNodePublicIP": false,
+                        "mode": "User",
+                        "osType": "Windows",
+                        "vnetSubnetID": "[if(not(empty(variables('KubernetesVnetResourceGroup'))),variables('vnetId'),json('null'))]"
+                    }
+                ],
+                "linuxProfile": {
+                    "adminUsername": "azureuser",
+                    "ssh": {
+                        "publicKeys": [
+                            {
+                                "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDOJtY73a8o8/+lSlrEycIchV77zZJeXHZT1+Lvhf97yrmPIU5hiVDLm3z8gD8sxi5VSQ7K3KvTbI7ssNUruXCVSWziDl2jTxOVfGo9faneP1dXGDnU7sRvRHHZ+9xwzh4zGdX4eMWZf1Szh8868f7KBn93mZJZt4Z3uQKJJZuDIveAeYMNQrOi1KGwRPNIOpK3Mu/TzDPo0q51mOYM7KoB0HsZmgWVVMY7vFnwWZGnBOS3QJEZKd369mFgDZ42h3p3gDkcMN76naApSnfCqTZMJ9jr1w0wSNw21IKMFCHph2t5kOPMNQCTq3uA4tbkWHMHyxrXgqBOKHgmVXNFF2BT"
+                            }
+                        ]
+                    }
+                },
+                "windowsProfile": {
+                    "adminUsername": "winadmin",
+                    "adminPassword": "Ple@seCh@ngeMe1234!"
+                },                
+                "nodeResourceGroup": "[variables('KubenetesInfrastructureResourceGroupName')]",
+                "enableRBAC": true,
+                "networkProfile": {
+                    "networkPlugin": "azure",
+                    "loadBalancerSku": "Standard",
+                    "outboundType": "loadBalancer",
+                    "serviceCidr": "[variables('KubernetesServiceCidr')]",
+                    "dnsServiceIP": "[variables('KubernetesDNSServiceIP')]",
+                    "dockerBridgeCidr": "[variables('KubernetesDockerBridgeCidr')]"
+                }
+            },
+            "identity": {
+                "type": "SystemAssigned"
+            }
+        },
+        {
+            "condition": "[and(equals(tolower(parameters('SQLServerCreateNew')),tolower('Yes')),equals(tolower(parameters('UseKeyVault')),tolower('No')))]",
+            "name": "[tolower(parameters('SQLServerName'))]",
+            "type": "Microsoft.Sql/servers",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2019-06-01-preview",
+            "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
+            "tags": {
+                "displayName": "SQLServer"
+            },
+            "properties": {
+                "administratorLogin": "[parameters('SQLServerUser')]",
+                "administratorLoginPassword": "[parameters('SQLServerPassword')]"
+            },
+            "resources": [
+                {
+                    "condition": "[and(equals(tolower(parameters('SQLServerCreateNew')),tolower('Yes')),equals(tolower(parameters('UseKeyVault')),tolower('No')))]",
+                    "name": "AllowAllWindowsAzureIps",
+                    "type": "firewallrules",
+                    "location": "[resourceGroup().location]",
+                    "apiVersion": "2015-05-01-preview",
+                    "dependsOn": [
+                        "[concat('Microsoft.Sql/servers/', tolower(parameters('SQLServerName')))]"
+                    ],
+                    "properties": {
+                        "startIpAddress": "0.0.0.0",
+                        "endIpAddress": "0.0.0.0"
+                    }
                 },
                 {
-                  "condition": "[equals(tolower(parameters('SQLServerCreateNew')),tolower('Yes'))]",
-                  "type": "databases",
-                  "apiVersion": "2020-08-01-preview",
-                  "name": "[parameters('SQLServerDatabaseName')]",
-                  "location": "[resourceGroup().location]",
-                  "dependsOn": [
+                "condition": "[and(equals(tolower(parameters('SQLServerCreateNew')),tolower('Yes')),equals(tolower(parameters('UseKeyVault')),tolower('No')))]",
+                "type": "databases",
+                "apiVersion": "2020-08-01-preview",
+                "name": "[parameters('SQLServerDatabaseName')]",
+                "location": "[resourceGroup().location]",
+                "dependsOn": [
                     "[resourceId('Microsoft.Sql/servers', concat(parameters('SQLServerName')))]"
-                  ]
+                ]
                 }
-              ]
-            }
-          ],
-          "parameters": {
-            "UseKeyVault": {
-              "type": "string"
-            },
-            "SQLServerUser": {
-              "type": "string"
-            },
-            "SQLServerPassword": {
-              "type": "string"
-            },
-            "SQLServerUserFromVault": {
-              "type": "securestring"
-            },
-            "SQLServerPasswordFromVault": {
-              "type": "securestring"
-            },
-            "SQLServerCreateNew": {
-              "type": "string"
-            },
-            "SQLServerName": {
-              "type": "string"
-            },
-            "SQLServerDatabaseName": {
-              "type": "string"
-            }
-          }
-        },
-        "parameters": {
-          "SQLServerCreateNew":{
-            "value":"[variables('SQLServerCreateNew')]"
-          },
-          "SQLServerDatabaseName":{
-            "value":"[variables('SQLServerDatabaseName')]"
-          },
-          "SQLServerName":{
-            "value":"[variables('SQLServerName')]"
-          },
-          "UseKeyVault":{
-            "value":"[parameters('UseKeyVault')]"
-          },
-          "SQLServerUser":{
-            "value":"[variables('SQLServerName')]"
-          },
-          "SQLServerPassword":{
-            "value":"[parameters('SQLServerPassword')]"
-          },
-          "SQLServerUserFromVault": {
-            "reference": {
-              "keyVault": {
-                "id": "[parameters('KeyVault')]"
-              },
-              "secretName": "[parameters('SQLServerUser')]"
-            }
-          },
-          "SQLServerPasswordFromVault": {
-            "reference": {
-              "keyVault": {
-                "id": "[parameters('KeyVault')]"
-              },
-              "secretName": "[parameters('SQLServerPassword')]"
-            }
-          }
-        }
-      }
-    },
-    {
-      "type": "Microsoft.ContainerService/managedClusters",
-      "apiVersion": "2020-07-01",
-      "name": "[variables('KubernetesClusterName')]",
-      "location": "[resourceGroup().location]",
-      "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
-      "sku": {
-        "name": "Basic",
-        "tier": "Free"
-      },
-      "properties": {
-        "kubernetesVersion": "[variables('KubernetesVersion')]",
-        "dnsPrefix": "profisee",
-        "agentPoolProfiles": [
-          {
-            "name": "nplinux1",
-            "count": "[variables('KubernetesLinuxNodeCount')]",
-            "vmSize": "[variables('KubernetesLinuxNodeSize')]",
-            "osDiskSizeGB": 100,
-            "maxPods": 30,
-            "type": "VirtualMachineScaleSets",
-            "orchestratorVersion": "[variables('KubernetesVersion')]",
-            "enableNodePublicIP": false,
-            "nodeLabels": {},
-            "mode": "System",
-            "osType": "Linux",
-            "vnetSubnetID": "[if(not(empty(variables('KubernetesVnetResourceGroup'))),variables('vnetId'),json('null'))]"
-          },
-          {
-            "name": "npwin1",
-            "count": "[variables('KubernetesWindowsNodeCount')]",
-            "vmSize": "[variables('KubernetesWindowsNodeSize')]",
-            "osDiskSizeGB": 100,
-            "maxPods": 30,
-            "type": "VirtualMachineScaleSets",
-            "orchestratorVersion": "[variables('KubernetesVersion')]",
-            "enableNodePublicIP": false,
-            "mode": "User",
-            "osType": "Windows",
-            "vnetSubnetID": "[if(not(empty(variables('KubernetesVnetResourceGroup'))),variables('vnetId'),json('null'))]"
-          }
-        ],
-        "linuxProfile": {
-          "adminUsername": "azureuser",
-          "ssh": {
-            "publicKeys": [
-              {
-                "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDOJtY73a8o8/+lSlrEycIchV77zZJeXHZT1+Lvhf97yrmPIU5hiVDLm3z8gD8sxi5VSQ7K3KvTbI7ssNUruXCVSWziDl2jTxOVfGo9faneP1dXGDnU7sRvRHHZ+9xwzh4zGdX4eMWZf1Szh8868f7KBn93mZJZt4Z3uQKJJZuDIveAeYMNQrOi1KGwRPNIOpK3Mu/TzDPo0q51mOYM7KoB0HsZmgWVVMY7vFnwWZGnBOS3QJEZKd369mFgDZ42h3p3gDkcMN76naApSnfCqTZMJ9jr1w0wSNw21IKMFCHph2t5kOPMNQCTq3uA4tbkWHMHyxrXgqBOKHgmVXNFF2BT"
-              }
             ]
-          }
-        },
-        "windowsProfile": {
-          "adminUsername": "winadmin",
-          "adminPassword": "Ple@seCh@ngeMe1234!"
-        },
-        "nodeResourceGroup": "[variables('KubenetesInfrastructureResourceGroupName')]",
-        "enableRBAC": true,
-        "networkProfile": {
-          "networkPlugin": "azure",
-          "loadBalancerSku": "Standard",
-          "outboundType": "loadBalancer",
-          "serviceCidr": "[variables('KubernetesServiceCidr')]",
-          "dnsServiceIP": "[variables('KubernetesDNSServiceIP')]",
-          "dockerBridgeCidr": "[variables('KubernetesDockerBridgeCidr')]"
-        }
-      },
-      "identity": {
-        "type": "SystemAssigned"
-      }
-    },
-    {
-      "condition": "[and(equals(tolower(parameters('SQLServerCreateNew')),tolower('Yes')),equals(tolower(parameters('UseKeyVault')),tolower('No')))]",
-      "name": "[tolower(parameters('SQLServerName'))]",
-      "type": "Microsoft.Sql/servers",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2019-06-01-preview",
-      "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
-      "tags": {
-        "displayName": "SQLServer"
-      },
-      "properties": {
-        "administratorLogin": "[parameters('SQLServerUser')]",
-        "administratorLoginPassword": "[parameters('SQLServerPassword')]"
-      },
-      "resources": [
-        {
-          "condition": "[and(equals(tolower(parameters('SQLServerCreateNew')),tolower('Yes')),equals(tolower(parameters('UseKeyVault')),tolower('No')))]",
-          "name": "AllowAllWindowsAzureIps",
-          "type": "firewallrules",
-          "location": "[resourceGroup().location]",
-          "apiVersion": "2015-05-01-preview",
-          "dependsOn": [
-            "[concat('Microsoft.Sql/servers/', tolower(parameters('SQLServerName')))]"
-          ],
-          "properties": {
-            "startIpAddress": "0.0.0.0",
-            "endIpAddress": "0.0.0.0"
-          }
         },
         {
-          "condition": "[and(equals(tolower(parameters('SQLServerCreateNew')),tolower('Yes')),equals(tolower(parameters('UseKeyVault')),tolower('No')))]",
-          "type": "databases",
-          "apiVersion": "2020-08-01-preview",
-          "name": "[parameters('SQLServerDatabaseName')]",
-          "location": "[resourceGroup().location]",
-          "dependsOn": [
-            "[resourceId('Microsoft.Sql/servers', concat(parameters('SQLServerName')))]"
-          ]
+            "condition": "[equals(tolower(variables('StorageAccountCreateNew')),tolower('Yes'))]",
+            "name": "[tolower(variables('StorageAccountName'))]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2019-06-01",
+            "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
+            "tags": {
+                "displayName": "[variables('StorageAccountName')]"
+            },
+            "sku": {
+                "name": "[variables('StorageAccountType')]"
+            },
+            "kind": "StorageV2"
+        },
+        {
+            "condition": "[equals(tolower(variables('StorageAccountCreateNew')),tolower('Yes'))]",
+            "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(tolower(variables('StorageAccountName')), '/default/', tolower(variables('StorageAccountFileShareName')))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', tolower(variables('StorageAccountName')))]"
+            ]
+        },          
+        {
+            "type": "Microsoft.Resources/deploymentScripts",
+            "apiVersion": "2020-10-01",
+            "name": "InstallProfiseePlatform",
+            "location": "[resourceGroup().location]",
+            "kind": "AzureCLI",
+            "dependsOn": [
+                    "[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]",
+                    "[resourceId('Microsoft.ContainerService/managedClusters', variables('KubernetesClusterName'))]"
+                ],
+            "identity": "[variables('ManagedIdentity')]",
+            "properties": {
+                "forceUpdateTag": "1",
+                "azCliVersion": "2.26.0",
+                "timeout": "PT1H",
+                "cleanupPreference": "OnExpiration",
+                "retentionInterval": "P1D",
+                "environmentVariables": [
+                    {
+                        "name": "RESOURCEGROUPNAME",
+                        "value": "[resourceGroup().name]"
+                    },
+                    {
+                        "name": "CLUSTERNAME",
+                        "value": "[variables('KubernetesClusterName')]"
+                    },
+                    {
+                        "name": "SQLNAME",
+                        "value": "[variables('SQLNAME')]"
+                    },
+                    {
+                        "name": "SQLUSERNAME",
+                        "value": "[variables('SQLUSERNAME')]"
+                    },
+                    {
+                        "name": "SQLUSERPASSWORD",
+                        "value": "[variables('SQLUSERPASSWORD')]"
+                    },
+                    {
+                        "name": "SQLDBNAME",
+                        "value": "[variables('SQLServerDatabaseName')]"
+                    },
+                    {
+                        "name": "STORAGEACCOUNTNAME",
+                        "value": "[variables('STORAGEACCOUNTNAME')]"
+                    },
+                    {
+                        "name": "STORAGEACCOUNTFILESHARENAME",
+                        "value": "[variables('StorageAccountFileShareName')]"
+                    },
+                    {
+                        "name": "ADMINACCOUNTNAME",
+                        "value": "[variables('ADMINACCOUNTNAME')]"
+                    },
+                    {
+                        "name": "DNSHOSTNAME",
+                        "value": "[variables('DNSHostName')]"
+                    },
+                    {
+                        "name": "DNSDOMAINNAME",
+                        "value": "[variables('DNSDomainName')]"
+                    },
+                    {
+                        "name": "DOMAINNAMERESOURCEGROUP",
+                        "value": "[variables('DOMAINNAMERESOURCEGROUP')]"
+                    },
+                    {
+                        "name": "UPDATEDNS",
+                        "value": "[variables('DNSUpdate')]"
+                    },
+                    {
+                        "name": "EXTERNALDNSNAME",
+                        "value": "[variables('ExternalDNSName')]"
+                    },
+                    {
+                        "name": "EXTERNALDNSURL",
+                        "value": "[variables('ExternalDNSURL')]"
+                    },                
+                    {
+                        "name": "OIDCURL",
+                        "value": "[variables('OIDCURL')]"
+                    },
+                    {
+                        "name": "LICENSEDATA",
+                        "value": "[if(equals(parameters('UseKeyVault'),'Yes'), reference('License').outputs.valueInVault.value,variables('LICENSEDATA'))]"
+                    },
+                     {
+                        "name": "LICENSEDATASECRETNAME",
+                        "value": "[if(equals(parameters('UseKeyVault'),'Yes'), variables('LICENSEDATA'),'')]"
+                    },
+                    {
+                        "name": "ACRUSER",
+                        "value": "[variables('ACRUSER')]"
+                    },
+                    {
+                        "name": "ACRUSERPASSWORD",
+                        "value": "[variables('ACRUSERPASSWORD')]"
+                    },
+                    {
+                        "name": "TLSCERT",
+                        "value": "[variables('TLSCERT')]"
+                    },
+                    {
+                        "name": "TLSKEY",
+                        "value": "[variables('TLSKEY')]"
+                    },
+                    {
+                        "name": "PROFISEEVERSION",
+                        "value": "[variables('PROFISEEVERSION')]"
+                    },
+                    {
+                        "name": "UPDATEAAD",
+                        "value": "[variables('UPDATEAAD')]"
+                    },
+                    {
+                        "name": "CLIENTID",
+                        "value": "[variables('CLIENTID')]"
+                    },
+                    {
+                        "name": "CONFIGUREHTTPS",
+                        "value": "[variables('CONFIGUREHTTPS')]"
+                    }
+                    ,
+                    {
+                        "name": "FILEREPOPASSWORD",
+                        "value": "[variables('FILEREPOPASSWORD')]"
+                    }
+                    ,
+                    {
+                        "name": "USELETSENCRYPT",
+                        "value": "[variables('USELETSENCRYPT')]"
+                    },
+                    {
+                        "name": "AKSINFRARESOURCEGROUPNAME",
+                        "value": "[variables('KubenetesInfrastructureResourceGroupName')]"
+                    },
+                    {
+                        "name": "SQLSERVERCREATENEW",
+                        "value": "[variables('SQLServerCreateNew')]"
+                    },
+                    {
+                        "name": "USEKEYVAULT",
+                        "value": "[variables('UseKeyVault')]"
+                    },
+                    {
+                        "name": "KEYVAULT",
+                        "value": "[variables('KeyVault')]"
+                    },
+                    {
+                        "name": "SUBSCRIPTIONID",
+                        "value": "[subscription().subscriptionId]"
+                    },
+                    {
+                        "name": "TENANTID",
+                        "value": "[subscription().tenantId]"
+                    },
+                    {
+                      "name": "KUBERNETESCLIENTID",
+                      "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('KubernetesClusterName'))).identityProfile.kubeletidentity.clientId]"
+                    },
+                    {
+                      "name": "USEPURVIEW",
+                      "value": "[variables('UsePurview')]"
+                    },
+                    {
+                        "name": "PURVIEWURL",
+                        "value": "[variables('PurviewUrl')]"
+                    },
+                    {
+                        "name": "PURVIEWCLIENTID",
+                        "value": "[variables('PurviewClientId')]"
+                    },
+                    {
+                      "name": "PURVIEWCLIENTSECRET",
+                      "value": "[variables('PurviewClientSecret')]"
+                    },
+                    {
+                      "name": "PURVIEWACCOUNTRESOURCEGROUP",
+                      "value": "[variables('PurviewAccountResourceGroup')]"
+                    },
+                    {
+                      "name": "WEBAPPNAME",
+                      "value": "[variables('WEBAPPNAME')]"
+                    }
+                ],
+                "primaryScriptUri": "[variables('ScriptURL')]"         
+            }
+        },
+        {
+            "apiVersion": "2018-02-01",
+            "name": "pid-498552cf-87f5-55b7-a69b-5364df5c1994",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": []
+                }
+            }
         }
-      ]
-    },
-    {
-      "condition": "[equals(tolower(variables('StorageAccountCreateNew')),tolower('Yes'))]",
-      "name": "[tolower(variables('StorageAccountName'))]",
-      "type": "Microsoft.Storage/storageAccounts",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2019-06-01",
-      "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
-      "tags": {
-        "displayName": "[variables('StorageAccountName')]"
-      },
-      "sku": {
-        "name": "[variables('StorageAccountType')]"
-      },
-      "kind": "StorageV2"
-    },
-    {
-      "condition": "[equals(tolower(variables('StorageAccountCreateNew')),tolower('Yes'))]",
-      "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
-      "apiVersion": "2019-06-01",
-      "name": "[concat(tolower(variables('StorageAccountName')), '/default/', tolower(variables('StorageAccountFileShareName')))]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]",
-        "[resourceId('Microsoft.Storage/storageAccounts', tolower(variables('StorageAccountName')))]"
-      ]
-    },
-    {
-      "type": "Microsoft.Resources/deploymentScripts",
-      "apiVersion": "2020-10-01",
-      "name": "InstallProfiseePlatform",
-      "location": "[resourceGroup().location]",
-      "kind": "AzureCLI",
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]",
-        "[resourceId('Microsoft.ContainerService/managedClusters', variables('KubernetesClusterName'))]"
-      ],
-      "identity": "[variables('ManagedIdentity')]",
-      "properties": {
-        "forceUpdateTag": "1",
-        "azCliVersion": "2.26.0",
-        "timeout": "PT1H",
-        "cleanupPreference": "OnExpiration",
-        "retentionInterval": "P1D",
-        "environmentVariables": [
-          {
-            "name": "RESOURCEGROUPNAME",
-            "value": "[resourceGroup().name]"
-          },
-          {
-            "name": "CLUSTERNAME",
-            "value": "[variables('KubernetesClusterName')]"
-          },
-          {
-            "name": "SQLNAME",
-            "value": "[variables('SQLNAME')]"
-          },
-          {
-            "name": "SQLUSERNAME",
-            "value": "[variables('SQLUSERNAME')]"
-          },
-          {
-            "name": "SQLUSERPASSWORD",
-            "value": "[variables('SQLUSERPASSWORD')]"
-          },
-          {
-            "name": "SQLDBNAME",
-            "value": "[variables('SQLServerDatabaseName')]"
-          },
-          {
-            "name": "STORAGEACCOUNTNAME",
-            "value": "[variables('STORAGEACCOUNTNAME')]"
-          },
-          {
-            "name": "STORAGEACCOUNTFILESHARENAME",
-            "value": "[variables('StorageAccountFileShareName')]"
-          },
-          {
-            "name": "ADMINACCOUNTNAME",
-            "value": "[variables('ADMINACCOUNTNAME')]"
-          },
-          {
-            "name": "DNSHOSTNAME",
-            "value": "[variables('DNSHostName')]"
-          },
-          {
-            "name": "DNSDOMAINNAME",
-            "value": "[variables('DNSDomainName')]"
-          },
-          {
-            "name": "DOMAINNAMERESOURCEGROUP",
-            "value": "[variables('DOMAINNAMERESOURCEGROUP')]"
-          },
-          {
-            "name": "UPDATEDNS",
-            "value": "[variables('DNSUpdate')]"
-          },
-          {
-            "name": "EXTERNALDNSNAME",
-            "value": "[variables('ExternalDNSName')]"
-          },
-          {
-            "name": "EXTERNALDNSURL",
-            "value": "[variables('ExternalDNSURL')]"
-          },
-          {
-            "name": "OIDCURL",
-            "value": "[variables('OIDCURL')]"
-          },
-          {
-            "name": "LICENSEDATA",
-            "value": "[if(equals(parameters('UseKeyVault'),'Yes'), reference('License').outputs.valueInVault.value,variables('LICENSEDATA'))]"
-          },
-          {
-            "name": "LICENSEDATASECRETNAME",
-            "value": "[if(equals(parameters('UseKeyVault'),'Yes'), variables('LICENSEDATA'),'')]"
-          },
-          {
-            "name": "ACRUSER",
-            "value": "[variables('ACRUSER')]"
-          },
-          {
-            "name": "ACRUSERPASSWORD",
-            "value": "[variables('ACRUSERPASSWORD')]"
-          },
-          {
-            "name": "TLSCERT",
-            "value": "[variables('TLSCERT')]"
-          },
-          {
-            "name": "TLSKEY",
-            "value": "[variables('TLSKEY')]"
-          },
-          {
-            "name": "PROFISEEVERSION",
-            "value": "[variables('PROFISEEVERSION')]"
-          },
-          {
-            "name": "UPDATEAAD",
-            "value": "[variables('UPDATEAAD')]"
-          },
-          {
-            "name": "CLIENTID",
-            "value": "[variables('CLIENTID')]"
-          },
-          {
-            "name": "CONFIGUREHTTPS",
-            "value": "[variables('CONFIGUREHTTPS')]"
-          }
-          ,
-          {
-            "name": "FILEREPOPASSWORD",
-            "value": "[variables('FILEREPOPASSWORD')]"
-          }
-          ,
-          {
-            "name": "USELETSENCRYPT",
-            "value": "[variables('USELETSENCRYPT')]"
-          },
-          {
-            "name": "AKSINFRARESOURCEGROUPNAME",
-            "value": "[variables('KubenetesInfrastructureResourceGroupName')]"
-          },
-          {
-            "name": "SQLSERVERCREATENEW",
-            "value": "[variables('SQLServerCreateNew')]"
-          },
-          {
-            "name": "USEKEYVAULT",
-            "value": "[variables('UseKeyVault')]"
-          },
-          {
-            "name": "KEYVAULT",
-            "value": "[variables('KeyVault')]"
-          },
-          {
-            "name": "SUBSCRIPTIONID",
-            "value": "[subscription().subscriptionId]"
-          },
-          {
-            "name": "TENANTID",
-            "value": "[subscription().tenantId]"
-          },
-          {
-            "name": "KUBERNETESCLIENTID",
-            "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('KubernetesClusterName'))).identityProfile.kubeletidentity.clientId]"
-          },
-          {
-            "name": "USEPURVIEW",
-            "value": "[variables('UsePurview')]"
-          },
-          {
-            "name": "PURVIEWURL",
-            "value": "[variables('PurviewUrl')]"
-          },
-          {
-            "name": "PURVIEWCLIENTID",
-            "value": "[variables('PurviewClientId')]"
-          },
-          {
-            "name": "PURVIEWCLIENTSECRET",
-            "value": "[variables('PurviewClientSecret')]"
-          },
-          {
-            "name": "PURVIEWACCOUNTRESOURCEGROUP",
-            "value": "[variables('PurviewAccountResourceGroup')]"
-          }
-        ],
-        "primaryScriptUri": "[variables('ScriptURL')]"
-      }
-    },
-    {
-      "apiVersion": "2018-02-01",
-      "name": "pid-498552cf-87f5-55b7-a69b-5364df5c1994",
-      "type": "Microsoft.Resources/deployments",
-      "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
-      "properties": {
-        "mode": "Incremental",
-        "template": {
-          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-          "contentVersion": "1.0.0.0",
-          "resources": []
-        }
-      }
-    }
-  ],
-  "outputs": 
-  {
+    ],
+    "outputs": 
+    {    
     "PreReqChecks": {
       "value": "[reference('PreReqChecks').outputs]",
       "type": "object"
@@ -836,13 +844,13 @@
       "type": "string"
     },
     "KubernetesClusterFQDN": {
-      "type": "string",
-      "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('KubernetesClusterName'))).FQDN]"
-    },
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('KubernetesClusterName'))).FQDN]"
+        },
     "KubernetesClusterIdentityClientId": {
-      "type": "string",
-      "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('KubernetesClusterName'))).identityProfile.kubeletidentity.clientId]"
-    },
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('KubernetesClusterName'))).identityProfile.kubeletidentity.clientId]"
+        },
     "InstallProfiseePlatformOutputs": {
       "value": "[reference('InstallProfiseePlatform').outputs]",
       "type": "object"

@@ -1,7 +1,7 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
-  "handler": "Microsoft.Azure.CreateUIDef",
-  "version": "0.1.2-preview",
+    "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+    "handler": "Microsoft.Azure.CreateUIDef",
+    "version": "0.1.2-preview",
   "parameters": {
     "resourceTypes": [
       "microsoft.containerservice/managedclusters",
@@ -99,7 +99,7 @@
             "name": "ProfiseeVersion",
             "type": "Microsoft.Common.DropDown",
             "label": "Version",
-            "defaultValue": "2021R3.0",
+            "defaultValue": "2022R1.0",
             "toolTip": "Which release of the Profisee Platform to start with.",
             "constraints": {
               "required": true,
@@ -133,8 +133,8 @@
                   "value": "profiseeplatform:2021r3.0"
                 },
                 {
-                  "label": "2021R2.PurviewPreview",
-                  "value": "profiseeplatform:2021r2.purviewpreview"
+                  "label": "2022R1.0",
+                  "value": "profiseeplatform:2022r1.0"
                 }
               ]
             },
@@ -225,7 +225,7 @@
               ],
               "required": true
             },
-            "visible": "[or(equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2021r2.purviewpreview'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2021r3.0'))]"
+            "visible": "[or(equals(steps('profisee').ProfiseeVersion,'profiseeplatform:2022r1.preview'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2021r3.0'))]"
           },
           {
             "name": "UserSuppliedClientyId",
@@ -297,6 +297,20 @@
               "validationMessage": ""
             },
             "visible": "[equals(steps('profisee').UsePurview,'Yes')]"
+          },
+          {
+            "name": "ProfiseeWebAppName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Web app name",
+            "defaultValue": "profisee",
+            "placeholder": "",
+            "toolTip": "https://host.domain.com/{webAppName}",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": true
           }
         ]
       },
@@ -979,7 +993,8 @@
       "PurviewUrl":"[steps('profisee').GetPurviewUrlRestApiResponse.properties.endpoints.catalog]",
       "PurviewClientId":"[steps('profisee').PurviewClientID]",
       "PurviewClientSecret":"[steps('profisee').PurviewClientSecret]",
-      "PurviewAccountResourceGroup":"[last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5))]"
+      "PurviewAccountResourceGroup":"[last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5))]",
+      "ProfiseeWebAppName":"[steps('profisee').ProfiseeWebAppName]"
     }
   }
 }

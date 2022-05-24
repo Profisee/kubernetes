@@ -172,7 +172,6 @@ fi
 
 success='true'
 
-
 echo $"Profisee pre-req check finished $(date +"%Y-%m-%d %T")";
 
 result="{\"Result\":[\

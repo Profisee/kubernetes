@@ -15,6 +15,9 @@ profiseeRunTime:
         fileShareName: "$FILEREPOSHARENAME"
     externalDnsUrl: "$EXTERNALDNSURL"
     externalDnsName: "$EXTERNALDNSNAME"
+    webAppName: "$WEBAPPNAME"
+    deployIngressRule: true
+    isPaaS: true
     oidc:
         name: "Azure Active Directory"
         authority: "$OIDCURL"
@@ -76,6 +79,11 @@ cloud:
         subscriptionId: "$AZURESUBSCRIPTIONID"
         tenantId: "$AZURETENANTID"
         clusterClientId: "$KUBERNETESCLIENTID" #clientid of the aks cluster; Roles must be assigned ot it; role to main RG: "Managed Identity Operator"; roles to node RG: "Managed Identity Operator", "Virtual Machine Contributor"
+      useManagedIdentity: false
+      managedIdentity:
+        name: ""
+        clientId: ""
+        resourceId: ""
       purview:
         clientId: "$PURVIEWCLIENTID"
         clientSecret: "$PURVIEWCLIENTSECRET"

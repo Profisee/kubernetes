@@ -78,4 +78,3 @@ TLSKEY=
 
 #Set to Yes it using LE or No if using own certificates
 USELETSENCRYPT=No
-

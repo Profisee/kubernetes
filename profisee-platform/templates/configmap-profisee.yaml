@@ -14,6 +14,7 @@ data:
     #ProfiseeAttachmentRepositoryUserPassword: {{.Values.profiseeRunTime.fileRepository.password|quote}} #in literal-secrets
     ProfiseeAttachmentRepositoryLogonType: {{.Values.profiseeRunTime.fileRepository.logonType|quote}}
     ProfiseeExternalDNSUrl: {{.Values.profiseeRunTime.externalDnsUrl|quote}}
+    ProfiseeWebAppName: {{.Values.profiseeRunTime.webAppName|quote}}
     ProfiseeAdditionalOpenIdConnectProvidersFile: ''
     ProfiseeOidcName: {{.Values.profiseeRunTime.oidc.name|quote}}
     ProfiseeOidcAuthority: {{.Values.profiseeRunTime.oidc.authority|quote}}
