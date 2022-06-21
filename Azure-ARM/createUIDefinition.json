@@ -225,7 +225,7 @@
               ],
               "required": true
             },
-            "visible": "[or(equals(steps('profisee').ProfiseeVersion,'profiseeplatform:2022r1.preview'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2021r3.0'))]"
+            "visible": "[or(equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2021r3.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r1.0'))]"
           },
           {
             "name": "UserSuppliedClientyId",
