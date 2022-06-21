@@ -165,8 +165,8 @@
   },
   "variables": 
   {
-    "ScriptURL":"https://raw.githubusercontent.com/profiseedev/kubernetes/master/Azure-ARM/deployprofisee.sh",
-    "PreReqCheckScriptURL":"https://raw.githubusercontent.com/profiseedev/kubernetes/master/Azure-ARM/prereqcheck.sh",
+    "ScriptURL":"https://raw.githubusercontent.com/profisee/kubernetes/master/Azure-ARM/deployprofisee.sh",
+    "PreReqCheckScriptURL":"https://raw.githubusercontent.com/profisee/kubernetes/master/Azure-ARM/prereqcheck.sh",
     "KubernetesVnetResourceGroup":"[parameters('KubernetesVnetResourceGroup')]",
     "vnetId":"[resourceId(parameters('KubernetesVnetResourceGroup'),'Microsoft.Network/virtualNetworks/subnets',parameters('KubernetesVnetName'),parameters('KubernetesSubnetName'))]",
     "PROFISEEVERSION":"[parameters('ProfiseeVersion')]",
