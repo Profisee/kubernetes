@@ -60,12 +60,10 @@ echo $"Cleaning license string to remove and unwanted characters - linebreaks, s
 LICENSEDATA=$(echo $LICENSEDATA|tr -d '\n')
 
 echo $"Getting values from license started";
-./LicenseReader "ExternalDnsUrl" $LICENSEDATA
-./LicenseReader "ACRUserName" $LICENSEDATA
-./LicenseReader "ACRUserPassword" $LICENSEDATA
+EXTERNALDNSURLLICENSE=$(./LicenseReader "ExternalDnsUrl" $LICENSEDATA)
 
 #use whats in the license otherwise use whats passed in which is a generated hostname
-EXTERNALDNSURLLICENSE=$(<ExternalDnsUrl.txt)
+#EXTERNALDNSURLLICENSE=$(<ExternalDnsUrl.txt)
 if [ "$EXTERNALDNSURLLICENSE" = "" ]; then
 	echo $"EXTERNALDNSURLLICENSE is empty"
 else	
@@ -81,8 +79,10 @@ echo $"DNSHOSTNAME is $DNSHOSTNAME";
 #If acr info is passed in (via legacy script) use it, otherwise pull it from license
 if [ "$ACRUSER" = "" ]; then
 	echo $"ACR info was not passed in, values in license are being used."
-	ACRUSER=$(<ACRUserName.txt)
-	ACRUSERPASSWORD=$(<ACRUserPassword.txt)
+	#ACRUSER=$(<ACRUserName.txt)
+	#ACRUSERPASSWORD=$(<ACRUserPassword.txt)
+	ACRUSER=$(./LicenseReader "ACRUserName" $LICENSEDATA)
+    ACRUSERPASSWORD=$(./LicenseReader "ACRUserPassword" $LICENSEDATA)
 else
 	echo $"ACR info that was passed in is being used."
 fi
@@ -170,6 +170,7 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
     #if rabc, add to rile, if not (policy based) - add policies
     if [ "$rbacEnabled" = true ]; then
 		echo $"Setting rbac role."
+		echo "Running az role assignment create --role 'Key Vault Secrets Officer' --assignee $akskvidentityClientId --scope $KEYVAULT"
 		az role assignment create --role "Key Vault Secrets Officer" --assignee $akskvidentityClientId --scope $KEYVAULT
 	else
 		echo $"Setting policies."
