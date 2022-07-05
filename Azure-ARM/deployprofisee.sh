@@ -151,8 +151,8 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	echo $"Managing Identity configuration for KV access - step 2 finished"
 
 	echo $"Managing Identity configuration for KV access - step 3 started"
-	echo "Sleeping for 30 seconds to wait for MI to be ready"
-	sleep 30;
+	echo "Sleeping for 60 seconds to wait for MI to be ready"
+	sleep 60;
 	#KEYVAULT looks like this this /subscriptions/$SUBID/resourceGroups/$kvresourceGroup/providers/Microsoft.KeyVault/vaults/$kvname
 	IFS='/' read -r -a kv <<< "$KEYVAULT" #splits the KEYVAULT on slashes and gets last one
 	keyVaultName=${kv[-1]}
