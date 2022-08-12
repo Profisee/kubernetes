@@ -115,7 +115,7 @@ curl -fsSL -o Settings.yaml "$REPOURL/Azure-ARM/Settings.yaml";
 if [ "$USEKEYVAULT" = "Yes" ]; then
 	echo $"Installing keyvault csi driver - started"
 	#Install the Secrets Store CSI driver and the Azure Key Vault provider for the driver
-	helm repo add csi-secrets-store-provider-azure https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts
+	helm repo add csi-secrets-store-provider-azure https://azure.github.io/secrets-store-csi-driver-provider-azure/charts
 	
 	#https://github.com/Azure/secrets-store-csi-driver-provider-azure/releases/tag/0.0.16
 	#The behavior changed so now you have to enable the secrets-store-csi-driver.syncSecret.enabled=true
