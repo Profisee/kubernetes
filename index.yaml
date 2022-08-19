@@ -9,6 +9,6 @@ entries:
     name: profisee-platform
     type: application
     urls:
-    - https://profisee.github.io/kubernetes/profisee-platform-0.1.17.tgz
-    version: 0.1.17
-generated: "2022-03-23T00:00:00.0-05:00"
+    - https://profiseedev.github.io/kubernetes/profisee-platform-0.1.21.tgz
+    version: 0.1.21
+generated: "2022-06-30T00:00:00.0-05:00"

@@ -264,6 +264,10 @@
                         "value": "[variables('DNSUpdate')]"
                     },
                     {
+                        "name": "DNSDOMAINNAME",
+                        "value": "[variables('DNSDomainName')]"
+                    },
+                    {
                         "name": "UPDATEAAD",
                         "value": "[variables('UPDATEAAD')]"
                     },
@@ -498,21 +502,7 @@
                         "osType": "Windows",
                         "vnetSubnetID": "[if(not(empty(variables('KubernetesVnetResourceGroup'))),variables('vnetId'),json('null'))]"
                     }
-                ],
-                "linuxProfile": {
-                    "adminUsername": "azureuser",
-                    "ssh": {
-                        "publicKeys": [
-                            {
-                                "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDOJtY73a8o8/+lSlrEycIchV77zZJeXHZT1+Lvhf97yrmPIU5hiVDLm3z8gD8sxi5VSQ7K3KvTbI7ssNUruXCVSWziDl2jTxOVfGo9faneP1dXGDnU7sRvRHHZ+9xwzh4zGdX4eMWZf1Szh8868f7KBn93mZJZt4Z3uQKJJZuDIveAeYMNQrOi1KGwRPNIOpK3Mu/TzDPo0q51mOYM7KoB0HsZmgWVVMY7vFnwWZGnBOS3QJEZKd369mFgDZ42h3p3gDkcMN76naApSnfCqTZMJ9jr1w0wSNw21IKMFCHph2t5kOPMNQCTq3uA4tbkWHMHyxrXgqBOKHgmVXNFF2BT"
-                            }
-                        ]
-                    }
-                },
-                "windowsProfile": {
-                    "adminUsername": "winadmin",
-                    "adminPassword": "Ple@seCh@ngeMe1234!"
-                },                
+                ],                
                 "nodeResourceGroup": "[variables('KubenetesInfrastructureResourceGroupName')]",
                 "enableRBAC": true,
                 "networkProfile": {

@@ -24,17 +24,16 @@ spec:
         "kubernetes.io/os": windows 
       volumes:
       - name: data-volume
-        secret:
-          secretName: profisee-license 
+        projected:
+          sources:
+          - secret:
+              name: profisee-license
+          - secret:
+              name: profisee-oidcproviders
       - name: initscripts
         secret:
           secretName: profisee-initscripts 
       {{- if .Values.cloud.azure.isProvider }}
-      - name: fileshareold
-        azureFile:
-          secretName: profisee-fileshare
-          shareName: {{.Values.profiseeRunTime.fileRepository.fileShareName}}
-          readOnly: false
       - name: fileshare
         csi:
           driver: file.csi.azure.com
@@ -66,10 +65,10 @@ spec:
             command:
               - powershell
               - >-
-                if((Get-Service profisee).Status -eq 'Running'){return
+                if((Get-Service profisee).Status -ne 'Stopped'){return
                 0}else{throw 'Profisee service is down'}
           initialDelaySeconds: 600
-          timeoutSeconds: 1
+          timeoutSeconds: 5
           periodSeconds: 60
         volumeMounts:
         - name: data-volume

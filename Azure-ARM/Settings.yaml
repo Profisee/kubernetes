@@ -66,7 +66,7 @@ cloud:
       isProvider: true
       useKeyVault: $USEKEYVAULT
       keyVault:
-        identity: #must be created in the aks node resource group and have reader ploicy's on keyvault
+        identity: #must be created in the AKS node resource group and have Get policies for key vault or Key Vault Secrets User for an RBAC key vault.
           clientId: "$KEYVAULTIDENTITCLIENTID"
           resourceId: $KEYVAULTIDENTITYRESOURCEID
         secrets:
@@ -78,7 +78,7 @@ cloud:
         resourceGroup: "$KEYVAULTRESOURCEGROUP"
         subscriptionId: "$AZURESUBSCRIPTIONID"
         tenantId: "$AZURETENANTID"
-        clusterClientId: "$KUBERNETESCLIENTID" #clientid of the aks cluster; Roles must be assigned ot it; role to main RG: "Managed Identity Operator"; roles to node RG: "Managed Identity Operator", "Virtual Machine Contributor"
+        clusterClientId: "$KUBERNETESCLIENTID" #clientId of the AKSCluster-agentpool identity; The "Managed Identity Operator" role must be assigned to the RG and Node RG; "Virtual Machine Contributor" role must be assigned to the Node RG.
       useManagedIdentity: false
       managedIdentity:
         name: ""

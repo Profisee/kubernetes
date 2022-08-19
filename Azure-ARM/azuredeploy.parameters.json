@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "ProfiseeVersion": {
-            "value": "profiseeplatform:2021R3.0"
+            "value": "profiseeplatform:2022r1.0"
         },
         "ProfiseeAdminUserAccount": {
             "value": ""
@@ -37,13 +37,13 @@
             "value": "ProfiseeAKSCluster"
         },
         "KubernetesLinuxNodeSize": {
-            "value": "Standard_D2s_v3"
+            "value": "Standard_D2_v5"
         },
         "KubernetesLinuxNodeCount": {
             "value": 1
         },
         "KubernetesWindowsNodeSize": {
-            "value": "Standard_D4s_v3"
+            "value": "Standard_D4_v5"
         },
         "KubernetesWindowsNodeCount": {
             "value": 1
