@@ -158,7 +158,7 @@ fi
 #If Deployment Managed Identity will be creating the Azure AD application registration, make sure that the Application Administrator role is assigned to it.
 if [ "$UPDATEAAD" = "Yes" ]; then
 	echo "Is the Deployment Managed Identity assigned the Application Administrator Role in Azure Active Directory?"
-	appDevRoleId=$(az rest --method get --url https://graph.microsoft.com/v1.0/directoryRoles/ | jq -r '.value[] | select(.displayName | contains("Application Administrator")).id')
+	appDevRoleId=$(az rest --method get --url https://graph.microsoft.com/v1.0/directoryRoles/ | jq -r '.value[] | select(.displayName == "Application Administrator").id')
 	minameinrole=$(az rest --method GET --uri "https://graph.microsoft.com/beta/directoryRoles/$appDevRoleId/members" | jq -r '.value[] | select(.displayName | contains("'"$miname"'")).displayName')
 	if [ -z "$minameinrole" ]; then
 		err="The Deployment Managed Identity is NOT assigned the Application Administrator role in Azure Active Directory. Exiting with error. This role is required so that the Deployment Managed Identity can create the Azure AD Application registration. For more information please visit https://support.profisee.com/wikis/2022_r1_support/planning_your_managed_identity_configuration."
