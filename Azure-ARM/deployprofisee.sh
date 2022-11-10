@@ -158,12 +158,12 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	echo $"AKS Managed Identity configuration for Key Vault access started."
 
 	echo $"AKS AgentPool Managed Identity configuration for Key Vault access step 1 started."
-	echo "Running az role assignment create --role "Managed Identity Operator" --assignee $KUBERNETESCLIENTID --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$RESOURCEGROUPNAME"
-	az role assignment create --role "Managed Identity Operator" --assignee $KUBERNETESCLIENTID --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$RESOURCEGROUPNAME
-	echo "Running az role assignment create --role "Managed Identity Operator" --assignee $KUBERNETESCLIENTID --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$AKSINFRARESOURCEGROUPNAME"
-	az role assignment create --role "Managed Identity Operator" --assignee $KUBERNETESCLIENTID --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$AKSINFRARESOURCEGROUPNAME
-	echo "Running az role assignment create --role "Virtual Machine Contributor" --assignee $KUBERNETESCLIENTID --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$AKSINFRARESOURCEGROUPNAME"
-	az role assignment create --role "Virtual Machine Contributor" --assignee $KUBERNETESCLIENTID --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$AKSINFRARESOURCEGROUPNAME
+	echo "Running az role assignment create --role "Managed Identity Operator" --assignee-object-id $KUBERNETESOBJECTID --assignee-principal-type ServicePrincipal --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$RESOURCEGROUPNAME"
+	az role assignment create --role "Managed Identity Operator" --assignee-object-id $KUBERNETESOBJECTID --assignee-principal-type ServicePrincipal --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$RESOURCEGROUPNAME
+	echo "Running az role assignment create --role "Managed Identity Operator" --assignee-object-id $KUBERNETESOBJECTID --assignee-principal-type ServicePrincipal --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$AKSINFRARESOURCEGROUPNAME"
+	az role assignment create --role "Managed Identity Operator" --assignee-object-id $KUBERNETESOBJECTID --assignee-principal-type ServicePrincipal --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$AKSINFRARESOURCEGROUPNAME
+	echo "Running az role assignment create --role "Virtual Machine Contributor" --assignee-object-id $KUBERNETESOBJECTID --assignee-principal-type ServicePrincipal --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$AKSINFRARESOURCEGROUPNAME"
+	az role assignment create --role "Virtual Machine Contributor" --assignee-object-id $KUBERNETESOBJECTID --assignee-principal-type ServicePrincipal --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$AKSINFRARESOURCEGROUPNAME
 	echo $"AKS AgentPool Managed Identity configuration for Key Vault access step 1 finished."
 
 	#Create Azure AD Managed Identity specifically for Key Vault, get its ClientiId and PrincipalId so we can assign to it the Reader role in steps 3a, 3b and 3c to.

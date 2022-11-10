@@ -745,6 +745,10 @@
                       "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('KubernetesClusterName'))).identityProfile.kubeletidentity.clientId]"
                     },
                     {
+                      "name": "KUBERNETESOBJECTID",
+                      "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('KubernetesClusterName'))).identityProfile.kubeletidentity.objectId]"
+                    },
+                    {
                       "name": "USEPURVIEW",
                       "value": "[variables('UsePurview')]"
                     },
