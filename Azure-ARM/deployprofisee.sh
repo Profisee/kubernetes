@@ -172,7 +172,7 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	akskvidentityClientId=$(az identity create -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'clientId' -o tsv);
 	akskvidentityClientResourceId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'id' -o tsv)
 	principalId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'principalId' -o tsv)
-	echo $"Key VAult Specific Managed  Identity configuration for Key Vault access step 2 finished."
+	echo $"Key VAult Specific Managed Identity configuration for Key Vault access step 2 finished."
 
 	echo $"Key Vault Specific Managed Identity configuration for KV access step 3 started."
 	echo "Sleeping for 60 seconds to wait for MI to be ready"
@@ -193,7 +193,7 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 
     #If Key Vault is RBAC based, assign Key Vault Secrets User role to the Key Vault Specific Managed Identity, otherwise assign Get policies for Keys, Secrets and Certificates.
     if [ "$rbacEnabled" = true ]; then
-		echo $"Setting Key Vault Secrets User RBAC role to the Key Vault Specific Managed Idenity."
+		echo $"Setting Key Vault Secrets User RBAC role to the Key Vault Specific Managed Identity."
 		echo "Running az role assignment create --role 'Key Vault Secrets User' --assignee $principalId --scope $KEYVAULT"
 		az role assignment create --role "Key Vault Secrets User" --assignee $principalId --scope $KEYVAULT
 	else
@@ -368,6 +368,7 @@ else
 	echo $"FILEREPOPASSWORD was passed in, we'll use it."
 fi
 
+echo $"Correction of TLS variables finished.";
 
 #If deployment of a new SQL database has been selected, we will create a SQL firewall rule to allow traffic from the AKS cluster's egress IP. 
 if [ "$SQLSERVERCREATENEW" = "Yes" ]; then
@@ -385,12 +386,27 @@ if [ "$SQLSERVERCREATENEW" = "Yes" ]; then
 	echo "Addition of the SQL firewall rule finished.";
 fi
 
+#Acquire the collection id from the collection name
+if [ "$USEPURVIEW" = "Yes" ]; then
+	echo "Obtain collection id from provided collection friendly name started.";
+	echo "Grab a token."
+	purviewtoken=$(curl --location --no-progress-meter --request GET "https://login.microsoftonline.com/$TENANTID/oauth2/token" --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "client_id=$PURVIEWCLIENTID" --data-urlencode "client_secret=$PURVIEWCLIENTSECRET" --data-urlencode 'grant_type=client_credentials' --data-urlencode 'resource=https://purview.azure.net'  | jq --raw-output '.access_token');
+	echo "Token acquired."
+	echo "Find collection Id.";
+	echo $"Stripping /catalog from $PURVIEWURL."
+	PURVIEWACCOUNTFQDN=${PURVIEWURL::-8}
+	echo $"Purview account name is $PURVIEWACCOUNTFQDN. Using it."
+	COLLECTIONTRUEID=$(curl --location --no-progress-meter --request GET "$PURVIEWACCOUNTFQDN/account/collections?api-version=2019-11-01-preview" --header "Authorization: Bearer $purviewtoken" | jq --raw-output '.value | .[] | select(.friendlyName=="'$PURVIEWCOLLECTIONID'") | .name')
+	echo $"Collection id is $COLLECTIONTRUEID, using that.";
+	echo "Obtain collection id from provided collection friendly name completed.";
+fi
+
 echo "The variables will now be set in the Settings.yaml file"
 #Setting storage related variables
 FILEREPOUSERNAME="Azure\\\\\\\\${STORAGEACCOUNTNAME}"
 FILEREPOURL="\\\\\\\\\\\\\\\\${STORAGEACCOUNTNAME}.file.core.windows.net\\\\\\\\${STORAGEACCOUNTFILESHARENAME}"
 
-#PROFISEEVERSION looks like this profiseeplatform:2022R1.0
+#PROFISEEVERSION looks like this profiseeplatform:2022R2.0
 #The repository name is profiseeplatform, it is everything to the left of the colon sign :
 #The label is everything to the right of the :
 
@@ -421,6 +437,7 @@ sed -i -e 's/$ACRREPONAME/'"$ACRREPONAME"'/g' Settings.yaml
 sed -i -e 's/$ACRREPOLABEL/'"$ACRREPOLABEL"'/g' Settings.yaml
 sed -i -e 's~$PURVIEWURL~'"$PURVIEWURL"'~g' Settings.yaml
 sed -i -e 's/$PURVIEWTENANTID/'"$TENANTID"'/g' Settings.yaml
+sed -i -e 's/$PURVIEWCOLLECTIONID/'"$COLLECTIONTRUEID"'/g' Settings.yaml
 sed -i -e 's/$PURVIEWCLIENTID/'"$PURVIEWCLIENTID"'/g' Settings.yaml
 sed -i -e 's/$PURVIEWCLIENTSECRET/'"$PURVIEWCLIENTSECRET"'/g' Settings.yaml
 sed -i -e 's/$WEBAPPNAME/'"$WEBAPPNAME"'/g' Settings.yaml
@@ -489,21 +506,10 @@ if [ "$profiseepresent" = "profiseeplatform" ]; then
 	helm -n profisee uninstall profiseeplatform;
 	echo "Will sleep for 30 seconds to allow clean uninstall."
 	sleep 30;
-fi
-
-echo "If we are using Key Vault and Profisee was uninstalled, then the profisee-license, profisee-sql-username, profisee-sql-password and profisee-tls-ingress secrets are missing. We need to find and restart the key-vault pod so that we can re-pull and re-mount the secrets."
-#Find and delete the key-vault pod
-if [ "$USEKEYVAULT" = "Yes" ]; then
-	findkvpod=$(kubectl get pods -n profisee -o jsonpath='{.items[?(@.metadata.labels.app=="profisee-keyvault")].metadata.name}')
-	if [ "$findkvpod" = "$findkvpod" ]; then
-	echo $"Profisee Key Vault pod name is $findkvpod, deleting it."
-	kubectl delete pod -n profisee $findkvpod --force --grace-period=0
-	echo "Now let's install Profisee."
-	helm install -n profisee profiseeplatform profisee/profisee-platform --values Settings.yaml
-	fi
 else
-	echo "Now let's install Profisee."
-	helm install -n profisee profiseeplatform profisee/profisee-platform --values Settings.yaml
+	echo "Profisee is not installed, proceeding to install it."
+	helm -n profisee install profiseeplatform profisee/profisee-platform --values Settings.yaml
+
 fi
 	
 kubectl delete secret profisee-deploymentlog -n profisee --ignore-not-found

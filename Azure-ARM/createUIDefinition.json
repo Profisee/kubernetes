@@ -1,7 +1,7 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
-    "handler": "Microsoft.Azure.CreateUIDef",
-    "version": "0.1.2-preview",
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+  "handler": "Microsoft.Azure.CreateUIDef",
+  "version": "0.1.2-preview",
   "parameters": {
     "resourceTypes": [
       "microsoft.containerservice/managedclusters",
@@ -11,7 +11,6 @@
       "microsoft.resources/resourcegroups"
     ],
     "basics": [
-
       {
         "name": "text2",
         "type": "Microsoft.Common.TextBlock",
@@ -51,10 +50,9 @@
         "options": {
           "icon": "Info",
           "text": "Click here to learn how Profisee uses Managed Identities.",
-          "uri": "https://support.profisee.com/wikis/2022_r1_support/planning_your_managed_identity_configuration"
+          "uri": "https://support.profisee.com/wikis/2022_r2_support/planning_your_managed_identity_configuration"
         }
       }
-
     ],
     "steps": [
       {
@@ -99,23 +97,11 @@
             "name": "ProfiseeVersion",
             "type": "Microsoft.Common.DropDown",
             "label": "Profisee version",
-            "defaultValue": "2022R1.0",
+            "defaultValue": "2022R2.0",
             "toolTip": "Which release of the Profisee Platform to deploy.",
             "constraints": {
               "required": true,
               "allowedValues": [
-                {
-                  "label": "2020R1.0",
-                  "value": "profiseeplatform:2020r1.0"
-                },
-                {
-                  "label": "2020R1.1",
-                  "value": "profiseeplatform:2020r1.1"
-                },
-                {
-                  "label": "2020R2.0",
-                  "value": "profiseeplatform:2020r2.0"
-                },
                 {
                   "label": "2021R1.0",
                   "value": "profiseeplatform:2021r1.0"
@@ -135,6 +121,14 @@
                 {
                   "label": "2022R1.0",
                   "value": "profiseeplatform:2022r1.0"
+                },
+                {
+                  "label": "2022R1-126062",
+                  "value": "profiseeplatform:2022r1-126062"
+                },
+                {
+                  "label": "2022R2.0",
+                  "value": "profiseeplatform:2022r2.0"
                 }
               ]
             },
@@ -190,7 +184,7 @@
             "type": "Microsoft.Common.OptionsGroup",
             "label": "Create a new Azure AD application registration for you?",
             "defaultValue": "Yes, create and configure it for me.",
-            "toolTip": "An Azure AD application registration will be used for authentication via ID tokens. For more information please visit https://support.profisee.com/wikis/2022_r1_support/deploying_the_AKS_cluster_with_the_arm_template.",
+            "toolTip": "An Azure AD application registration will be used for authentication via ID tokens. For more information please visit https://support.profisee.com/wikis/2022_r2_support/deploying_the_AKS_cluster_with_the_arm_template.",
             "constraints": {
               "allowedValues": [
                 {
@@ -246,7 +240,7 @@
               ],
               "required": true
             },
-            "visible": "[or(equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2021r2.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2021r2.1'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2021r3.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r1.0'))]"
+            "visible": "[or(equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2021r2.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2021r2.1'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2021r3.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r1.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r1-126062'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r2.0'))]"
           },
           {
             "name": "PurviewAccountName",
@@ -262,13 +256,27 @@
             "visible": "[equals(steps('profisee').UsePurview,'Yes')]"
           },
           {
-            "name":"GetPurviewUrlRestApiResponse",
-            "type":"Microsoft.Solutions.ArmApiControl",
-            "request":{
+            "name": "GetPurviewUrlRestApiResponse",
+            "type": "Microsoft.Solutions.ArmApiControl",
+            "request": {
               "method": "GET",
               "path": "[concat(subscription().id,'/resourceGroups/',last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5)),'/providers/Microsoft.Purview/accounts/',steps('profisee').PurviewAccountName.name,'?api-version=2020-12-01-preview')]",
               "body": ""
             }
+          },
+          {
+            "name": "PurviewCollectionFriendlyName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Purview Collection Friendly Name",
+            "defaultValue": "",
+            "placeholder": "tHiS iS CaSe SenSiTiVe!",
+            "toolTip": "Please provide the Purview Collection Friendly Name that you see in your Purview account. Profisee will deploy to that collection. If you would like to deploy in the root collection, please specify its friendly name.",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[and(equals(steps('profisee').UsePurview,'Yes'), or(equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r2.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r1.preview')))]"
           },
           {
             "name": "PurviewClientID",
@@ -549,7 +557,6 @@
             ],
             "visible": "[equals(steps('kubernetes').KubernetesAdvancedYesNo,'Yes')]"
           }
-
         ]
       },
       {
@@ -686,16 +693,12 @@
             },
             "visible": true
           }
-
-
-
         ]
       },
       {
         "name": "storage",
         "label": "Storage",
         "elements": [
-
           {
             "name": "StorageAccountNameSection",
             "type": "Microsoft.Common.Section",
@@ -722,9 +725,9 @@
             "visible": true
           },
           {
-            "name":"GetStorageAccessKeysRestApiResponse",
-            "type":"Microsoft.Solutions.ArmApiControl",
-            "request":{
+            "name": "GetStorageAccessKeysRestApiResponse",
+            "type": "Microsoft.Solutions.ArmApiControl",
+            "request": {
               "method": "POST",
               "path": "[concat(subscription().id,'/resourceGroups/',steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,'/providers/Microsoft.Storage/storageAccounts/',steps('storage').StorageAccountNameSection.StorageAccountName.name,'/listKeys?api-version=2019-06-01')]",
               "body": ""
@@ -742,9 +745,9 @@
             "visible": "[equals(steps('storage').StorageAccountNameSection.StorageAccountName.newOrExisting, 'existing')]"
           },
           {
-            "name":"GetStorageFileSharesRestApiResponse",
-            "type":"Microsoft.Solutions.ArmApiControl",
-            "request":{
+            "name": "GetStorageFileSharesRestApiResponse",
+            "type": "Microsoft.Solutions.ArmApiControl",
+            "request": {
               "method": "GET",
               "path": "[concat(subscription().id,'/resourceGroups/',steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,'/providers/Microsoft.Storage/storageAccounts/',steps('storage').StorageAccountNameSection.StorageAccountName.name,'/fileServices/default/shares?api-version=2019-06-01')]",
               "body": ""
@@ -833,7 +836,7 @@
                 "type": "Microsoft.Common.TextBox",
                 "label": "DNS Domain Name",
                 "defaultValue": "",
-                "placeholder":"This value is CaSe SeNSitiVe! mydomain.com",
+                "placeholder": "This value is CaSe SeNSitiVe! mydomain.com",
                 "toolTip": "This value is CaSe SeNSitiVe!",
                 "constraints": {
                   "required": true,
@@ -936,20 +939,16 @@
             ],
             "visible": "[equals(steps('networking').HttpsConfigure,'Yes')]"
           }
-
         ]
-
       }
     ],
     "outputs": {
       "ManagedIdentityName": "[basics('ManagedIdentityName')]",
-
       "ProfiseeVersion": "[steps('profisee').ProfiseeVersion]",
       "ProfiseeAdminUserAccount": "[steps('profisee').ProfiseeAdminUserAccount]",
       "ProfiseeLicense": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('profisee').ProfiseeLicenseSecret, steps('profisee').ProfiseeLicense)]",
       "ActiveDirectoryCreateApp": "[steps('profisee').ActiveDirectoryCreateApp]",
       "ActiveDirectoryClientId": "[steps('profisee').UserSuppliedClientyId.ActiveDirectoryClientId]",
-
       "KubernetesClusterName": "[steps('kubernetes').KubernetesClusterName]",
       "KubernetesVersion": "[steps('kubernetes').KubernetesVersion]",
       "KubenetesInfrastructureResourceGroupName": "[steps('kubernetes').KubenetesInfrastructureResourceGroupName]",
@@ -957,15 +956,12 @@
       "KubernetesLinuxNodeCount": "[steps('kubernetes').KubernetesLinuxNodeCount]",
       "KubernetesWindowsNodeSize": "[steps('kubernetes').KubernetesWindowsNodeSizeSection.KubernetesWindowsNodeSize]",
       "KubernetesWindowsNodeCount": "[steps('kubernetes').KubernetesWindowsNodeCount]",
-
       "KubernetesVnetName": "[steps('kubernetes').KubernetesAdvanced.KubernetesVnetName.name]",
       "KubernetesVnetResourceGroup": "[steps('kubernetes').KubernetesAdvanced.KubernetesVnetName.resourceGroup]",
       "KubernetesSubnetName": "[steps('kubernetes').KubernetesAdvanced.KubernetesVnetName.subnets.subnet1.name]",
-
       "KubernetesServiceCidr": "[steps('kubernetes').KubernetesAdvanced.KubernetesServiceCidr]",
       "KubernetesDNSServiceIP": "[steps('kubernetes').KubernetesAdvanced.KubernetesDNSServiceIP]",
       "KubernetesDockerBridgeCidr": "[steps('kubernetes').KubernetesAdvanced.KubernetesDockerBridgeCidr]",
-
       "SQLServerCreateNew": "[steps('sql').SQLServerCreateNew]",
       "SQLServerName": "[if(equals(steps('sql').SQLServerCreateNew, 'Yes'), steps('sql').SQLServerName, steps('sql').SQLServerNameExisting.name)]",
       "SQLServerUser": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('sql').SQLServerUserSecret, steps('sql').SQLServerUser)]",
@@ -977,7 +973,6 @@
       "StorageAccountAccessKey": "[steps('storage').StorageAccountAccessKey]",
       "StorageAccountType": "[steps('storage').StorageAccountNameSection.StorageAccountName.type]",
       "StorageAccountFileShareName": "files",
-
       "DNSUpdate": "[if(equals(steps('networking').DNSUpdate, 'No'), 'No', steps('networking').UserDefinedDNS.DNSUpdate2)]",
       "DNSHostName": "[steps('networking').UserDefinedDNS.DNSHostName]",
       "DNSDomainName": "[steps('networking').UserDefinedDNS.DNSDomainName]",
@@ -985,16 +980,16 @@
       "HttpsConfigure": "[coalesce(steps('networking').HttpsConfigure,'No')]",
       "UseLetsEncrypt": "[if(equals(coalesce(steps('networking').HttpsConfigure,'No'),'No'),'Yes','No')]",
       "HttpsCertificate": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('networking').UserDefinedHTTPS.HttpsCertificateSecret, steps('networking').UserDefinedHTTPS.HttpsCertificate)]",
-
       "HttpsCertificatePrivateKey": "[steps('networking').UserDefinedHTTPS.HttpsCertificatePrivateKey]",
-      "UseKeyVault":"[steps('profisee').UseKeyVault]",
-      "KeyVault":"[steps('profisee').KeyVault.id]",
-      "UsePurview":"[steps('profisee').UsePurview]",
-      "PurviewUrl":"[steps('profisee').GetPurviewUrlRestApiResponse.properties.endpoints.catalog]",
-      "PurviewClientId":"[steps('profisee').PurviewClientID]",
-      "PurviewClientSecret":"[steps('profisee').PurviewClientSecret]",
-      "PurviewAccountResourceGroup":"[last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5))]",
-      "ProfiseeWebAppName":"[steps('profisee').ProfiseeWebAppName]"
+      "UseKeyVault": "[steps('profisee').UseKeyVault]",
+      "KeyVault": "[steps('profisee').KeyVault.id]",
+      "UsePurview": "[steps('profisee').UsePurview]",
+      "PurviewUrl": "[steps('profisee').GetPurviewUrlRestApiResponse.properties.endpoints.catalog]",
+      "PurviewClientId": "[steps('profisee').PurviewClientID]",
+      "PurviewCollectionFriendlyName": "[steps('profisee').PurviewCollectionFriendlyName]",
+      "PurviewClientSecret": "[steps('profisee').PurviewClientSecret]",
+      "PurviewAccountResourceGroup": "[last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5))]",
+      "ProfiseeWebAppName": "[steps('profisee').ProfiseeWebAppName]"
     }
   }
 }

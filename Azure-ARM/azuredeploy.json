@@ -29,6 +29,10 @@
       "defaultValue": "",
       "type": "String"
     },
+    "PurviewCollectionFriendlyName": {
+      "defaultValue": "",
+      "type": "String"
+    },
     "PurviewClientId": {
       "defaultValue": "",
       "type": "String"
@@ -226,6 +230,7 @@
 
     "UsePurview":"[parameters('UsePurview')]",
     "PurviewUrl":"[parameters('PurviewUrl')]",
+    "PurviewCollectionId":"[parameters('PurviewCollectionFriendlyName')]",
     "PurviewClientId":"[parameters('PurviewClientId')]",
     "PurviewClientSecret":"[parameters('PurviewClientSecret')]",
     "PurviewAccountResourceGroup":"[parameters('PurviewAccountResourceGroup')]"
@@ -254,6 +259,10 @@
                     {
                         "name": "SUBSCRIPTIONID",
                         "value": "[subscription().subscriptionId]"
+                    },
+                    {
+                        "name": "TENANTID",
+                        "value": "[subscription().tenantId]"
                     },
                     {
                         "name": "DOMAINNAMERESOURCEGROUP",
@@ -288,8 +297,16 @@
                         "value": "[variables('PurviewUrl')]"
                     },
                     {
+                        "name": "PURVIEWCOLLECTIONID",
+                        "value": "[variables('PurviewCollectionId')]"
+                    },
+                    {
                         "name": "PURVIEWCLIENTID",
                         "value": "[variables('PurviewClientId')]"
+                    },
+                    {
+                        "name": "PURVIEWCLIENTSECRET",
+                        "value": "[variables('PurviewClientSecret')]"
                     }
                 ]           
             }
@@ -755,6 +772,10 @@
                     {
                         "name": "PURVIEWURL",
                         "value": "[variables('PurviewUrl')]"
+                    },
+                    {
+                        "name": "PURVIEWCOLLECTIONID",
+                        "value": "[variables('PurviewCollectionId')]"
                     },
                     {
                         "name": "PURVIEWCLIENTID",

@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "ProfiseeVersion": {
-            "value": "profiseeplatform:2022r1.0"
+            "value": "profiseeplatform:2022r2.0"
         },
         "ProfiseeAdminUserAccount": {
             "value": ""
@@ -14,6 +14,9 @@
         "ProfiseeWebAppName": {
             "value": ""
         },
+        "TenantId": {
+            "value": ""
+        },
         "ActiveDirectoryCreateApp": {
             "value": "Yes"
         },
@@ -21,6 +24,9 @@
             "value": ""
         },
         "PurviewUrl": {
+            "value": ""
+        },
+        "PurviewCollectionFriendlyName": {
             "value": ""
         },
         "PurviewClientId": {

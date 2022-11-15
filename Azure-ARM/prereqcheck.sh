@@ -38,7 +38,10 @@ echo $"USEKEYVAULT is $USEKEYVAULT"
 echo $"KEYVAULT is $KEYVAULT"
 echo $"USEPURVIEW is $USEPURVIEW"
 echo $"PURVIEWURL is $PURVIEWURL"
+echo $"PURVIEWCOLLECTIONID is $PURVIEWCOLLECTIONID"
 echo $"PURVIEWCLIENTID is $PURVIEWCLIENTID"
+echo $"PURVIEWCLIENTSECRET is $PURVIEWCLIENTSECRET"
+echo $"TENANTID is $TENANTID"
 
 IFS='/' read -r -a miparts <<< "$AZ_SCRIPTS_USER_ASSIGNED_IDENTITY" #splits the mi on slashes
 mirg=${miparts[4]}
@@ -67,7 +70,7 @@ if [ -z "$subscriptionContributor" ]; then
 	#Deployment MAnaged Identity is not granted Contributor at Subscription level, checking Resource Group level.
 	rgContributor=$(az role assignment list --all --assignee $currentIdentityId --output json --include-inherited --query "[?roleDefinitionName=='Contributor' && scope=='/subscriptions/$SUBSCRIPTIONID/resourceGroups/$RESOURCEGROUPNAME'].roleDefinitionName" --output tsv)
 	if [ -z "$rgContributor" ]; then
-		err="Role is NOT assigned at either Subscription or Resource Group level. Exiting with error. Please assign the Contributor role to the Deployment Managed Identity at either Subscription or Resource Group level. Please visit https://support.profisee.com/wikis/2022_r1_support/planning_your_managed_identity_configuration for more information."
+		err="Role is NOT assigned at either Subscription or Resource Group level. Exiting with error. Please assign the Contributor role to the Deployment Managed Identity at either Subscription or Resource Group level. Please visit https://support.profisee.com/wikis/2022_r2_support/planning_your_managed_identity_configuration for more information."
 		echo $err
 		set_resultAndReturn;
 	else
@@ -79,7 +82,7 @@ if [ -z "$subscriptionContributor" ]; then
 		echo "Is the Deployment Managed Identity assigned the DNS Zone Contributor role to the DNS zone itself?"
 		dnsznContributor=$(az role assignment list --all --assignee $currentIdentityId --output json --include-inherited --query "[?roleDefinitionName=='DNS Zone Contributor' && scope=='/subscriptions/$SUBSCRIPTIONID/resourceGroups/$DOMAINNAMERESOURCEGROUP/providers/Microsoft.Network/dnszones/$DNSDOMAINNAME'].roleDefinitionName" --output tsv)
 		if [ -z "$dnsznContributor" ]; then
-			err="Role is NOT assigned. Exiting with error. Please assign the DNS Zone Contributor role to the Deployment Managed Identity for the DNS zone you want updated. Please visit https://support.profisee.com/wikis/2022_r1_support/planning_your_managed_identity_configuration for more information."
+			err="Role is NOT assigned. Exiting with error. Please assign the DNS Zone Contributor role to the Deployment Managed Identity for the DNS zone you want updated. Please visit https://support.profisee.com/wikis/2022_r2_support/planning_your_managed_identity_configuration for more information."
 			echo $err
 			set_resultAndReturn;
 		else
@@ -113,22 +116,36 @@ if [ "$USEPURVIEW" = "Yes" ]; then
 	
 	#Check if User.Read permission has been granted to the Purview specific Azure Application Registration.
 	if [[ $purviewClientPermissions != *"e1fe6dd8-ba31-4d61-89e7-88639da4683d"* ]]; then
-		echo "The Purview Azure AD application registration is missing the Microsoft Graph API User.Read delegated permission. Some governance features may not function until this permission is granted. This permission might require an Azure AD Global Admin consent. Please visit https://support.profisee.com/wikis/2022_r1_support/prerequisites_for_integrating_with_purview for more information. "
+		echo "The Purview Azure AD application registration is missing the Microsoft Graph API User.Read delegated permission. Some governance features may not function until this permission is granted. This permission might require an Azure AD Global Admin consent. Please visit https://support.profisee.com/wikis/2022_r2_support/prerequisites_for_integrating_with_purview for more information. "
 	fi
 
 	#Check if User.Read.All permission has been granted to the Purview specific Azure Application Registration.
 	if [[ $purviewClientPermissions != *"df021288-bdef-4463-88db-98f22de89214"* ]]; then
-		echo "The Purview Azure AD application registration is missing the Microsoft Graph API User.Read.All application permission. Some governance features will not function until this permission is granted. This permission requires an Azure AD Global Admin consent. Please visit https://support.profisee.com/wikis/2022_r1_support/prerequisites_for_integrating_with_purview for more information."
+		echo "The Purview Azure AD application registration is missing the Microsoft Graph API User.Read.All application permission. Some governance features will not function until this permission is granted. This permission requires an Azure AD Global Admin consent. Please visit https://support.profisee.com/wikis/2022_r2_support/prerequisites_for_integrating_with_purview for more information."
 	fi
 
 	#Check if Group.Read.All permission has been granted to the Purview specific Azure Application Registration.
 	if [[ $purviewClientPermissions != *"5b567255-7703-4780-807c-7be8301ae99b"* ]]; then
-		echo "The Purview Azure AD application registration is missing the Microsoft Graph API Group.Read.All application permission. Some governance features will not function until this permission is granted. This permission requires an Azure AD Global Admin consent. Please visit https://support.profisee.com/wikis/2022_r1_support/prerequisites_for_integrating_with_purview for more information."
+		echo "The Purview Azure AD application registration is missing the Microsoft Graph API Group.Read.All application permission. Some governance features will not function until this permission is granted. This permission requires an Azure AD Global Admin consent. Please visit https://support.profisee.com/wikis/2022_r2_support/prerequisites_for_integrating_with_purview for more information."
 	fi
 
 	#Check if GroupMember.Read.All permission has been granted to the Purview specific Azure Application Registration.
 	if [[ $purviewClientPermissions != *"98830695-27a2-44f7-8c18-0c3ebc9698f6"* ]]; then
-		echo "The Purview Azure AD application registration is missing the Microsoft Graph API GroupMember.Read.All application permission. Some governance features will not function until this permission is granted. This permission requires an Azure AD Global Admin consent. Please visit https://support.profisee.com/wikis/2022_r1_support/prerequisites_for_integrating_with_purview for more information."
+		echo "The Purview Azure AD application registration is missing the Microsoft Graph API GroupMember.Read.All application permission. Some governance features will not function until this permission is granted. This permission requires an Azure AD Global Admin consent. Please visit https://support.profisee.com/wikis/2022_r2_support/prerequisites_for_integrating_with_purview for more information."
+	fi
+	#Check if the provided Purview Collection name exists.
+	#Acquire token
+	echo "Checking if provided Purview collection friendly name exists."
+	purviewtoken=$(curl --location --no-progress-meter --request GET "https://login.microsoftonline.com/$TENANTID/oauth2/token" --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "client_id=$PURVIEWCLIENTID" --data-urlencode "client_secret=$PURVIEWCLIENTSECRET" --data-urlencode 'grant_type=client_credentials' --data-urlencode 'resource=https://purview.azure.net' | jq --raw-output '.access_token');
+	#Strip /catalog from end of Purview URL
+	PURVIEWACCOUNTFQDN=${PURVIEWURL::-8}
+	collectionnamenotfound=$(curl --location --no-progress-meter --request GET "$PURVIEWACCOUNTFQDN/account/collections?api-version=2019-11-01-preview" --header "Authorization: Bearer $purviewtoken" | jq --raw-output '.value | .[] | select(.friendlyName=="'$PURVIEWCOLLECTIONID'") | .name');
+	if [ -z "$collectionnamenotfound" ]; then
+		err=$"The "$PURVIEWCOLLECTIONID" collection name provided could NOT be found. Exiting with error."
+		echo $err
+		set_resultAndReturn;
+	else
+		echo $"The "$PURVIEWCOLLECTIONID" collection name provided was found. Continuing checks."
 	fi
 fi 
 
@@ -161,7 +178,7 @@ if [ "$UPDATEAAD" = "Yes" ]; then
 	appDevRoleId=$(az rest --method get --url https://graph.microsoft.com/v1.0/directoryRoles/ | jq -r '.value[] | select(.displayName == "Application Administrator").id')
 	minameinrole=$(az rest --method GET --uri "https://graph.microsoft.com/beta/directoryRoles/$appDevRoleId/members" | jq -r '.value[] | select(.displayName | contains("'"$miname"'")).displayName')
 	if [ -z "$minameinrole" ]; then
-		err="The Deployment Managed Identity is NOT assigned the Application Administrator role in Azure Active Directory. Exiting with error. This role is required so that the Deployment Managed Identity can create the Azure AD Application registration. For more information please visit https://support.profisee.com/wikis/2022_r1_support/planning_your_managed_identity_configuration."
+		err="The Deployment Managed Identity is NOT assigned the Application Administrator role in Azure Active Directory. Exiting with error. This role is required so that the Deployment Managed Identity can create the Azure AD Application registration. For more information please visit https://support.profisee.com/wikis/2022_r2_support/planning_your_managed_identity_configuration."
 		echo $err
 		set_resultAndReturn;
 	else

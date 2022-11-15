@@ -84,11 +84,11 @@ cloud:
         name: ""
         clientId: ""
       purview:
-        tenantId: "$AZURETENANTID"
-        clientId: "$CLIENTID"
-        clientSecret: "$OIDCCLIENTSECRET"
-        instanceName: "$PURVIEWINSTANCENAME"
-        baseUrl: "$PURVIEWBASEURL"
+        tenantId: "$PURVIEWTENANTID"
+        url: "$PURVIEWURL"
+        collectionId: "$PURVIEWCOLLECTIONID"
+        clientId: "$PURVIEWCLIENTID"
+        clientSecret: "$PURVIEWCLIENTSECRET"
     aws:
       isProvider: false
       ebsVolumeId: ""
