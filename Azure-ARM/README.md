@@ -39,7 +39,7 @@ Please read through the upgrade instructions both here and in our Support portal
 For customers who do **NOT** use Purview.
 1. Connect to your cluster from the Azure portal or powershell. For customers running Private PaaS please connect to your jumpbox first, then connect via powershell or Lens.
 2. Run the following commands (if you do not have the repo added that would be the first step):  
-helm -n profisee repo add profisee https://profiseedev.github.io/kubernetes  
+helm -n profisee repo add profisee https://profisee.github.io/kubernetes  
 helm repo update  
 helm upgrade -n profisee profiseeplatform profisee/profisee-platform --reuse-values --set image.tag=2022r2.0  
 kubectl logs -n profisee profisee-0 -f #this will allow you to follow the upgrade as it is happening  
@@ -50,7 +50,7 @@ For customers who **DO** use Purview.
 1. Connect to your cluster from the Azure portal or powershell. For customers running Private PaaS please connect to your jumpbox first, then connect via powershell or Lens.
 2. Locate your Purview collection Id by visiting your MS Purview Governance Portal. Go to the collection where you would like Profisee to deploy to. Your URL will look like so: web.purview.azure.com/resource/**YourPurviewAccountName**/main/datasource/collections?collection=**ThisIsTheCollectionId**&feature.tenant=**YourAzureTenantId**
 3. Run the following commands (if you do not have the repo added that would be the first step):  
-helm -n profisee repo add profisee https://profiseedev.github.io/kubernetes  
+helm -n profisee repo add profisee https://profisee.github.io/kubernetes  
 helm repo update  
 helm upgrade -n profisee profiseeplatform profisee/profisee-platform --reuse-values --set cloud.azure.purview.collectionId=YourCollectionId --set image.tag=2022r2.0  
 kubectl logs -n profisee profisee-0 -f #this will allow you to follow the upgrade as it is happening  
