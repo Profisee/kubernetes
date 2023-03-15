@@ -301,7 +301,7 @@ echo $"Correction of TLS variables finished.";
 #Installation of Profisee platform
 echo $"Installation of Profisee platform statrted.";
 #Configure Profisee helm chart settings
-auth="$(echo -n "$ACRUSER:$ACRUSERPASSWORD" | base64)"
+auth="$(echo -n "$ACRUSER:$ACRUSERPASSWORD" | base64 -w0)"
 sed -i -e 's/$ACRUSER/'"$ACRUSER"'/g' Settings.yaml
 sed -i -e 's/$ACRPASSWORD/'"$ACRUSERPASSWORD"'/g' Settings.yaml
 sed -i -e 's/$ACREMAIL/'"support@profisee.com"'/g' Settings.yaml
@@ -506,11 +506,9 @@ if [ "$profiseepresent" = "profiseeplatform" ]; then
 	helm -n profisee uninstall profiseeplatform;
 	echo "Will sleep for 30 seconds to allow clean uninstall."
 	sleep 30;
-else
+fi
 	echo "Profisee is not installed, proceeding to install it."
 	helm -n profisee install profiseeplatform profisee/profisee-platform --values Settings.yaml
-
-fi
 	
 kubectl delete secret profisee-deploymentlog -n profisee --ignore-not-found
 kubectl create secret generic profisee-deploymentlog -n profisee --from-file=$logfile
