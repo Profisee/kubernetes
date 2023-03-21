@@ -301,7 +301,7 @@ echo $"Correction of TLS variables finished.";
 #Installation of Profisee platform
 echo $"Installation of Profisee platform statrted.";
 #Configure Profisee helm chart settings
-auth="$(echo -n "$ACRUSER:$ACRUSERPASSWORD" | base64 -w0)"
+auth="$(echo -n "$ACRUSER:$ACRUSERPASSWORD" | base64 )"
 sed -i -e 's/$ACRUSER/'"$ACRUSER"'/g' Settings.yaml
 sed -i -e 's/$ACRPASSWORD/'"$ACRUSERPASSWORD"'/g' Settings.yaml
 sed -i -e 's/$ACREMAIL/'"support@profisee.com"'/g' Settings.yaml
