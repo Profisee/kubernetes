@@ -180,6 +180,20 @@
             "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
           },
           {
+            "name": "ProfiseeWebAppName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Web app name",
+            "defaultValue": "profisee",
+            "placeholder": "",
+            "toolTip": "https://host.domain.com/{webAppName}",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": true
+          },
+          {
             "name": "ActiveDirectoryCreateApp",
             "type": "Microsoft.Common.OptionsGroup",
             "label": "Create a new Azure AD application registration for you?",
@@ -305,20 +319,6 @@
               "validationMessage": ""
             },
             "visible": "[equals(steps('profisee').UsePurview,'Yes')]"
-          },
-          {
-            "name": "ProfiseeWebAppName",
-            "type": "Microsoft.Common.TextBox",
-            "label": "Web app name",
-            "defaultValue": "profisee",
-            "placeholder": "",
-            "toolTip": "https://host.domain.com/{webAppName}",
-            "constraints": {
-              "required": true,
-              "regex": "",
-              "validationMessage": ""
-            },
-            "visible": true
           }
         ]
       },

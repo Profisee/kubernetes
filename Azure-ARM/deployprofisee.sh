@@ -40,7 +40,7 @@ curl -fsSL -o dotnet-install.sh https://dot.net/v1/dotnet-install.sh
 #Set permisssions for installation script.
 chmod 755 ./dotnet-install.sh
 #Install dotnet.
-./dotnet-install.sh -c Current
+./dotnet-install.sh -c LTS
 echo $"Installation of dotnet core finished.";
 
 #Downloadind and extracting Proisee license reader.
@@ -66,11 +66,11 @@ EXTERNALDNSURLLICENSE=$(./LicenseReader "ExternalDnsUrl" $LICENSEDATA)
 #EXTERNALDNSURLLICENSE=$(<ExternalDnsUrl.txt)
 if [ "$EXTERNALDNSURLLICENSE" = "" ]; then
 	echo $"EXTERNALDNSURLLICENSE is empty"
-else	
+else
 	echo $"EXTERNALDNSURLLICENSE is not empty"
 	EXTERNALDNSURL=$EXTERNALDNSURLLICENSE
 	EXTERNALDNSNAME=$(echo $EXTERNALDNSURL | sed 's~http[s]*://~~g')
-	DNSHOSTNAME=$(echo "${EXTERNALDNSNAME%%.*}")	
+	DNSHOSTNAME=$(echo "${EXTERNALDNSNAME%%.*}")
 fi
 echo $"EXTERNALDNSURL is $EXTERNALDNSURL";
 echo $"EXTERNALDNSNAME is $EXTERNALDNSNAME";
@@ -124,7 +124,7 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	echo $"Installation of Key Vault Container Storage Interface (CSI) driver started. If present, we uninstall and reinstall it."
 	#Install the Secrets Store CSI driver and the Azure Key Vault provider for the driver
 	helm repo add csi-secrets-store-provider-azure https://azure.github.io/secrets-store-csi-driver-provider-azure/charts
-	
+
 	#If Key Vault CSI driver is present, uninstall it.
         kvcsipresent=$(helm list -n profisee -f csi-secrets-store-provider-azure -o table --short)
         if [ "$kvcsipresent" = "csi-secrets-store-provider-azure" ]; then
@@ -132,14 +132,14 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	        echo $"Will sleep for 30 seconds to allow clean uninstall of Key Vault CSI driver."
 	        sleep 30;
         fi
-	
+
 	#https://github.com/Azure/secrets-store-csi-driver-provider-azure/releases/tag/0.0.16
 	#The behavior changed so now you have to enable the secrets-store-csi-driver.syncSecret.enabled=true
 	#We are not but if this is to run on a windows node, then you use this --set windows.enabled=true --set secrets-store-csi-driver.windows.enabled=true
 	helm install -n profisee csi-secrets-store-provider-azure csi-secrets-store-provider-azure/csi-secrets-store-provider-azure --set secrets-store-csi-driver.syncSecret.enabled=true
 	echo $"Installation of Key Vault Container Storage Interface (CSI) driver finished."
-	
-	
+
+
 	#Install AAD pod identity into AKS.
 	echo $"Installation of Key Vault Azure Active Directory Pod Identity driver started. If present, we uninstall and reinstall it."
 	#If AAD Pod Identity is present, uninstall it.
@@ -149,7 +149,7 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	        echo $"Will sleep for 30 seconds to allow clean uninstall of AAD Pod Identity."
 	        sleep 30;
         fi
-	
+
 	helm repo add aad-pod-identity https://raw.githubusercontent.com/Azure/aad-pod-identity/master/charts
 	helm install -n profisee pod-identity aad-pod-identity/aad-pod-identity
 	echo $"Installation of Key Vault Azure Active Directory Pod Identity driver finished."
@@ -186,7 +186,7 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	echo $"keyVaultName is $keyVaultName"
 	echo $"akskvidentityClientId is $akskvidentityClientId"
 	echo $"principalId is $principalId"
-    
+
     #Check if Key Vault is RBAC or policy based.
     echo $"Checking if Key Vauls is RBAC based or policy based"
     rbacEnabled=$(az keyvault show --name $keyVaultName --subscription $keyVaultSubscriptionId --query "properties.enableRbacAuthorization")
@@ -215,7 +215,7 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 
 		echo $"Key Vault Specific Managed Identity setup is now finished."
 	fi
-	
+
 fi
 
 #Installation of nginx
@@ -271,7 +271,7 @@ echo $"Correction of TLS variables started.";
 if [ "$CONFIGUREHTTPS" = "Yes" ]; then
 	printf '%s\n' "$TLSCERT" | sed 's/- /-\n/g; s/ -/\n-/g' | sed '/CERTIFICATE/! s/ /\n/g' >> a.cert;
 	sed -e 's/^/    /' a.cert > tls.cert;
-else    
+else
     echo '    NA' > tls.cert;
 fi
 rm -f a.cert
@@ -281,7 +281,7 @@ if [ "$CONFIGUREHTTPS" = "Yes" ]; then
     printf '%s\n' "$TLSKEY" | sed 's/- /-\n/g; s/ -/\n-/g' | sed '/PRIVATE/! s/ /\n/g' >> a.key;
 	sed -e 's/^/    /' a.key > tls.key;
 else
-	echo '    NA' > tls.key;	    
+	echo '    NA' > tls.key;
 fi
 rm -f a.key
 
@@ -301,7 +301,7 @@ echo $"Correction of TLS variables finished.";
 #Installation of Profisee platform
 echo $"Installation of Profisee platform statrted.";
 #Configure Profisee helm chart settings
-auth="$(echo -n "$ACRUSER:$ACRUSERPASSWORD" | base64 )"
+auth="$(echo -n "$ACRUSER:$ACRUSERPASSWORD" | base64 -w0)"
 sed -i -e 's/$ACRUSER/'"$ACRUSER"'/g' Settings.yaml
 sed -i -e 's/$ACRPASSWORD/'"$ACRUSERPASSWORD"'/g' Settings.yaml
 sed -i -e 's/$ACREMAIL/'"support@profisee.com"'/g' Settings.yaml
@@ -325,7 +325,7 @@ if [ "$UPDATEAAD" = "Yes" ]; then
 	echo $"azureAppReplyUrl is $azureAppReplyUrl";
 
 	echo "Creation of the Azure Active Directory application registration started."
-	CLIENTID=$(az ad app create --display-name $azureClientName --reply-urls $azureAppReplyUrl --query 'appId' -o tsv);
+	CLIENTID=$(az ad app create --display-name $azureClientName --web-redirect-uris $azureAppReplyUrl --enable-id-token-issuance --query 'appId' -o tsv);
 	echo $"CLIENTID is $CLIENTID";
 	if [ -z "$CLIENTID" ]; then
 		echo $"CLIENTID is null fetching";
@@ -342,7 +342,7 @@ if [ "$UPDATEAAD" = "Yes" ]; then
         if [ "$appregpermissionspresent" = "e1fe6dd8-ba31-4d61-89e7-88639da4683d" ]; then
 	        echo $"User.Read permissions already present, no need to add it."
 	else
-	
+
 	        echo "Update of the application registration's permissions, step 1 started."
 	        #Add a Graph API permission to "Sign in and read user profile"
 	        az ad app permission add --id $CLIENTID --api 00000003-0000-0000-c000-000000000000 --api-permissions e1fe6dd8-ba31-4d61-89e7-88639da4683d=Scope
@@ -352,7 +352,7 @@ if [ "$UPDATEAAD" = "Yes" ]; then
 	        echo "Update of the application registration's permissions, step 1 finished."
 
 	        echo "Update of the application registration's permissions, step 2 started."
-	        az ad app permission grant --id $CLIENTID --api 00000003-0000-0000-c000-000000000000
+	        az ad app permission grant --id $CLIENTID --api 00000003-0000-0000-c000-000000000000 --scope User.Read
 	        echo "Update of the application registration's permissions, step 2 finished."
 	        echo "Update of Azure Active Directory finished.";
 	fi
@@ -370,7 +370,7 @@ fi
 
 echo $"Correction of TLS variables finished.";
 
-#If deployment of a new SQL database has been selected, we will create a SQL firewall rule to allow traffic from the AKS cluster's egress IP. 
+#If deployment of a new SQL database has been selected, we will create a SQL firewall rule to allow traffic from the AKS cluster's egress IP.
 if [ "$SQLSERVERCREATENEW" = "Yes" ]; then
 	echo "Addition of a SQL firewall rule started.";
 	#strip off .database.windows.net
@@ -413,7 +413,7 @@ FILEREPOURL="\\\\\\\\\\\\\\\\${STORAGEACCOUNTNAME}.file.core.windows.net\\\\\\\\
 IFS=':' read -r -a repostring <<< "$PROFISEEVERSION"
 
 #lowercase is the ,,
-ACRREPONAME="${repostring[0],,}"; 
+ACRREPONAME="${repostring[0],,}";
 ACRREPOLABEL="${repostring[1],,}"
 
 #Setting values in the Settings.yaml
@@ -509,7 +509,7 @@ if [ "$profiseepresent" = "profiseeplatform" ]; then
 fi
 	echo "Profisee is not installed, proceeding to install it."
 	helm -n profisee install profiseeplatform profisee/profisee-platform --values Settings.yaml
-	
+
 kubectl delete secret profisee-deploymentlog -n profisee --ignore-not-found
 kubectl create secret generic profisee-deploymentlog -n profisee --from-file=$logfile
 

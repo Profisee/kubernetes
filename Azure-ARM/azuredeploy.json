@@ -246,7 +246,7 @@
             "identity": "[variables('ManagedIdentity')]",
             "properties": {
                 "forceUpdateTag": "[parameters('NewGuid')]",
-                "azCliVersion": "2.26.0",
+                "azCliVersion": "2.45.0",
                 "timeout": "PT1H",
                 "cleanupPreference": "OnExpiration",
                 "retentionInterval": "P1D",
@@ -614,7 +614,7 @@
             "identity": "[variables('ManagedIdentity')]",
             "properties": {
                 "forceUpdateTag": "1",
-                "azCliVersion": "2.26.0",
+                "azCliVersion": "2.45.0",
                 "timeout": "PT1H",
                 "cleanupPreference": "OnExpiration",
                 "retentionInterval": "P1D",
