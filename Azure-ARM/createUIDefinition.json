@@ -97,7 +97,7 @@
             "name": "ProfiseeVersion",
             "type": "Microsoft.Common.DropDown",
             "label": "Profisee version",
-            "defaultValue": "2022R2.0",
+            "defaultValue": "2023R1.0",
             "toolTip": "Which release of the Profisee Platform to deploy.",
             "constraints": {
               "required": true,
@@ -129,6 +129,10 @@
                 {
                   "label": "2022R2.0",
                   "value": "profiseeplatform:2022r2.0"
+                },
+                {
+                  "label": "2023R1.0",
+                  "value": "profiseeplatform:2023r1.0"
                 }
               ]
             },
