@@ -427,7 +427,7 @@ echo "The variables will now be set in the Settings.yaml file"
 FILEREPOUSERNAME="Azure\\\\\\\\${STORAGEACCOUNTNAME}"
 FILEREPOURL="\\\\\\\\\\\\\\\\${STORAGEACCOUNTNAME}.file.core.windows.net\\\\\\\\${STORAGEACCOUNTFILESHARENAME}"
 
-#PROFISEEVERSION looks like this profiseeplatform:2022R2.0
+#PROFISEEVERSION looks like this profiseeplatform:2023R1.0
 #The repository name is profiseeplatform, it is everything to the left of the colon sign :
 #The label is everything to the right of the :
 
