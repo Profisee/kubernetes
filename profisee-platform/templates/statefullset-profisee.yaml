@@ -21,7 +21,7 @@ spec:
     spec:
       terminationGracePeriodSeconds: 60
       nodeSelector:
-        "kubernetes.io/os": windows 
+        "kubernetes.io/os": windows
       volumes:
       - name: data-volume
         projected:
@@ -32,7 +32,7 @@ spec:
               name: profisee-oidcproviders
       - name: initscripts
         secret:
-          secretName: profisee-initscripts 
+          secretName: profisee-initscripts
       {{- if .Values.cloud.azure.isProvider }}
       - name: fileshare
         csi:
@@ -59,7 +59,7 @@ spec:
       containers:
       - name: profisee
         image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: Always      
+        imagePullPolicy: Always
         livenessProbe:
           exec:
             command:

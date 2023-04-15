@@ -126,17 +126,22 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	helm repo add csi-secrets-store-provider-azure https://azure.github.io/secrets-store-csi-driver-provider-azure/charts
 
 	#If Key Vault CSI driver is present, uninstall it.
-        kvcsipresent=$(helm list -n profisee -f csi-secrets-store-provider-azure -o table --short)
-        if [ "$kvcsipresent" = "csi-secrets-store-provider-azure" ]; then
-	        helm uninstall -n profisee csi-secrets-store-provider-azure;
-	        echo $"Will sleep for 30 seconds to allow clean uninstall of Key Vault CSI driver."
-	        sleep 30;
-        fi
+    kvcsipresent=$(helm list -n profisee -f csi-secrets-store-provider-azure -o table --short)
+    if [ "$kvcsipresent" = "csi-secrets-store-provider-azure" ]; then
+	    helm uninstall -n profisee csi-secrets-store-provider-azure;
+	    echo $"Will sleep for 30 seconds to allow clean uninstall of Key Vault CSI driver."
+	    sleep 30;
+    fi
+	kvcsipresentinkubesystem=$(helm list -n kube-system -f csi-secrets-store-provider-azure -o table --short)
+	if [ "$kvcsipresentinkubesystem" = "csi-secrets-store-provider-azure" ]; then
+		helm uninstall -n kube-system csi-secrets-store-provider-azure;
+		echo $"Will sleep for 30 seconds to allow clean uninstall of Key Vault CSI driver."
+		sleep 30;
+	fi
 
-	#https://github.com/Azure/secrets-store-csi-driver-provider-azure/releases/tag/0.0.16
-	#The behavior changed so now you have to enable the secrets-store-csi-driver.syncSecret.enabled=true
 	#We are not but if this is to run on a windows node, then you use this --set windows.enabled=true --set secrets-store-csi-driver.windows.enabled=true
-	helm install -n profisee csi-secrets-store-provider-azure csi-secrets-store-provider-azure/csi-secrets-store-provider-azure --set secrets-store-csi-driver.syncSecret.enabled=true
+	#Recommendation is to have CSI installed in kube-system as per https://azure.github.io/secrets-store-csi-driver-provider-azure/docs/getting-started/installation/
+	helm install -n kube-system csi-secrets-store-provider-azure csi-secrets-store-provider-azure/csi-secrets-store-provider-azure --set secrets-store-csi-driver.syncSecret.enabled=true
 	echo $"Installation of Key Vault Container Storage Interface (CSI) driver finished."
 
 
@@ -338,23 +343,39 @@ if [ "$UPDATEAAD" = "Yes" ]; then
 
 	#If Azure Application Registration User.Read permission is present, skip adding it.
 	echo $"Let's check to see if the User.Read permission is granted, skip if has been."
-        appregpermissionspresent=$(az ad app permission list --id $CLIENTID --query "[].resourceAccess[].id" -o tsv)
-        if [ "$appregpermissionspresent" = "e1fe6dd8-ba31-4d61-89e7-88639da4683d" ]; then
-	        echo $"User.Read permissions already present, no need to add it."
+    appregpermissionspresent=$(az ad app permission list --id $CLIENTID --query "[].resourceAccess[].id" -o tsv)
+    if [ "$appregpermissionspresent" = "e1fe6dd8-ba31-4d61-89e7-88639da4683d" ]; then
+	    echo $"User.Read permissions already present, no need to add it."
 	else
+		echo "Update of the application registration's permissions, step 1 started."
+		#Add a Graph API permission to "Sign in and read user profile"
+		az ad app permission add --id $CLIENTID --api 00000003-0000-0000-c000-000000000000 --api-permissions e1fe6dd8-ba31-4d61-89e7-88639da4683d=Scope
+		echo "Creation of the service principal started."
+		az ad sp create --id $CLIENTID
+		echo "Creation of the service principal finished."
+		echo "Update of the application registration's permissions, step 1 finished."
 
-	        echo "Update of the application registration's permissions, step 1 started."
-	        #Add a Graph API permission to "Sign in and read user profile"
-	        az ad app permission add --id $CLIENTID --api 00000003-0000-0000-c000-000000000000 --api-permissions e1fe6dd8-ba31-4d61-89e7-88639da4683d=Scope
-	        echo "Creation of the service principal started."
-	        az ad sp create --id $CLIENTID
-	        echo "Creation of the service principal finished."
-	        echo "Update of the application registration's permissions, step 1 finished."
-
-	        echo "Update of the application registration's permissions, step 2 started."
-	        az ad app permission grant --id $CLIENTID --api 00000003-0000-0000-c000-000000000000 --scope User.Read
-	        echo "Update of the application registration's permissions, step 2 finished."
-	        echo "Update of Azure Active Directory finished.";
+		echo "Update of the application registration's permissions, step 2 started."
+		az ad app permission grant --id $CLIENTID --api 00000003-0000-0000-c000-000000000000 --scope User.Read
+		echo "Update of the application registration's permissions, step 2 finished."
+		echo "Update of Azure Active Directory finished.";
+	fi
+	#If Azure Application Registration "groups" token is present, skip adding it.
+	echo $"Let's check to see if the "groups" token is present, skip if present."
+    appregtokengroupsclaimpresent=$(az ad app list --app-id $CLIENTID --query "[].optionalClaims[].idToken[].name" -o tsv)
+    if [ "$appregtokengroupsclaimpresent" = "groups" ]; then
+	    echo $"Token is configured with groups token claim, no need to add it."
+	else
+	    echo "Update of the application registration's token configuration started."
+	    #Add a groups claim token for idTokens
+		az ad app update --id $CLIENTID --set groupMembershipClaims=SecurityGroup --optional-claims '{"idToken":[{"additionalProperties":[],"essential":false,"name":"groups","source":null}],"accessToken":[{"additionalProperties":[],"essential":false,"name":"groups","source":null}],"saml2Token":[{"additionalProperties":[],"essential":false,"name":"groups","source":null}]}'
+		appregidtokengroupsclaimpresent=$(az ad app list --app-id $CLIENTID --query "[].optionalClaims[].idToken[].name" -o tsv)
+		appregaccesstokengroupsclaimpresent=$(az ad app list --app-id $CLIENTID --query "[].optionalClaims[].accessToken[].name" -o tsv)
+		appregsaml2tokengroupsclaimpresent=$(az ad app list --app-id $CLIENTID --query "[].optionalClaims[].saml2Token[].name" -o tsv)
+		echo $"idToken claim is now '$appregidtokengroupsclaimpresent'"
+		echo $"accessToken claim is now '$appregaccesstokengroupsclaimpresent'"
+		echo $"saml2Token claim is now '$appregsaml2tokengroupsclaimpresent'"
+	    echo "Update of the application registration's token configuration finished."
 	fi
 fi
 

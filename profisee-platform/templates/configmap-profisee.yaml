@@ -25,3 +25,4 @@ data:
     ProfiseeOidcFirstNameClaim: {{.Values.profiseeRunTime.oidc.firstNameClaim|quote}}
     ProfiseeOidcLastNameClaim: {{.Values.profiseeRunTime.oidc.lastNameClaim|quote}}
     ProfiseeOidcEmailClaim: {{.Values.profiseeRunTime.oidc.emailClaim|quote}}
+    ProfiseeOidcGroupsClaim: {{.Values.profiseeRunTime.oidc.groupsClaim|quote}}

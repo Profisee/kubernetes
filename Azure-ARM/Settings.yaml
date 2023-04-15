@@ -28,6 +28,7 @@ profiseeRunTime:
         firstNameClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
         lastNameClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
         emailClaim: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+        groupsClaim: "groups"
     clusterNodeCount: 1
 clusterNode:
     limits:
