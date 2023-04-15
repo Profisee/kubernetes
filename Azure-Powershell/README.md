@@ -87,11 +87,9 @@ The following properties must be set:
 	$adminAccountForPlatform = "emailaddress@domain.com" #This should be account of the first super user who will be registered with Profisee, who will be able to logon and add other users.
 
 	###AKS Settings###
-	$clusterVmSizeForLinux = "Standard_B2s" #This should be fine, but we could change it if we determine we should. Used primarily for networking/load balancing controllers (Linux).
-	$clusterVmSizeForWindows = "Standard_B4ms" #We’ll want to ensure the correct size 
-	$kubernetesVersion = "1.17.3"
-	$windowsAdminUserName = "winadmin" #Username to create on Windows node VMs.
-	$windowsAdminPassword = "Ple@seCh@ngeMe1234!" #Password to create on Windows node VMs.
+	$clusterVmSizeForLinux = "Standard_D4as_v5" #This should be fine, but we could change it if we determine we should. Used primarily for networking/load balancing controllers (Linux).
+	$clusterVmSizeForWindows = "Standard_D8as_v5" #We’ll want to ensure the correct size 
+	$kubernetesVersion = "1.24.10"
 
 ## D - Set the Azure AD redirect URI if you did not have the deploy update it for you.
 
