@@ -15,8 +15,6 @@ controller:
     proxy-next-upstream: "off"
     proxy-request-buffering: "off"    
     client-header-buffer-size: "512k"
-    http2-max-field-size: "16k"
-    http2-max-header-size: "512k"
     large-client-header-buffers: "32 512k"
     client_body_buffer_size: "512k"
   metrics:    
