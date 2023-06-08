@@ -5,7 +5,7 @@ metadata:
   name: sqlmaintenance
   namespace: {{.Release.Namespace}}
 spec:
-  schedule: "0 3 * * 7"
+  schedule: "0 3 * * 0"
   jobTemplate:
     spec:
       ttlSecondsAfterFinished: 50
