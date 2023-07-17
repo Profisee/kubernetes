@@ -480,12 +480,12 @@
         },   
         {
             "type": "Microsoft.ContainerService/managedClusters",
-            "apiVersion": "2020-07-01",
+            "apiVersion": "2023-05-02-preview",
             "name": "[variables('KubernetesClusterName')]",
             "location": "[resourceGroup().location]",
             "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
             "sku": {
-                "name": "Basic",
+                "name": "Base",
                 "tier": "Free"
             },
             "properties": {
@@ -503,6 +503,7 @@
                         "enableNodePublicIP": false,
                         "nodeLabels": {},
                         "mode": "System",
+                        "osSKU": "Ubuntu",
                         "osType": "Linux",
                         "vnetSubnetID": "[if(not(empty(variables('KubernetesVnetResourceGroup'))),variables('vnetId'),json('null'))]"
                     },
@@ -516,6 +517,7 @@
                         "orchestratorVersion": "[variables('KubernetesVersion')]",
                         "enableNodePublicIP": false,
                         "mode": "User",
+                        "osSKU": "Windows2019",
                         "osType": "Windows",
                         "vnetSubnetID": "[if(not(empty(variables('KubernetesVnetResourceGroup'))),variables('vnetId'),json('null'))]"
                     }
