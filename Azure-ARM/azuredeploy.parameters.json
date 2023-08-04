@@ -14,9 +14,6 @@
         "ProfiseeWebAppName": {
             "value": ""
         },
-        "TenantId": {
-            "value": ""
-        },
         "ActiveDirectoryCreateApp": {
             "value": "Yes"
         },
