@@ -8,7 +8,7 @@ spec:
   schedule: "0 3 * * 0"
   jobTemplate:
     spec:
-      ttlSecondsAfterFinished: 50
+      ttlSecondsAfterFinished: 1200
       template:
         spec:
           nodeSelector:
@@ -47,6 +47,7 @@ spec:
             - $SqlCmd.ExecuteNonQuery();
             - $sqlquery="exec [dbo].[AzureSQLMaintenance] @Operation='all' ,@debug = 'off',@RebuildHeaps = 0,@mode = 'smart',@ResumableIndexRebuild = 0,@LogToTable=1";
             - $SqlCmd.CommandText = $sqlquery;
+            - $SqlCmd.CommandTimeout=0;
             - $SqlCmd.ExecuteNonQuery();
             - $SqlConnection.Close();
           restartPolicy: Never
