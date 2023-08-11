@@ -1,5 +1,5 @@
 --Execute sproc to prune logs 
-EXEC [logging].[pPurgeLoggingMessages] 14 
+EXEC [logging].[pPurgeLoggingMessages] 30
 
 --Create and execute sproc for DB index rebuild, statistics update and defragmentation 
 CREATE OR ALTER PROCEDURE [AzureSQLMaintenance]
