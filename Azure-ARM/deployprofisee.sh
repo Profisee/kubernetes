@@ -230,7 +230,7 @@ fi
 echo $"Installation of Azure File CSI Driver started.";
 echo $"Adding Azure File CSI Driver repo."
 helm repo add azurefile-csi-driver https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/charts
-helm install azurefile-csi-driver azurefile-csi-driver/azurefile-csi-driver --namespace kube-system --version v1.28.1 --set controller.replicas=1
+helm install azurefile-csi-driver azurefile-csi-driver/azurefile-csi-driver --namespace kube-system --set controller.replicas=1
 echo $"Azure File CSI Driver installation finished."
 
 #Installation of nginx
