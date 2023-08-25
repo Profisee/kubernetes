@@ -45,8 +45,12 @@ spec:
             - $SqlCmd.CommandText = $sqlText;
             - $SqlCmd.Connection = $SqlConnection;
             - $SqlCmd.ExecuteNonQuery();
-            - $sqlquery="exec [dbo].[AzureSQLMaintenance] @Operation='all' ,@debug = 'off',@RebuildHeaps = 0,@mode = 'smart',@ResumableIndexRebuild = 0,@LogToTable=1";
-            - $SqlCmd.CommandText = $sqlquery;
+            - $sqlMaintenanceQuery="exec [dbo].[AzureSQLMaintenance] @Operation='all' ,@debug = 'off',@RebuildHeaps = 0,@mode = 'dummy',@ResumableIndexRebuild = 0,@LogToTable=1";
+            - $SqlCmd.CommandText = $sqlMaintenanceQuery;
+            - $SqlCmd.CommandTimeout=0;
+            - $SqlCmd.ExecuteNonQuery();
+            - $sqlLoggingQuery="exec [logging].[pPurgeLoggingMessages] 30";
+            - $SqlCmd.CommandText = $sqlLoggingQuery;
             - $SqlCmd.CommandTimeout=0;
             - $SqlCmd.ExecuteNonQuery();
             - $SqlConnection.Close();

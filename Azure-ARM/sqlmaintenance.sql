@@ -488,7 +488,3 @@ begin
 	if @ScriptHasAnError=1 	raiserror('Script has errors - please review the log.',16,1)
 end
 print 'Create or Alter Stored Procedure Done'
-
---Execute sproc to prune logs
-EXEC [logging].[pPurgeLoggingMessages] 30
-
