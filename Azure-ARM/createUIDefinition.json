@@ -50,7 +50,7 @@
         "options": {
           "icon": "Info",
           "text": "Click here to learn how Profisee uses Managed Identities.",
-          "uri": "https://support.profisee.com/wikis/2023_r1_support/planning_your_managed_identity_configuration"
+          "uri": "https://support.profisee.com/wikis/profiseeplatform/planning_your_managed_identity_configuration"
         }
       }
     ],
@@ -206,7 +206,7 @@
             "type": "Microsoft.Common.OptionsGroup",
             "label": "Create a new Azure AD application registration for you?",
             "defaultValue": "Yes, create and configure it for me.",
-            "toolTip": "An Azure AD application registration will be used for authentication via ID tokens. For more information please visit https://support.profisee.com/wikis/2023_r1_support/deploying_the_AKS_cluster_with_the_arm_template.",
+            "toolTip": "An Azure AD application registration will be used for authentication via ID tokens. For more information please visit https://support.profisee.com/wikis/profiseeplatform/deploying_the_AKS_cluster_with_the_arm_template.",
             "constraints": {
               "allowedValues": [
                 {
