@@ -20,6 +20,9 @@
         "ActiveDirectoryClientId": {
             "value": ""
         },
+        "ActiveDirectoryClientSecret": {
+            "value": ""
+        },
         "PurviewUrl": {
             "value": ""
         },
@@ -33,20 +36,20 @@
             "value": ""
         },
         "ManagedIdentityName": {
-            "value": {              
+            "value": {
             }
         },
         "KubernetesClusterName": {
             "value": "ProfiseeAKSCluster"
         },
         "KubernetesLinuxNodeSize": {
-            "value": "Standard_D4as_v5"
+            "value": "Standard_B2s"
         },
         "KubernetesLinuxNodeCount": {
             "value": 1
         },
         "KubernetesWindowsNodeSize": {
-            "value": "Standard_D8as_v5"
+            "value": "Standard_B4ms"
         },
         "KubernetesWindowsNodeCount": {
             "value": 1
@@ -133,6 +136,12 @@
             "value": ""
         },
         "KubenetesInfrastructureResourceGroupName": {
+            "value": ""
+        },
+        "WindowsNodeVersion":{
+            "value": ""
+        },    
+        "AuthenticationType":{
             "value": ""
         }
     }
