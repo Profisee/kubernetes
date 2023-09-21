@@ -21,6 +21,10 @@
       "defaultValue": "",
       "type": "String"
     },
+    "ActiveDirectoryClientSecret": {
+      "defaultValue": "",
+      "type": "String"
+    },
     "UsePurview": {
       "defaultValue": "",
       "type": "String"
@@ -51,6 +55,9 @@
     "KubenetesInfrastructureResourceGroupName": {
       "defaultValue": "",
       "type": "String"
+    },
+    "WindowsNodeVersion":{
+      "type": "string"
     },
     "KubernetesClusterName": {
       "type": "String"
@@ -93,6 +100,9 @@
     },
     "KubernetesDockerBridgeCidr": {
       "defaultValue": "",
+      "type": "string"
+    },
+    "AuthenticationType":{
       "type": "string"
     },
     "SQLServerCreateNew": {
@@ -167,7 +177,7 @@
       "type": "String"
     }
   },
-  "variables": 
+  "variables":
   {
     "ScriptURL":"https://raw.githubusercontent.com/profisee/kubernetes/master/Azure-ARM/deployprofisee.sh",
     "PreReqCheckScriptURL":"https://raw.githubusercontent.com/profisee/kubernetes/master/Azure-ARM/prereqcheck.sh",
@@ -180,8 +190,10 @@
     "ACRUSER":"",
     "ACRUSERPASSWORD":"",
 
+
     "UPDATEAAD":"[parameters('ActiveDirectoryCreateApp')]",
     "CLIENTID":"[parameters('ActiveDirectoryClientId')]",
+    "CLIENTSECRET":"[parameters('ActiveDirectoryClientSecret')]",
     "OIDCURL":"[concat('https://login.microsoftonline.com/',subscription().tenantId)]",
 
     "KubernetesVersion":"[parameters('KubernetesVersion')]",
@@ -192,9 +204,10 @@
     "KubernetesDockerBridgeCidr": "[parameters('KubernetesDockerBridgeCidr')]",
     "KubernetesLinuxNodeCount": "[int(parameters('KubernetesLinuxNodeCount'))]",
     "KubernetesLinuxNodeSize": "[parameters('KubernetesLinuxNodeSize')]",
+    "AuthenticationType": "[parameters('AuthenticationType')]",
     "KubernetesWindowsNodeCount": "[int(parameters('KubernetesWindowsNodeCount'))]",
     "KubernetesWindowsNodeSize": "[parameters('KubernetesWindowsNodeSize')]",
-
+    "WindowsNodeVersion": "[parameters('WindowsNodeVersion')]",
     "ManagedIdentity": "[parameters('ManagedIdentityName')]",
 
     "DNSHostName": "[parameters('DNSHostName')]",
@@ -235,7 +248,7 @@
     "PurviewClientSecret":"[parameters('PurviewClientSecret')]",
     "PurviewAccountResourceGroup":"[parameters('PurviewAccountResourceGroup')]"
   },
-    "resources": 
+    "resources":
     [
         {
             "type": "Microsoft.Resources/deploymentScripts",
@@ -308,22 +321,22 @@
                         "name": "PURVIEWCLIENTSECRET",
                         "value": "[variables('PurviewClientSecret')]"
                     }
-                ]           
+                ]
             }
         },
         {
-            "apiVersion": "2015-01-01",
+            "apiVersion": "2022-09-01",
             "name": "License",
             "type": "Microsoft.Resources/deployments",
             "condition": "[equals(tolower(parameters('UseKeyVault')),tolower('Yes'))]",
             "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
             "properties": {
                 "mode": "Incremental",
-                "expressionEvaluationOptions": 
+                "expressionEvaluationOptions":
                 {
                 "scope": "inner"
                 },
-                "template": 
+                "template":
                     {
                     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
@@ -355,18 +368,18 @@
         },
 
         {
-            "apiVersion": "2015-01-01",
+            "apiVersion": "2022-09-01",
             "name": "Sql",
             "type": "Microsoft.Resources/deployments",
             "condition": "[equals(tolower(parameters('UseKeyVault')),tolower('Yes'))]",
             "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
             "properties": {
                 "mode": "Incremental",
-                "expressionEvaluationOptions": 
+                "expressionEvaluationOptions":
                 {
                 "scope": "inner"
                 },
-                "template": 
+                "template":
                     {
                     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
@@ -376,7 +389,7 @@
                         "name": "[tolower(parameters('SQLServerName'))]",
                         "type": "Microsoft.Sql/servers",
                         "location": "[resourceGroup().location]",
-                        "apiVersion": "2019-06-01-preview",
+                        "apiVersion": "2022-05-01-preview",
                         "dependsOn": [],
                         "tags": {
                             "displayName": "SQLServer"
@@ -391,7 +404,7 @@
                                 "name": "AllowAllWindowsAzureIps",
                                 "type": "firewallrules",
                                 "location": "[resourceGroup().location]",
-                                "apiVersion": "2015-05-01-preview",
+                                "apiVersion": "2022-05-01-preview",
                                 "dependsOn": [
                                     "[concat('Microsoft.Sql/servers/', tolower(parameters('SQLServerName')))]"
                                 ],
@@ -403,7 +416,7 @@
                             {
                             "condition": "[equals(tolower(parameters('SQLServerCreateNew')),tolower('Yes'))]",
                             "type": "databases",
-                            "apiVersion": "2020-08-01-preview",
+                            "apiVersion": "2022-05-01-preview",
                             "name": "[parameters('SQLServerDatabaseName')]",
                             "location": "[resourceGroup().location]",
                             "dependsOn": [
@@ -475,9 +488,9 @@
                         "secretName": "[parameters('SQLServerPassword')]"
                         }
                     }
-                }      
+                }
             }
-        },   
+        },
         {
             "type": "Microsoft.ContainerService/managedClusters",
             "apiVersion": "2023-05-02-preview",
@@ -517,11 +530,11 @@
                         "orchestratorVersion": "[variables('KubernetesVersion')]",
                         "enableNodePublicIP": false,
                         "mode": "User",
-                        "osSKU": "Windows2019",
+                        "osSKU": "[variables('WindowsNodeVersion')]",
                         "osType": "Windows",
                         "vnetSubnetID": "[if(not(empty(variables('KubernetesVnetResourceGroup'))),variables('vnetId'),json('null'))]"
                     }
-                ],                
+                ],
                 "nodeResourceGroup": "[variables('KubenetesInfrastructureResourceGroupName')]",
                 "enableRBAC": true,
                 "networkProfile": {
@@ -529,8 +542,7 @@
                     "loadBalancerSku": "Standard",
                     "outboundType": "loadBalancer",
                     "serviceCidr": "[variables('KubernetesServiceCidr')]",
-                    "dnsServiceIP": "[variables('KubernetesDNSServiceIP')]",
-                    "dockerBridgeCidr": "[variables('KubernetesDockerBridgeCidr')]"
+                    "dnsServiceIP": "[variables('KubernetesDNSServiceIP')]"
                 }
             },
             "identity": {
@@ -542,7 +554,7 @@
             "name": "[tolower(parameters('SQLServerName'))]",
             "type": "Microsoft.Sql/servers",
             "location": "[resourceGroup().location]",
-            "apiVersion": "2019-06-01-preview",
+            "apiVersion": "2022-05-01-preview",
             "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
             "tags": {
                 "displayName": "SQLServer"
@@ -557,7 +569,7 @@
                     "name": "AllowAllWindowsAzureIps",
                     "type": "firewallrules",
                     "location": "[resourceGroup().location]",
-                    "apiVersion": "2015-05-01-preview",
+                    "apiVersion": "2022-05-01-preview",
                     "dependsOn": [
                         "[concat('Microsoft.Sql/servers/', tolower(parameters('SQLServerName')))]"
                     ],
@@ -569,7 +581,7 @@
                 {
                 "condition": "[and(equals(tolower(parameters('SQLServerCreateNew')),tolower('Yes')),equals(tolower(parameters('UseKeyVault')),tolower('No')))]",
                 "type": "databases",
-                "apiVersion": "2020-08-01-preview",
+                "apiVersion": "2022-05-01-preview",
                 "name": "[parameters('SQLServerDatabaseName')]",
                 "location": "[resourceGroup().location]",
                 "dependsOn": [
@@ -583,7 +595,7 @@
             "name": "[tolower(variables('StorageAccountName'))]",
             "type": "Microsoft.Storage/storageAccounts",
             "location": "[resourceGroup().location]",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2022-09-01",
             "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
             "tags": {
                 "displayName": "[variables('StorageAccountName')]"
@@ -596,13 +608,13 @@
         {
             "condition": "[equals(tolower(variables('StorageAccountCreateNew')),tolower('Yes'))]",
             "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2022-09-01",
             "name": "[concat(tolower(variables('StorageAccountName')), '/default/', tolower(variables('StorageAccountFileShareName')))]",
             "dependsOn": [
                 "[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]",
                 "[resourceId('Microsoft.Storage/storageAccounts', tolower(variables('StorageAccountName')))]"
             ]
-        },          
+        },
         {
             "type": "Microsoft.Resources/deploymentScripts",
             "apiVersion": "2020-10-01",
@@ -680,7 +692,7 @@
                     {
                         "name": "EXTERNALDNSURL",
                         "value": "[variables('ExternalDNSURL')]"
-                    },                
+                    },
                     {
                         "name": "OIDCURL",
                         "value": "[variables('OIDCURL')]"
@@ -720,6 +732,10 @@
                     {
                         "name": "CLIENTID",
                         "value": "[variables('CLIENTID')]"
+                    },
+                    {
+                        "name": "CLIENTSECRET",
+                        "value": "[variables('CLIENTSECRET')]"
                     },
                     {
                         "name": "CONFIGUREHTTPS",
@@ -792,15 +808,23 @@
                       "value": "[variables('PurviewAccountResourceGroup')]"
                     },
                     {
+                      "name": "AUTHENTICATIONTYPE",
+                      "value": "[variables('AuthenticationType')]"
+                    },
+                    {
+                      "name": "WINDOWSNODEVERSION",
+                      "value": "[variables('WindowsNodeVersion')]"
+                    },
+                    {
                       "name": "WEBAPPNAME",
                       "value": "[variables('WEBAPPNAME')]"
                     }
                 ],
-                "primaryScriptUri": "[variables('ScriptURL')]"         
+                "primaryScriptUri": "[variables('ScriptURL')]"
             }
         },
         {
-            "apiVersion": "2018-02-01",
+            "apiVersion": "2022-09-01",
             "name": "pid-498552cf-87f5-55b7-a69b-5364df5c1994",
             "type": "Microsoft.Resources/deployments",
             "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
@@ -814,8 +838,8 @@
             }
         }
     ],
-    "outputs": 
-    {    
+    "outputs":
+    {
     "PreReqChecks": {
       "value": "[reference('PreReqChecks').outputs]",
       "type": "object"
