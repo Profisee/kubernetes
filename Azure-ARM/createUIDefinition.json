@@ -435,7 +435,7 @@
                 "label": "VM Size",
                 "toolTip": "Pick VM size for the instances in the Linux nodepool. An 's' in the size will result in use of a Premium SSD. Ex. Standard_D2s_v5 will use Premium SSD, Standard_D2_v5 will use HDD.",
                 "recommendedSizes": [
-                  "Standard_D4_v5"
+                  "Standard_D4as_v5"
                 ],
                 "constraints": {
                   "allowedSizes": []
@@ -444,7 +444,7 @@
                   "hideDiskTypeFilter": false
                 },
                 "osPlatform": "Linux",
-                "count": 1,
+                "count": 2,
                 "visible": true
               }
             ],
@@ -453,11 +453,11 @@
           {
             "name": "KubernetesLinuxNodeCount",
             "type": "Microsoft.Common.Slider",
-            "min": 1,
+            "min": 2,
             "max": 12,
             "label": "Linux node count",
             "subLabel": "",
-            "defaultValue": 1,
+            "defaultValue": 2,
             "showStepMarkers": false,
             "toolTip": "",
             "constraints": {
@@ -476,7 +476,7 @@
                 "label": "VM Size",
                 "toolTip": "Pick VM size for the instances in the Windows nodepool. An 's' in the size will result in use of a Premium SSD. Ex. Standard_D2s_v5 will use Premium SSD, Standard_D2_v5 will use HDD.",
                 "recommendedSizes": [
-                  "Standard_D4_v5"
+                  "Standard_D8as_v5"
                 ],
                 "constraints": {
                   "allowedSizes": []

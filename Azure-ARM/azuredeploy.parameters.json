@@ -43,13 +43,13 @@
             "value": "ProfiseeAKSCluster"
         },
         "KubernetesLinuxNodeSize": {
-            "value": "Standard_B2s"
+            "value": "Standard_D4as_v5"
         },
         "KubernetesLinuxNodeCount": {
             "value": 1
         },
         "KubernetesWindowsNodeSize": {
-            "value": "Standard_B4ms"
+            "value": "Standard_D8as_v5"
         },
         "KubernetesWindowsNodeCount": {
             "value": 1
