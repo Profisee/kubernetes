@@ -33,11 +33,11 @@ printenv;
 
 #Get AKS credentials, this allows us to use kubectl commands, if needed.
 az aks get-credentials --resource-group $RESOURCEGROUPNAME --name $CLUSTERNAME --overwrite-existing;
-az extension add --name aks-preview
-az extension update --name aks-preview
-az feature register --namespace "Microsoft.ContainerService" --name "EnableWorkloadIdentityPreview"
-az feature show --namespace "Microsoft.ContainerService" --name "EnableWorkloadIdentityPreview"
-az provider register --namespace Microsoft.ContainerService
+#az extension add --name aks-preview
+#az extension update --name aks-preview
+#az feature register --namespace "Microsoft.ContainerService" --name "EnableWorkloadIdentityPreview"
+#az feature show --namespace "Microsoft.ContainerService" --name "EnableWorkloadIdentityPreview"
+#az provider register --namespace Microsoft.ContainerService
 
 #Install dotnet core.
 echo $"Installation of dotnet core started.";
@@ -150,12 +150,26 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	echo $"Installation of Key Vault Container Storage Interface (CSI) driver finished."
 
 	#Install Azure Workload Identity driver.
-	echo $"Installation of Key Vault Azure Active Directory Workload Identity driver started."
-    az aks update -g $RESOURCEGROUPNAME -n $CLUSTERNAME --enable-oidc-issuer --enable-workload-identity
-	OIDC_ISSUER="$(az aks show -n $CLUSTERNAME -g $RESOURCEGROUPNAME --query "oidcIssuerProfile.issuerUrl" -o tsv)"
-	echo $"Installation of Key Vault Azure Active Directory Workload Identity driver finished."
+	#echo $"Installation of Key Vault Azure Active Directory Workload Identity driver started."
+    #az aks update -g $RESOURCEGROUPNAME -n $CLUSTERNAME --enable-oidc-issuer --enable-workload-identity
+	#OIDC_ISSUER="$(az aks show -n $CLUSTERNAME -g $RESOURCEGROUPNAME --query "oidcIssuerProfile.issuerUrl" -o tsv)"
+	#echo $"Installation of Key Vault Azure Active Directory Workload Identity driver finished."
 
-	#Assign AAD roles to the AKS AgentPool Managed Identity.
+-	#Install AAD pod identity into AKS.
+	echo $"Installation of Key Vault Azure Active Directory Pod Identity driver started. If present, we uninstall and reinstall it."
+	#If AAD Pod Identity is present, uninstall it.
+        aadpodpresent=$(helm list -n profisee -f pod-identity -o table --short)
+        if [ "$aadpodpresent" = "pod-identity" ]; then
+	        helm uninstall -n profisee pod-identity;
+	        echo $"Will sleep for 30 seconds to allow clean uninstall of AAD Pod Identity."
+	        sleep 30;
+        fi
+
+	helm repo add aad-pod-identity https://raw.githubusercontent.com/Azure/aad-pod-identity/master/charts
+	helm install -n profisee pod-identity aad-pod-identity/aad-pod-identity
+	echo $"Installation of Key Vault Azure Active Directory Pod Identity driver finished."
+
+	#Assign AAD roles to the AKS AgentPool Managed Identity. The Pod identity communicates with the AgentPool MI, which in turn communicates with the Key Vault specific Managed Identity.
 	echo $"AKS Managed Identity configuration for Key Vault access started."
 
 	echo $"AKS AgentPool Managed Identity configuration for Key Vault access step 1 started."
@@ -173,7 +187,7 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	akskvidentityClientId=$(az identity create -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'clientId' -o tsv);
 
 	#Create Federated Credential and assign it to the Profisee Service Account
-	az identity federated-credential create --name ProfiseefederatedId --identity-name $identityName  --resource-group $AKSINFRARESOURCEGROUPNAME --issuer $OIDC_ISSUER --subject system:serviceaccount:profisee:profiseeserviceaccount --audience api://AzureADTokenExchange
+	#az identity federated-credential create --name ProfiseefederatedId --identity-name $identityName  --resource-group $AKSINFRARESOURCEGROUPNAME --issuer $OIDC_ISSUER --subject system:serviceaccount:profisee:profiseeserviceaccount --audience api://AzureADTokenExchange
 	akskvidentityClientResourceId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'id' -o tsv)
 	principalId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'principalId' -o tsv)
 	echo $"Key VAult Specific Managed Identity configuration for Key Vault access step 2 finished."

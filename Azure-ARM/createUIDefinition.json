@@ -408,7 +408,7 @@
                 "name": "KubernetesLinuxNodeSize",
                 "type": "Microsoft.Compute.SizeSelector",
                 "label": "VM Size",
-                "toolTip": "Pick VM size for the instances in the Linux nodepool. An 's' in the size will result in use of a Premium SSD. Ex. Standard_D2s_v5 will use Premium SSD, Standard_D2_v5 will use HDD.",
+                "toolTip": "Pick VM size for the instances in the Linux nodepool. An 's' in the size will result in use of a Premium SSD. Ex. Standard_D4s_v5 will use Premium SSD, Standard_D4_v5 will use HDD.",
                 "recommendedSizes": [
                   "Standard_D4as_v5"
                 ],
@@ -449,7 +449,7 @@
                 "name": "KubernetesWindowsNodeSize",
                 "type": "Microsoft.Compute.SizeSelector",
                 "label": "VM Size",
-                "toolTip": "Pick VM size for the instances in the Windows nodepool. An 's' in the size will result in use of a Premium SSD. Ex. Standard_D2s_v5 will use Premium SSD, Standard_D2_v5 will use HDD.",
+                "toolTip": "Pick VM size for the instances in the Windows nodepool. An 's' in the size will result in use of a Premium SSD. Ex. Standard_D8s_v5 will use Premium SSD, Standard_D8_v5 will use HDD.",
                 "recommendedSizes": [
                   "Standard_D8as_v5"
                 ],

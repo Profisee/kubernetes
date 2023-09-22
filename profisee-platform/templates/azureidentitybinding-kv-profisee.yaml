@@ -1,9 +1,9 @@
-# {{- if .Values.cloud.azure.useKeyVault -}}
-# apiVersion: aadpodidentity.k8s.io/v1
-# kind: AzureIdentityBinding
-# metadata:
-#     name: azure-pod-identity-binding
-# spec:
-#     azureIdentity: "akskvidentity"
-#     selector: azure-pod-identity-binding-selector
-# {{- end }}
+ {{- if .Values.cloud.azure.useKeyVault -}}
+ apiVersion: aadpodidentity.k8s.io/v1
+ kind: AzureIdentityBinding
+ metadata:
+     name: azure-pod-identity-binding
+ spec:
+     azureIdentity: "akskvidentity"
+     selector: azure-pod-identity-binding-selector
+ {{- end }}
