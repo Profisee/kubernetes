@@ -49,17 +49,17 @@ chmod 755 ./dotnet-install.sh
 echo $"Installation of dotnet core finished.";
 
 #Downloadind and extracting Proisee license reader.
-echo $"Download and extraction of Profisee license reader started.";
-curl -fsSL -o LicenseReader.tar.001 "$REPOURL/Utilities/LicenseReader/LicenseReader.tar.001"
-curl -fsSL -o LicenseReader.tar.002 "$REPOURL/Utilities/LicenseReader/LicenseReader.tar.002"
-curl -fsSL -o LicenseReader.tar.003 "$REPOURL/Utilities/LicenseReader/LicenseReader.tar.003"
-curl -fsSL -o LicenseReader.tar.004 "$REPOURL/Utilities/LicenseReader/LicenseReader.tar.004"
-cat LicenseReader.tar.* | tar xf -
-rm LicenseReader.tar.001
-rm LicenseReader.tar.002
-rm LicenseReader.tar.003
-rm LicenseReader.tar.004
-echo $"Download and extraction of Profisee license reader finished.";
+echo $"Download of Profisee license reader started.";
+curl -fsSL -o LicenseReader "$REPOURL/Utilities/LicenseReader/LicenseReader"
+#curl -fsSL -o LicenseReader.tar.002 "$REPOURL/Utilities/LicenseReader/LicenseReader.tar.002"
+#curl -fsSL -o LicenseReader.tar.003 "$REPOURL/Utilities/LicenseReader/LicenseReader.tar.003"
+#curl -fsSL -o LicenseReader.tar.004 "$REPOURL/Utilities/LicenseReader/LicenseReader.tar.004"
+#cat LicenseReader.tar.* | tar xf -
+#rm LicenseReader.tar.001
+#rm LicenseReader.tar.002
+#rm LicenseReader.tar.003
+#rm LicenseReader.tar.004
+echo $"Download of Profisee license reader finished.";
 
 echo $"Clean Profisee license string of any unwanted characters such as linebreaks, spaces, etc...";
 LICENSEDATA=$(echo $LICENSEDATA|tr -d '\n')
