@@ -45,7 +45,7 @@ curl -fsSL -o dotnet-install.sh https://dot.net/v1/dotnet-install.sh
 #Set permisssions for installation script.
 chmod 755 ./dotnet-install.sh
 #Install dotnet.
-./dotnet-install.sh -version 6.0.22
+./dotnet-install.sh -c LTS
 echo $"Installation of dotnet core finished.";
 
 #Downloadind and extracting Proisee license reader.
