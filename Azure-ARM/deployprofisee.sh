@@ -155,7 +155,7 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	#OIDC_ISSUER="$(az aks show -n $CLUSTERNAME -g $RESOURCEGROUPNAME --query "oidcIssuerProfile.issuerUrl" -o tsv)"
 	#echo $"Installation of Key Vault Azure Active Directory Workload Identity driver finished."
 
--	#Install AAD pod identity into AKS.
+	#Install AAD pod identity into AKS.
 	echo $"Installation of Key Vault Azure Active Directory Pod Identity driver started. If present, we uninstall and reinstall it."
 	#If AAD Pod Identity is present, uninstall it.
         aadpodpresent=$(helm list -n profisee -f pod-identity -o table --short)
