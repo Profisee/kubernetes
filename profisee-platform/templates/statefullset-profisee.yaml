@@ -20,8 +20,14 @@ spec:
         {{- end}}
     spec:
       terminationGracePeriodSeconds: 60
+      serviceAccountName: profiseeserviceaccount
+      automountServiceAccountToken: false
       nodeSelector:
-        "kubernetes.io/os": windows
+      {{ if hasSuffix "win22" .Values.image.tag }}
+        "kubernetes.azure.com/os-sku": Windows2022
+      {{ else }}
+        "kubernetes.azure.com/os-sku": Windows2019
+      {{ end }}
       volumes:
       - name: data-volume
         projected:

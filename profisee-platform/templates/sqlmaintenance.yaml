@@ -1,0 +1,57 @@
+{{- if not .Values.profiseeRunTime.isPaaS }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sqlmaintenance
+  namespace: {{.Release.Namespace}}
+spec:
+  schedule: "0 3 * * 0"
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 1200
+      template:
+        spec:
+          nodeSelector:
+            maintenance: sqlcronjob
+          containers:
+          - name: profisee
+            image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+            imagePullPolicy: Always
+            ports:
+              - containerPort: 80
+            envFrom:
+            - configMapRef:
+                name: profisee-settings
+            env:
+            - name: ProfiseeSqlUserName
+              valueFrom:
+                secretKeyRef:
+                    name: profisee-sql-username
+                    key: ProfiseeSqlUserName
+            - name: ProfiseeSqlPassword
+              valueFrom:
+                secretKeyRef:
+                    name: profisee-sql-password
+                    key: ProfiseeSqlPassword
+            command: ["Powershell"]
+            args:
+            - $sqlScriptPath="C:\sqlMaintenance.sql";
+            - Invoke-WebRequest -outfile $sqlScriptPath -usebasicparsing "https://raw.githubusercontent.com/Profisee/kubernetes/master/Azure-ARM/sqlmaintenance.sql";
+            - $sqlText = Get-Content $sqlScriptPath -Raw;
+            - $SqlConnection = New-Object System.Data.SqlClient.SqlConnection;
+            - $SqlConnection.ConnectionString = 'Data Source={0};database={1};User ID={2};Password={3}' -f $env:ProfiseeSqlServer,$env:ProfiseeSqlDatabase,$env:ProfiseeSqlUserName,$env:ProfiseeSqlPassword;
+            - $SqlConnection.Open();
+            - $SqlCmd = New-Object System.Data.SqlClient.SqlCommand;
+            - $SqlCmd.CommandText = $sqlText;
+            - $SqlCmd.Connection = $SqlConnection;
+            - $SqlCmd.ExecuteNonQuery();
+            - $sqlquery="exec [dbo].[AzureSQLMaintenance] @Operation='all' ,@debug = 'off',@RebuildHeaps = 0,@mode = 'smart',@ResumableIndexRebuild = 0,@LogToTable=1";
+            - $SqlCmd.CommandText = $sqlquery;
+            - $SqlCmd.CommandTimeout=0;
+            - $SqlCmd.ExecuteNonQuery();
+            - $SqlConnection.Close();
+          restartPolicy: Never
+          imagePullSecrets:
+            - name: profisee-containerregistry
+      backoffLimit: 0
+{{- end }}

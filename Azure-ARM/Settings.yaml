@@ -1,4 +1,4 @@
-sqlServer: 
+sqlServer:
     name: "$SQLNAME"
     databaseName: "$SQLDBNAME"
     userName: "$SQLUSERNAME"
@@ -32,11 +32,11 @@ profiseeRunTime:
     clusterNodeCount: 1
 clusterNode:
     limits:
-      cpu: 1000
-      memory: 10T
+      cpu: $CPULIMITSVALUE
+      memory: $MEMORYLIMITSVALUE
     requests:
       cpu: 1
-      memory: 1000M        
+      memory: 1000M
 image:
     registry: "profisee.azurecr.io"
     repository: "$ACRREPONAME"
@@ -56,12 +56,12 @@ licenseFileData: $LICENSEDATA
 preInitScriptData: Cg==
 postInitScriptData: Cg==
 oidcFileData: |
-    {      
+    {
     }
 tlsCert: |
     $TLSCERT
 tlsKey: |
-    $TLSKEY  
+    $TLSKEY
 cloud:
     azure:
       isProvider: true
@@ -94,4 +94,4 @@ cloud:
     aws:
       isProvider: false
     google:
-      isProvider: false     
+      isProvider: false

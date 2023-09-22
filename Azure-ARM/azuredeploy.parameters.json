@@ -14,13 +14,13 @@
         "ProfiseeWebAppName": {
             "value": ""
         },
-        "TenantId": {
-            "value": ""
-        },
         "ActiveDirectoryCreateApp": {
             "value": "Yes"
         },
         "ActiveDirectoryClientId": {
+            "value": ""
+        },
+        "ActiveDirectoryClientSecret": {
             "value": ""
         },
         "PurviewUrl": {
@@ -36,7 +36,7 @@
             "value": ""
         },
         "ManagedIdentityName": {
-            "value": {              
+            "value": {
             }
         },
         "KubernetesClusterName": {
@@ -136,6 +136,12 @@
             "value": ""
         },
         "KubenetesInfrastructureResourceGroupName": {
+            "value": ""
+        },
+        "WindowsNodeVersion":{
+            "value": ""
+        },    
+        "AuthenticationType":{
             "value": ""
         }
     }

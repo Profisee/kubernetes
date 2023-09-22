@@ -50,7 +50,7 @@
         "options": {
           "icon": "Info",
           "text": "Click here to learn how Profisee uses Managed Identities.",
-          "uri": "https://support.profisee.com/wikis/2023_r1_support/planning_your_managed_identity_configuration"
+          "uri": "https://support.profisee.com/wikis/profiseeplatform/planning_your_managed_identity_configuration"
         }
       }
     ],
@@ -97,34 +97,14 @@
             "name": "ProfiseeVersion",
             "type": "Microsoft.Common.DropDown",
             "label": "Profisee version",
-            "defaultValue": "2023R1.0",
+            "defaultValue": "2023R2.0-win22",
             "toolTip": "Which release of the Profisee Platform to deploy.",
             "constraints": {
               "required": true,
               "allowedValues": [
                 {
-                  "label": "2021R1.0",
-                  "value": "profiseeplatform:2021r1.0"
-                },
-                {
-                  "label": "2021R2.0",
-                  "value": "profiseeplatform:2021r2.0"
-                },
-                {
-                  "label": "2021R2.1",
-                  "value": "profiseeplatform:2021r2.1"
-                },
-                {
-                  "label": "2021R3.0",
-                  "value": "profiseeplatform:2021r3.0"
-                },
-                {
                   "label": "2022R1.0",
                   "value": "profiseeplatform:2022r1.0"
-                },
-                {
-                  "label": "2022R1-126062",
-                  "value": "profiseeplatform:2022r1-126062"
                 },
                 {
                   "label": "2022R2.0",
@@ -133,11 +113,19 @@
                 {
                   "label": "2023R1.0",
                   "value": "profiseeplatform:2023r1.0"
+                },
+                {
+                  "label": "2023R2.0-win19",
+                  "value": "profiseeplatform:2023r2.0-win19"
+                },
+                {
+                  "label": "2023R2.0-win22",
+                  "value": "profiseeplatform:2023r2.0-win22"
                 }
               ]
             },
             "visible": true
-          },
+          },          
           {
             "name": "ProfiseeAdminUserAccount",
             "type": "Microsoft.Common.TextBox",
@@ -202,7 +190,7 @@
             "type": "Microsoft.Common.OptionsGroup",
             "label": "Create a new Azure AD application registration for you?",
             "defaultValue": "Yes, create and configure it for me.",
-            "toolTip": "An Azure AD application registration will be used for authentication via ID tokens. For more information please visit https://support.profisee.com/wikis/2023_r1_support/deploying_the_AKS_cluster_with_the_arm_template.",
+            "toolTip": "An Azure AD application registration will be used for authentication via ID tokens. For more information please visit https://support.profisee.com/wikis/profiseeplatform/deploying_the_AKS_cluster_with_the_arm_template.",
             "constraints": {
               "allowedValues": [
                 {
@@ -219,7 +207,7 @@
             "visible": true
           },
           {
-            "name": "UserSuppliedClientyId",
+            "name": "UserSuppliedClientId",
             "type": "Microsoft.Common.Section",
             "label": "",
             "elements": [
@@ -231,6 +219,27 @@
                 "toolTip": "Please provide the client ID of the Azure AD application to be used by Profisee for authentication.",
                 "constraints": {
                   "required": "[equals(steps('profisee').ActiveDirectoryCreateApp,'No')]",
+                  "regex": "",
+                  "validationMessage": ""
+                },
+                "visible": true
+              }
+            ],
+            "visible": "[equals(steps('profisee').ActiveDirectoryCreateApp,'No')]"
+          },
+          {
+            "name": "UserSuppliedClientSecret",
+            "type": "Microsoft.Common.Section",
+            "label": "",
+            "elements": [
+              {
+                "name": "ActiveDirectoryClientSecret",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Application Registration Client Secret",
+                "defaultValue": "",
+                "toolTip": "Please provide the client secret of the Azure AD application to be used by Profisee for authentication.",
+                "constraints": {
+                  "required": "[or(equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win19'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win22'))]",
                   "regex": "",
                   "validationMessage": ""
                 },
@@ -258,7 +267,7 @@
               ],
               "required": true
             },
-            "visible": "[or(equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2021r2.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2021r2.1'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2021r3.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r1.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r1-126062'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r2.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r1.0'))]"
+            "visible": "[or(equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r1.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r2.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r1.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win19'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win22'))]"
           },
           {
             "name": "PurviewAccountName",
@@ -278,7 +287,7 @@
             "type": "Microsoft.Solutions.ArmApiControl",
             "request": {
               "method": "GET",
-              "path": "[concat(subscription().id,'/resourceGroups/',last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5)),'/providers/Microsoft.Purview/accounts/',steps('profisee').PurviewAccountName.name,'?api-version=2020-12-01-preview')]",
+              "path": "[concat(subscription().id,'/resourceGroups/',last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5)),'/providers/Microsoft.Purview/accounts/',steps('profisee').PurviewAccountName.name,'?api-version=2021-07-01')]",
               "body": ""
             }
           },
@@ -294,7 +303,7 @@
               "regex": "",
               "validationMessage": ""
             },
-            "visible": "[and(equals(steps('profisee').UsePurview,'Yes'), or(equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r2.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r1.0')))]"
+            "visible": "[and(equals(steps('profisee').UsePurview,'Yes'), or(equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r2.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r1.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win19'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win22')))]"
           },
           {
             "name": "PurviewClientID",
@@ -370,6 +379,27 @@
             "visible": true
           },
           {
+            "name": "AuthenticationType",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Authentication and Authorization",
+            "defaultValue": "Local Accounts with Kubernetes RBAC",
+            "toolTip": "Choose among native Kubernetes RBAC managed locally or leverage Azure AD to manage identities for your Kubernetes RBAC needs. Azure RBAC for AKS is a fully managed RBAC solution providing both authentication and authorization through Azure IAM.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Local Accounts with Kubernetes RBAC",
+                  "value": "LocalAccounts"
+                },
+                {
+                  "label": "Azure AD authentication with Azure RBAC",
+                  "value": "AzureRBAC"
+                }
+              ],
+              "required": true
+            },
+            "visible": true
+          },
+          {
             "name": "KubernetesLinuxNodeSizeSection",
             "type": "Microsoft.Common.Section",
             "label": "Linux Nodepool",
@@ -378,7 +408,7 @@
                 "name": "KubernetesLinuxNodeSize",
                 "type": "Microsoft.Compute.SizeSelector",
                 "label": "VM Size",
-                "toolTip": "Pick VM size for the instances in the Linux nodepool. An 's' in the size will result in use of a Premium SSD. Ex. Standard_D2s_v5 will use Premium SSD, Standard_D2_v5 will use HDD.",
+                "toolTip": "Pick VM size for the instances in the Linux nodepool. An 's' in the size will result in use of a Premium SSD. Ex. Standard_D4s_v5 will use Premium SSD, Standard_D4_v5 will use HDD.",
                 "recommendedSizes": [
                   "Standard_D4as_v5"
                 ],
@@ -389,7 +419,7 @@
                   "hideDiskTypeFilter": false
                 },
                 "osPlatform": "Linux",
-                "count": 1,
+                "count": 2,
                 "visible": true
               }
             ],
@@ -398,11 +428,11 @@
           {
             "name": "KubernetesLinuxNodeCount",
             "type": "Microsoft.Common.Slider",
-            "min": 1,
+            "min": 2,
             "max": 12,
             "label": "Linux node count",
             "subLabel": "",
-            "defaultValue": 1,
+            "defaultValue": 2,
             "showStepMarkers": false,
             "toolTip": "",
             "constraints": {
@@ -419,7 +449,7 @@
                 "name": "KubernetesWindowsNodeSize",
                 "type": "Microsoft.Compute.SizeSelector",
                 "label": "VM Size",
-                "toolTip": "Pick VM size for the instances in the Windows nodepool. An 's' in the size will result in use of a Premium SSD. Ex. Standard_D4s_v5 will use Premium SSD, Standard_D2_v5 will use HDD.",
+                "toolTip": "Pick VM size for the instances in the Windows nodepool. An 's' in the size will result in use of a Premium SSD. Ex. Standard_D8s_v5 will use Premium SSD, Standard_D8_v5 will use HDD.",
                 "recommendedSizes": [
                   "Standard_D8as_v5"
                 ],
@@ -606,7 +636,7 @@
             "type": "Microsoft.Solutions.ArmApiControl",
             "request": {
               "method": "POST",
-              "path": "[concat(subscription().id,'/providers/Microsoft.Sql/checkNameAvailability?api-version=2014-04-01')]",
+              "path": "[concat(subscription().id,'/providers/Microsoft.Sql/checkNameAvailability?api-version=2021-08-01-preview')]",
               "body": "[parse(concat('{\"name\":\"',steps('sql').SQLServerName,'\",\"type\":\"Microsoft.Sql/servers\"}'))]"
             }
           },
@@ -733,7 +763,7 @@
             "type": "Microsoft.Solutions.ArmApiControl",
             "request": {
               "method": "POST",
-              "path": "[concat(subscription().id,'/resourceGroups/',steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,'/providers/Microsoft.Storage/storageAccounts/',steps('storage').StorageAccountNameSection.StorageAccountName.name,'/listKeys?api-version=2019-06-01')]",
+              "path": "[concat(subscription().id,'/resourceGroups/',steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,'/providers/Microsoft.Storage/storageAccounts/',steps('storage').StorageAccountNameSection.StorageAccountName.name,'/listKeys?api-version=2022-09-01')]",
               "body": ""
             }
           },
@@ -753,7 +783,7 @@
             "type": "Microsoft.Solutions.ArmApiControl",
             "request": {
               "method": "GET",
-              "path": "[concat(subscription().id,'/resourceGroups/',steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,'/providers/Microsoft.Storage/storageAccounts/',steps('storage').StorageAccountNameSection.StorageAccountName.name,'/fileServices/default/shares?api-version=2019-06-01')]",
+              "path": "[concat(subscription().id,'/resourceGroups/',steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,'/providers/Microsoft.Storage/storageAccounts/',steps('storage').StorageAccountNameSection.StorageAccountName.name,'/fileServices/default/shares?api-version=2022-09-01')]",
               "body": ""
             }
           },
@@ -952,7 +982,9 @@
       "ProfiseeAdminUserAccount": "[steps('profisee').ProfiseeAdminUserAccount]",
       "ProfiseeLicense": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('profisee').ProfiseeLicenseSecret, steps('profisee').ProfiseeLicense)]",
       "ActiveDirectoryCreateApp": "[steps('profisee').ActiveDirectoryCreateApp]",
-      "ActiveDirectoryClientId": "[steps('profisee').UserSuppliedClientyId.ActiveDirectoryClientId]",
+      "ActiveDirectoryClientId": "[steps('profisee').UserSuppliedClientId.ActiveDirectoryClientId]",
+      "ActiveDirectoryClientSecret": "[steps('profisee').UserSuppliedClientSecret.ActiveDirectoryClientSecret]",
+      "WindowsNodeVersion": "[if(contains(steps('profisee').ProfiseeVersion, '-win22'), 'Windows2022', 'Windows2019')]",
       "KubernetesClusterName": "[steps('kubernetes').KubernetesClusterName]",
       "KubernetesVersion": "[steps('kubernetes').KubernetesVersion]",
       "KubenetesInfrastructureResourceGroupName": "[steps('kubernetes').KubenetesInfrastructureResourceGroupName]",
@@ -960,6 +992,7 @@
       "KubernetesLinuxNodeCount": "[steps('kubernetes').KubernetesLinuxNodeCount]",
       "KubernetesWindowsNodeSize": "[steps('kubernetes').KubernetesWindowsNodeSizeSection.KubernetesWindowsNodeSize]",
       "KubernetesWindowsNodeCount": "[steps('kubernetes').KubernetesWindowsNodeCount]",
+      "AuthenticationType": "[steps('kubernetes').AuthenticationType]",
       "KubernetesVnetName": "[steps('kubernetes').KubernetesAdvanced.KubernetesVnetName.name]",
       "KubernetesVnetResourceGroup": "[steps('kubernetes').KubernetesAdvanced.KubernetesVnetName.resourceGroup]",
       "KubernetesSubnetName": "[steps('kubernetes').KubernetesAdvanced.KubernetesVnetName.subnets.subnet1.name]",

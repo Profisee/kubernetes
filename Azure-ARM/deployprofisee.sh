@@ -33,6 +33,11 @@ printenv;
 
 #Get AKS credentials, this allows us to use kubectl commands, if needed.
 az aks get-credentials --resource-group $RESOURCEGROUPNAME --name $CLUSTERNAME --overwrite-existing;
+#az extension add --name aks-preview
+#az extension update --name aks-preview
+#az feature register --namespace "Microsoft.ContainerService" --name "EnableWorkloadIdentityPreview"
+#az feature show --namespace "Microsoft.ContainerService" --name "EnableWorkloadIdentityPreview"
+#az provider register --namespace Microsoft.ContainerService
 
 #Install dotnet core.
 echo $"Installation of dotnet core started.";
@@ -126,24 +131,29 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	helm repo add csi-secrets-store-provider-azure https://azure.github.io/secrets-store-csi-driver-provider-azure/charts
 
 	#If Key Vault CSI driver is present, uninstall it.
-    kvcsipresent=$(helm list -n profisee -f csi-secrets-store-provider-azure -o table --short)
-    if [ "$kvcsipresent" = "csi-secrets-store-provider-azure" ]; then
-	    helm uninstall -n profisee csi-secrets-store-provider-azure;
-	    echo $"Will sleep for 30 seconds to allow clean uninstall of Key Vault CSI driver."
-	    sleep 30;
-    fi
-	kvcsipresentinkubesystem=$(helm list -n kube-system -f csi-secrets-store-provider-azure -o table --short)
-	if [ "$kvcsipresentinkubesystem" = "csi-secrets-store-provider-azure" ]; then
-		helm uninstall -n kube-system csi-secrets-store-provider-azure;
-		echo $"Will sleep for 30 seconds to allow clean uninstall of Key Vault CSI driver."
-		sleep 30;
-	fi
+        kvcsipresent=$(helm list -n profisee -f csi-secrets-store-provider-azure -o table --short)
+        if [ "$kvcsipresent" = "csi-secrets-store-provider-azure" ]; then
+	        helm uninstall -n profisee csi-secrets-store-provider-azure;
+	        echo $"Will sleep for 30 seconds to allow clean uninstall of Key Vault CSI driver."
+	        sleep 30;
+        fi
+		kvcsipresentinkubesystem=$(helm list -n kube-system -f csi-secrets-store-provider-azure -o table --short)
+        if [ "$kvcsipresentinkubesystem" = "csi-secrets-store-provider-azure" ]; then
+	        helm uninstall -n kube-system csi-secrets-store-provider-azure;
+	        echo $"Will sleep for 30 seconds to allow clean uninstall of Key Vault CSI driver."
+	        sleep 30;
+        fi
 
 	#We are not but if this is to run on a windows node, then you use this --set windows.enabled=true --set secrets-store-csi-driver.windows.enabled=true
 	#Recommendation is to have CSI installed in kube-system as per https://azure.github.io/secrets-store-csi-driver-provider-azure/docs/getting-started/installation/
 	helm install -n kube-system csi-secrets-store-provider-azure csi-secrets-store-provider-azure/csi-secrets-store-provider-azure --set secrets-store-csi-driver.syncSecret.enabled=true
 	echo $"Installation of Key Vault Container Storage Interface (CSI) driver finished."
 
+	#Install Azure Workload Identity driver.
+	#echo $"Installation of Key Vault Azure Active Directory Workload Identity driver started."
+    #az aks update -g $RESOURCEGROUPNAME -n $CLUSTERNAME --enable-oidc-issuer --enable-workload-identity
+	#OIDC_ISSUER="$(az aks show -n $CLUSTERNAME -g $RESOURCEGROUPNAME --query "oidcIssuerProfile.issuerUrl" -o tsv)"
+	#echo $"Installation of Key Vault Azure Active Directory Workload Identity driver finished."
 
 	#Install AAD pod identity into AKS.
 	echo $"Installation of Key Vault Azure Active Directory Pod Identity driver started. If present, we uninstall and reinstall it."
@@ -175,6 +185,9 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	echo $"Key Vault Specific Managed Identity configuration for Key Vault access step 2 started."
 	identityName="AKSKeyVaultUser"
 	akskvidentityClientId=$(az identity create -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'clientId' -o tsv);
+
+	#Create Federated Credential and assign it to the Profisee Service Account
+	#az identity federated-credential create --name ProfiseefederatedId --identity-name $identityName  --resource-group $AKSINFRARESOURCEGROUPNAME --issuer $OIDC_ISSUER --subject system:serviceaccount:profisee:profiseeserviceaccount --audience api://AzureADTokenExchange
 	akskvidentityClientResourceId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'id' -o tsv)
 	principalId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'principalId' -o tsv)
 	echo $"Key VAult Specific Managed Identity configuration for Key Vault access step 2 finished."
@@ -194,7 +207,7 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 
     #Check if Key Vault is RBAC or policy based.
     echo $"Checking if Key Vauls is RBAC based or policy based"
-    rbacEnabled=$(az keyvault show --name $keyVaultName --subscription $keyVaultSubscriptionId --query "properties.enableRbacAuthorization")
+	rbacEnabled=$(az keyvault show --name $keyVaultName --subscription $keyVaultSubscriptionId --query "properties.enableRbacAuthorization")
 
     #If Key Vault is RBAC based, assign Key Vault Secrets User role to the Key Vault Specific Managed Identity, otherwise assign Get policies for Keys, Secrets and Certificates.
     if [ "$rbacEnabled" = true ]; then
@@ -222,6 +235,7 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	fi
 
 fi
+
 
 #Installation of nginx
 echo $"Installation of nginx ingress started.";
@@ -347,18 +361,18 @@ if [ "$UPDATEAAD" = "Yes" ]; then
     if [ "$appregpermissionspresent" = "e1fe6dd8-ba31-4d61-89e7-88639da4683d" ]; then
 	    echo $"User.Read permissions already present, no need to add it."
 	else
-		echo "Update of the application registration's permissions, step 1 started."
-		#Add a Graph API permission to "Sign in and read user profile"
-		az ad app permission add --id $CLIENTID --api 00000003-0000-0000-c000-000000000000 --api-permissions e1fe6dd8-ba31-4d61-89e7-88639da4683d=Scope
-		echo "Creation of the service principal started."
-		az ad sp create --id $CLIENTID
-		echo "Creation of the service principal finished."
-		echo "Update of the application registration's permissions, step 1 finished."
+	    echo "Update of the application registration's permissions, step 1 started."
+	    #Add a Graph API permission to "Sign in and read user profile"
+	    az ad app permission add --id $CLIENTID --api 00000003-0000-0000-c000-000000000000 --api-permissions e1fe6dd8-ba31-4d61-89e7-88639da4683d=Scope
+	    echo "Creation of the service principal started."
+	    az ad sp create --id $CLIENTID
+	    echo "Creation of the service principal finished."
+	    echo "Update of the application registration's permissions, step 1 finished."
 
-		echo "Update of the application registration's permissions, step 2 started."
-		az ad app permission grant --id $CLIENTID --api 00000003-0000-0000-c000-000000000000 --scope User.Read
-		echo "Update of the application registration's permissions, step 2 finished."
-		echo "Update of Azure Active Directory finished.";
+	    echo "Update of the application registration's permissions, step 2 started."
+	    az ad app permission grant --id $CLIENTID --api 00000003-0000-0000-c000-000000000000 --scope User.Read
+	    echo "Update of the application registration's permissions, step 2 finished."
+	    echo "Update of Azure Active Directory finished.";
 	fi
 	#If Azure Application Registration "groups" token is present, skip adding it.
 	echo $"Let's check to see if the "groups" token is present, skip if present."
@@ -368,7 +382,7 @@ if [ "$UPDATEAAD" = "Yes" ]; then
 	else
 	    echo "Update of the application registration's token configuration started."
 	    #Add a groups claim token for idTokens
-		az ad app update --id $CLIENTID --set groupMembershipClaims=SecurityGroup --optional-claims '{"idToken":[{"additionalProperties":[],"essential":false,"name":"groups","source":null}],"accessToken":[{"additionalProperties":[],"essential":false,"name":"groups","source":null}],"saml2Token":[{"additionalProperties":[],"essential":false,"name":"groups","source":null}]}'
+	    az ad app update --id $CLIENTID --set groupMembershipClaims=ApplicationGroup --optional-claims '{"idToken":[{"additionalProperties":[],"essential":false,"name":"groups","source":null}],"accessToken":[{"additionalProperties":[],"essential":false,"name":"groups","source":null}],"saml2Token":[{"additionalProperties":[],"essential":false,"name":"groups","source":null}]}'
 		appregidtokengroupsclaimpresent=$(az ad app list --app-id $CLIENTID --query "[].optionalClaims[].idToken[].name" -o tsv)
 		appregaccesstokengroupsclaimpresent=$(az ad app list --app-id $CLIENTID --query "[].optionalClaims[].accessToken[].name" -o tsv)
 		appregsaml2tokengroupsclaimpresent=$(az ad app list --app-id $CLIENTID --query "[].optionalClaims[].saml2Token[].name" -o tsv)
@@ -376,6 +390,22 @@ if [ "$UPDATEAAD" = "Yes" ]; then
 		echo $"accessToken claim is now '$appregaccesstokengroupsclaimpresent'"
 		echo $"saml2Token claim is now '$appregsaml2tokengroupsclaimpresent'"
 	    echo "Update of the application registration's token configuration finished."
+	fi
+	#Create application Registration secret to be used for Authentication.
+	echo $"Let's check to see if an application registration secret has been created for Profisee, we'll recreate it if it is present as it can only be acquired during creation."
+    appregsecretpresent=$(az ad app list --app-id $CLIENTID --query "[].passwordCredentials[?displayName=='Profisee env in cluster $CLUSTERNAME'].displayName | [0]" -o tsv)
+	if [ "$appregsecretpresent" = "Profisee env in cluster $CLUSTERNAME" ]; then
+	    echo $"Application registration secret for 'Profisee in cluster $CLUSTERNAME' is already present, but need to recreate it. Acquiring secret ID so it can be deleted."
+		appregsecretid=$(az ad app list --app-id $CLIENTID --query "[].passwordCredentials[?displayName=='Profisee env in cluster $CLUSTERNAME'].keyId | [0]" -o tsv)
+		echo $"Application registration secret ID is $appregsecretid, deleting it."
+		az ad app credential delete --id $CLIENTID --key-id $appregsecretid
+		echo $"Application registration secret ID $appregsecretid has been deleted."
+		echo "Creating new application registration secret now."
+		CLIENTSECRET=$(az ad app credential reset --id $CLIENTID --append --display-name "Profisee env in cluster $CLUSTERNAME" --years 2 --query "password" -o tsv)
+	else
+	    echo "Secret for cluster $CLUSTERNAME does not exist, creating it."
+	    echo "Creating new application registration secret now."
+		CLIENTSECRET=$(az ad app credential reset --id $CLIENTID --append --display-name "Profisee env in cluster $CLUSTERNAME" --years 2 --query "password" -o tsv)
 	fi
 fi
 
@@ -437,6 +467,42 @@ IFS=':' read -r -a repostring <<< "$PROFISEEVERSION"
 ACRREPONAME="${repostring[0],,}";
 ACRREPOLABEL="${repostring[1],,}"
 
+#Installation of Azure File CSI Driver
+WINDOWS_NODE_VERSION="$(az aks show -n $CLUSTERNAME -g $RESOURCEGROUPNAME --query "agentPoolProfiles[1].osSku" -o tsv)"
+if [ "$WINDOWS_NODE_VERSION" = "Windows2019" ]; then
+	#Disable built-in AKS file driver, will install further down.
+	echo $"Disabling AKS Built-in CSI Driver to install Azure File CSI."
+	az aks update -n $CLUSTERNAME -g $RESOURCEGROUPNAME --disable-file-driver --yes
+	echo $"Installation of Azure File CSI Driver started.";
+	echo $"Adding Azure File CSI Driver repo."
+	helm repo add azurefile-csi-driver https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/charts
+	helm repo update azurefile-csi-driver
+	helm install azurefile-csi-driver azurefile-csi-driver/azurefile-csi-driver --namespace kube-system --set controller.replicas=1
+	echo $"Azure File CSI Driver installation finished."
+fi
+
+
+#Get the vCPU and RAM so we can change the stateful set CPU and RAM limits on the fly.
+echo "Let's see how many vCPUs and how much RAM we can allocate to Profisee's pod on the Windows node size you've selected."
+findwinnodename=$(kubectl get nodes -l kubernetes.io/os=windows -o 'jsonpath={.items[0].metadata.name}')
+findallocatablecpu=$(kubectl get nodes $findwinnodename -o 'jsonpath={.status.allocatable.cpu}')
+findallocatablememory=$(kubectl get nodes $findwinnodename -o 'jsonpath={.status.allocatable.memory}')
+vcpubarevalue=${findallocatablecpu::-1}
+safecpuvalue=$(($vcpubarevalue-800))
+safecpuvalueinmilicores="${safecpuvalue}m"
+echo $"The safe vCPU value to assign to Profisee pod is $safecpuvalueinmilicores."
+#Math around safe RAM values
+vrambarevalue=${findallocatablememory::-2}
+saferamvalue=$(($vrambarevalue-2253125))
+saferamvalueinkibibytes="${saferamvalue}Ki"
+echo $"The safe RAM value to assign to Profisee pod is $saferamvalueinkibibytes."
+# helm -n profisee install profiseeplatform profisee/profisee-platform --values Settings.yaml
+# #Patch stateful set for safe vCPU and RAM values
+# kubectl patch statefulsets -n profisee profisee --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/resources/limits/cpu", "value":'"$safecpuvalueinmilicores"'}]'
+# echo $"Profisee's stateful set has been patched to use $safecpuvalueinmilicores for CPU."
+# kubectl patch statefulsets -n profisee profisee --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/resources/limits/memory", "value":'"$saferamvalueinkibibytes"'}]'
+# echo $"Profisee's stateful set has been patched to use $saferamvalueinkibibytes for RAM."
+
 #Setting values in the Settings.yaml
 sed -i -e 's/$SQLNAME/'"$SQLNAME"'/g' Settings.yaml
 sed -i -e 's/$SQLDBNAME/'"$SQLDBNAME"'/g' Settings.yaml
@@ -449,7 +515,7 @@ sed -i -e 's/$FILEREPOURL/'"$FILEREPOURL"'/g' Settings.yaml
 sed -i -e 's/$FILEREPOSHARENAME/'"$STORAGEACCOUNTFILESHARENAME"'/g' Settings.yaml
 sed -i -e 's~$OIDCURL~'"$OIDCURL"'~g' Settings.yaml
 sed -i -e 's/$CLIENTID/'"$CLIENTID"'/g' Settings.yaml
-sed -i -e 's/$OIDCCLIENTSECRET/'"$OIDCCLIENTSECRET"'/g' Settings.yaml
+sed -i -e 's/$OIDCCLIENTSECRET/'"$CLIENTSECRET"'/g' Settings.yaml
 sed -i -e 's/$ADMINACCOUNTNAME/'"$ADMINACCOUNTNAME"'/g' Settings.yaml
 sed -i -e 's~$EXTERNALDNSURL~'"$EXTERNALDNSURL"'~g' Settings.yaml
 sed -i -e 's/$EXTERNALDNSNAME/'"$EXTERNALDNSNAME"'/g' Settings.yaml
@@ -462,6 +528,8 @@ sed -i -e 's/$PURVIEWCOLLECTIONID/'"$COLLECTIONTRUEID"'/g' Settings.yaml
 sed -i -e 's/$PURVIEWCLIENTID/'"$PURVIEWCLIENTID"'/g' Settings.yaml
 sed -i -e 's/$PURVIEWCLIENTSECRET/'"$PURVIEWCLIENTSECRET"'/g' Settings.yaml
 sed -i -e 's/$WEBAPPNAME/'"$WEBAPPNAME"'/g' Settings.yaml
+sed -i -e 's/$CPULIMITSVALUE/'"$safecpuvalueinmilicores"'/g' Settings.yaml
+sed -i -e 's/$MEMORYLIMITSVALUE/'"$saferamvalueinkibibytes"'/g' Settings.yaml
 if [ "$USEKEYVAULT" = "Yes" ]; then
 	sed -i -e 's/$USEKEYVAULT/'true'/g' Settings.yaml
 
@@ -515,6 +583,8 @@ fi
 kubectl delete secret profisee-settings -n profisee --ignore-not-found
 kubectl create secret generic profisee-settings -n profisee --from-file=Settings.yaml
 
+
+
 #################################Install Profisee Start #######################################
 echo "Installation of Profisee platform started $(date +"%Y-%m-%d %T")";
 helm repo add profisee $HELMREPOURL
@@ -565,8 +635,21 @@ result="{\"Result\":[\
 ]}"
 
 echo $result
-
 kubectl delete secret profisee-deploymentlog -n profisee --ignore-not-found
 kubectl create secret generic profisee-deploymentlog -n profisee --from-file=$logfile
 
+#Change Authentication context: disable local accounts, Enabled Azure AD with Azure RBAC and assign the Azure Kubernetes Service RBAC Cluster Admin role to the Profisee Super Admin account.
+echo $"AuthenticationType is $AUTHENTICATIONTYPE";
+echo $"Resourcegroup is $RESOURCEGROUPNAME";
+echo $"WindowsNodeVersion is $WINDOWSNODEVERSION";
+echo $"clustername is $CLUSTERNAME";
+if [ "$AUTHENTICATIONTYPE" = "AzureRBAC" ]; then
+	az aks update -g $RESOURCEGROUPNAME -n $CLUSTERNAME --enable-aad --enable-azure-rbac --disable-local-accounts
+	ObjectId="$(az ad user show --id $ADMINACCOUNTNAME --query id -o tsv)"
+	echo $"ObjectId of ADMIN is $ObjectId";
+	az role assignment create --role "Azure Kubernetes Service RBAC Cluster Admin" --assignee-object-id $ObjectId --assignee-principal-type User --scope /subscriptions/$SUBSCRIPTIONID/resourcegroups/$RESOURCEGROUPNAME
+fi;
+
 echo $result > $AZ_SCRIPTS_OUTPUT_PATH
+
+
