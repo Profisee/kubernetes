@@ -40,7 +40,6 @@ spec:
         backend:
           service:
             name: profisee-service
-            port: 
+            port:
               number: 80
 {{- end }}
-

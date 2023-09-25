@@ -33,11 +33,11 @@ printenv;
 
 #Get AKS credentials, this allows us to use kubectl commands, if needed.
 az aks get-credentials --resource-group $RESOURCEGROUPNAME --name $CLUSTERNAME --overwrite-existing;
-#az extension add --name aks-preview
-#az extension update --name aks-preview
-#az feature register --namespace "Microsoft.ContainerService" --name "EnableWorkloadIdentityPreview"
-#az feature show --namespace "Microsoft.ContainerService" --name "EnableWorkloadIdentityPreview"
-#az provider register --namespace Microsoft.ContainerService
+az extension add --name aks-preview
+az extension update --name aks-preview
+az feature register --namespace "Microsoft.ContainerService" --name "EnableWorkloadIdentityPreview"
+az feature show --namespace "Microsoft.ContainerService" --name "EnableWorkloadIdentityPreview"
+az provider register --namespace Microsoft.ContainerService
 
 #Install dotnet core.
 echo $"Installation of dotnet core started.";
@@ -150,13 +150,13 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	echo $"Installation of Key Vault Container Storage Interface (CSI) driver finished."
 
 	#Install Azure Workload Identity driver.
-	#echo $"Installation of Key Vault Azure Active Directory Workload Identity driver started."
-    #az aks update -g $RESOURCEGROUPNAME -n $CLUSTERNAME --enable-oidc-issuer --enable-workload-identity
-	#OIDC_ISSUER="$(az aks show -n $CLUSTERNAME -g $RESOURCEGROUPNAME --query "oidcIssuerProfile.issuerUrl" -o tsv)"
-	#echo $"Installation of Key Vault Azure Active Directory Workload Identity driver finished."
+	echo $"Installation of Key Vault Azure Active Directory Workload Identity driver started."
+    az aks update -g $RESOURCEGROUPNAME -n $CLUSTERNAME --enable-oidc-issuer --enable-workload-identity
+	OIDC_ISSUER="$(az aks show -n $CLUSTERNAME -g $RESOURCEGROUPNAME --query "oidcIssuerProfile.issuerUrl" -o tsv)"
+	echo $"Installation of Key Vault Azure Active Directory Workload Identity driver finished."
 
-	#Install AAD pod identity into AKS.
-	echo $"Installation of Key Vault Azure Active Directory Pod Identity driver started. If present, we uninstall and reinstall it."
+	#Uninstall AAD pod identity from AKS.
+	echo $"Uninstallation of Key Vault Azure Active Directory Pod Identity driver started. If present, we uninstall it."
 	#If AAD Pod Identity is present, uninstall it.
         aadpodpresent=$(helm list -n profisee -f pod-identity -o table --short)
         if [ "$aadpodpresent" = "pod-identity" ]; then
@@ -164,12 +164,12 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	        echo $"Will sleep for 30 seconds to allow clean uninstall of AAD Pod Identity."
 	        sleep 30;
         fi
+	#AAD Pod identity is no longed required, replaced by Workload Identity.
+	#helm repo add aad-pod-identity https://raw.githubusercontent.com/Azure/aad-pod-identity/master/charts
+	#helm install -n profisee pod-identity aad-pod-identity/aad-pod-identity
+	#echo $"Installation of Key Vault Azure Active Directory Pod Identity driver finished."
 
-	helm repo add aad-pod-identity https://raw.githubusercontent.com/Azure/aad-pod-identity/master/charts
-	helm install -n profisee pod-identity aad-pod-identity/aad-pod-identity
-	echo $"Installation of Key Vault Azure Active Directory Pod Identity driver finished."
-
-	#Assign AAD roles to the AKS AgentPool Managed Identity. The Pod identity communicates with the AgentPool MI, which in turn communicates with the Key Vault specific Managed Identity.
+	#Assign AAD roles to the AKS AgentPool Managed Identity.
 	echo $"AKS Managed Identity configuration for Key Vault access started."
 
 	echo $"AKS AgentPool Managed Identity configuration for Key Vault access step 1 started."
@@ -187,10 +187,10 @@ if [ "$USEKEYVAULT" = "Yes" ]; then
 	akskvidentityClientId=$(az identity create -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'clientId' -o tsv);
 
 	#Create Federated Credential and assign it to the Profisee Service Account
-	#az identity federated-credential create --name ProfiseefederatedId --identity-name $identityName  --resource-group $AKSINFRARESOURCEGROUPNAME --issuer $OIDC_ISSUER --subject system:serviceaccount:profisee:profiseeserviceaccount --audience api://AzureADTokenExchange
+	az identity federated-credential create --name ProfiseefederatedId --identity-name $identityName  --resource-group $AKSINFRARESOURCEGROUPNAME --issuer $OIDC_ISSUER --subject system:serviceaccount:profisee:profiseeserviceaccount --audience api://AzureADTokenExchange
 	akskvidentityClientResourceId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'id' -o tsv)
 	principalId=$(az identity show -g $AKSINFRARESOURCEGROUPNAME -n $identityName --query 'principalId' -o tsv)
-	echo $"Key VAult Specific Managed Identity configuration for Key Vault access step 2 finished."
+	echo $"Key Vault Specific Managed Identity configuration for Key Vault access step 2 finished."
 
 	echo $"Key Vault Specific Managed Identity configuration for KV access step 3 started."
 	echo "Sleeping for 60 seconds to wait for MI to be ready"
@@ -400,6 +400,8 @@ if [ "$UPDATEAAD" = "Yes" ]; then
 		echo $"Application registration secret ID is $appregsecretid, deleting it."
 		az ad app credential delete --id $CLIENTID --key-id $appregsecretid
 		echo $"Application registration secret ID $appregsecretid has been deleted."
+		echo "Will sleep for 10 seconds to avoid request concurrency errors."
+		sleep 10
 		echo "Creating new application registration secret now."
 		CLIENTSECRET=$(az ad app credential reset --id $CLIENTID --append --display-name "Profisee env in cluster $CLUSTERNAME" --years 2 --query "password" -o tsv)
 	else
@@ -473,11 +475,18 @@ if [ "$WINDOWS_NODE_VERSION" = "Windows2019" ]; then
 	#Disable built-in AKS file driver, will install further down.
 	echo $"Disabling AKS Built-in CSI Driver to install Azure File CSI."
 	az aks update -n $CLUSTERNAME -g $RESOURCEGROUPNAME --disable-file-driver --yes
-	echo $"Installation of Azure File CSI Driver started.";
+	echo $"Installation of Azure File CSI Driver started. If present, we uninstall it first.";
+	azfilecsipresent=$(helm list -n kube-system -f azurefile-csi-driver -o table --short)
+	if [ "$azfilecsipresent" = "azurefile-csi-driver" ]; then
+		helm -n kube-system uninstall azurefile-csi-driver;
+		echo "Will sleep for 30 seconds to allow clean uninstall."
+		sleep 30;
+	fi
 	echo $"Adding Azure File CSI Driver repo."
 	helm repo add azurefile-csi-driver https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/charts
 	helm repo update azurefile-csi-driver
-	helm install azurefile-csi-driver azurefile-csi-driver/azurefile-csi-driver --namespace kube-system --set controller.replicas=1
+	#Controller Replicas MUST be 2 in Prod, okay to be 1 in Dev (i.e. do NOT add --set controller.replica=1 in Prod). This is dependent on number of available Linux nodes in the nodepool. In Prod, it is minimum of 2, Dev is 1.
+	helm install azurefile-csi-driver azurefile-csi-driver/azurefile-csi-driver --namespace kube-system
 	echo $"Azure File CSI Driver installation finished."
 fi
 
@@ -651,5 +660,3 @@ if [ "$AUTHENTICATIONTYPE" = "AzureRBAC" ]; then
 fi;
 
 echo $result > $AZ_SCRIPTS_OUTPUT_PATH
-
-

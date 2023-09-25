@@ -1,9 +1,9 @@
-{{- if .Values.cloud.azure.useManagedIdentity -}}
-apiVersion: aadpodidentity.k8s.io/v1
-kind: AzureIdentityBinding
-metadata:
-    name: {{.Values.cloud.azure.managedIdentity.name }}-binding
-spec:
-    azureIdentity: {{.Values.cloud.azure.managedIdentity.name }}
-    selector: {{.Values.cloud.azure.managedIdentity.name }}
-{{- end }}
+# {{- if .Values.cloud.azure.useManagedIdentity -}}
+# apiVersion: aadpodidentity.k8s.io/v1
+# kind: AzureIdentityBinding
+# metadata:
+#     name: {{.Values.cloud.azure.managedIdentity.name }}-binding
+# spec:
+#     azureIdentity: {{.Values.cloud.azure.managedIdentity.name }}
+#     selector: {{.Values.cloud.azure.managedIdentity.name }}
+# {{- end }}

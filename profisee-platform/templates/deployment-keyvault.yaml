@@ -12,13 +12,13 @@ spec:
     metadata:
       labels:
         app: profisee-keyvault
-        aadpodidbinding: azure-pod-identity-binding-selector
+        #aadpodidbinding: azure-pod-identity-binding-selector
     spec:
       terminationGracePeriodSeconds: 60
       nodeSelector:
             "kubernetes.io/os": linux
-      #serviceAccountName: profiseeserviceaccount
-      #automountServiceAccountToken: false
+      serviceAccountName: profiseeserviceaccount
+      automountServiceAccountToken: false
       containers:
         - name: profisee-keyvault
           image: docker.io/library/alpine:latest

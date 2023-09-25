@@ -46,7 +46,7 @@
             "value": "Standard_D4as_v5"
         },
         "KubernetesLinuxNodeCount": {
-            "value": 1
+            "value": 2
         },
         "KubernetesWindowsNodeSize": {
             "value": "Standard_D8as_v5"

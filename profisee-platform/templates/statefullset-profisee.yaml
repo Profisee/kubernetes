@@ -20,8 +20,8 @@ spec:
         {{- end}}
     spec:
       terminationGracePeriodSeconds: 60
-      #serviceAccountName: profiseeserviceaccount
-      #automountServiceAccountToken: false
+      serviceAccountName: profiseeserviceaccount
+      automountServiceAccountToken: false
       nodeSelector:
       {{ if hasSuffix "win22" .Values.image.tag }}
         "kubernetes.azure.com/os-sku": Windows2022

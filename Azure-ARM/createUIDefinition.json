@@ -239,7 +239,7 @@
                 "defaultValue": "",
                 "toolTip": "Please provide the client secret of the Azure AD application to be used by Profisee for authentication.",
                 "constraints": {
-                  "required": "[or(equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win19'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win22'))]",
+                  "required": "[or(contains(steps('profisee').ProfiseeVersion, '-win19'), contains(steps('profisee').ProfiseeVersion, '-win22'))]",
                   "regex": "",
                   "validationMessage": ""
                 },
