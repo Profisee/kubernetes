@@ -13,6 +13,11 @@ spec:
         spec:
           nodeSelector:
             maintenance: sqlcronjob
+          {{ if hasSuffix "win22" .Values.image.tag }}
+            "kubernetes.azure.com/os-sku": Windows2022
+          {{ else }}
+            "kubernetes.azure.com/os-sku": Windows2019
+          {{ end }}
           containers:
           - name: profisee
             image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
