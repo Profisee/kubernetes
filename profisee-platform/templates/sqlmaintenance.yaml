@@ -12,11 +12,12 @@ spec:
       template:
         spec:
           nodeSelector:
-            maintenance: sqlcronjob
           {{ if hasSuffix "win22" .Values.image.tag }}
             "kubernetes.azure.com/os-sku": Windows2022
+            "maintenance": sqlcronjobwin22
           {{ else }}
             "kubernetes.azure.com/os-sku": Windows2019
+            "maintenance": sqlcronjob
           {{ end }}
           containers:
           - name: profisee
