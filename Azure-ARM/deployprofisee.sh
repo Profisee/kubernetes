@@ -511,6 +511,8 @@ echo $"The safe RAM value to assign to Profisee pod is $saferamvalueinkibibytes.
 # echo $"Profisee's stateful set has been patched to use $safecpuvalueinmilicores for CPU."
 # kubectl patch statefulsets -n profisee profisee --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/resources/limits/memory", "value":'"$saferamvalueinkibibytes"'}]'
 # echo $"Profisee's stateful set has been patched to use $saferamvalueinkibibytes for RAM."
+curl -fsSL -o coredns-custom.yaml "$REPOURL/Azure-ARM/coredns-custom.yaml";
+sed -i -e 's/$EXTERNALDNSNAME/'"$EXTERNALDNSNAME"'/g' coredns-custom.yaml
 
 #Setting values in the Settings.yaml
 sed -i -e 's/$SQLNAME/'"$SQLNAME"'/g' Settings.yaml
@@ -592,7 +594,8 @@ fi
 kubectl delete secret profisee-settings -n profisee --ignore-not-found
 kubectl create secret generic profisee-settings -n profisee --from-file=Settings.yaml
 
-
+#Replacing Coredns with custom coredns config map
+kubectl replace -f ./coredns-custom.yaml
 
 #################################Install Profisee Start #######################################
 echo "Installation of Profisee platform started $(date +"%Y-%m-%d %T")";
