@@ -490,5 +490,5 @@ end
 print 'Create or Alter Stored Procedure Done'
 
 --Execute sproc to prune logs
-EXEC [logging].[pPurgeLoggingMessages] 30
+EXEC [logging].[pPurgeLoggingMessages] 60
 
