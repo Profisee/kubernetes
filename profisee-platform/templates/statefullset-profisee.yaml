@@ -61,7 +61,7 @@ spec:
       {{- end }}
       dnsConfig:
         searches:
-        - profisee-service.profisee.svc.cluster.local
+        - profisee-service.{{.Release.Namespace}}.svc.cluster.local
       containers:
       - name: profisee
         image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
