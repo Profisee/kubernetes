@@ -60,6 +60,7 @@ if [ -z "$currentIdentityId" ]; then
 	set_resultAndReturn;
 fi
 
+echo "0"
 #Check to make sure you have effective Contributor access at Subscription level. This is now required at Sub level due to the lack of specific roles to use that can grant Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials/write and Microsoft.ContainerService/register/action. Once these are made part of a role the we will rechecked if we can lower the permissions.
 #Checking Subscription level.
 
@@ -77,6 +78,7 @@ else
 	echo "Role is assigned at Subscription level. Continuing checks."
 fi
 
+echo "1"
 #If updating DNS, check to make sure you have effective contributor access to the DNS zone itself.
 if [ "$UPDATEDNS" = "Yes" ]; then
 	echo "Is the Deployment Managed Identity assigned the DNS Zone Contributor role to the DNS zone itself?"
@@ -89,7 +91,7 @@ if [ "$UPDATEDNS" = "Yes" ]; then
 		echo "Role is assigned. Continuing checks."
 	fi
 fi
-
+echo "2"
 # #If using keyvault, check to make sure you have effective contributor access to the keyvault
 # if [ "$USEKEYVAULT" = "Yes" ]; then
 # 	echo "Checking contributor for keyvault"
