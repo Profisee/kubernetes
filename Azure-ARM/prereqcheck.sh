@@ -52,7 +52,7 @@ miname=$(echo $miname | xargs)
 
 #Get the ID of the current user (MI)
 echo "Running az identity show -g $mirg -n $miname --query principalId -o tsv"
-currentIdentityId=$(az identity show -g $mirg -n $miname --query principalId -o tsv)
+currentIdentityId=$(az identity show -g $mirg -n $miname --subscription $SUBSCRIPTIONID --query principalId -o tsv)
 
 if [ -z "$currentIdentityId" ]; then
 	err="Unable to query the Deployment Managed Identity to get principal id. Exiting with error. IF the Deployment Managed Identity has just been created, this issue is most likely intermittent. Please retry your deployment."
@@ -108,12 +108,12 @@ fi
 #	echo "Role is assigned at Subsciption level. Continuing checks."
 #fi
 
-# If using Purview, check for the following: 
+# If using Purview, check for the following:
 # 1. Has the Purview Application Registration been added to the Data Curators role in the Purview account. If not, exit with error.
 # 2. Does the Purview Application Registartion have the proper permissions. If not, output warnings and continue.
 if [ "$USEPURVIEW" = "Yes" ]; then
 	purviewClientPermissions=$(az ad app permission list --id $PURVIEWCLIENTID --output tsv --query [].resourceAccess[].id)
-	
+
 	#Check if User.Read permission has been granted to the Purview specific Azure Application Registration.
 	if [[ $purviewClientPermissions != *"e1fe6dd8-ba31-4d61-89e7-88639da4683d"* ]]; then
 		echo "The Purview Azure AD application registration is missing the Microsoft Graph API User.Read delegated permission. Some governance features may not function until this permission is granted. This permission might require an Azure AD Global Admin consent. Please visit https://support.profisee.com/wikis/profiseeplatform/prerequisites_for_integrating_with_purview for more information. "
@@ -147,7 +147,7 @@ if [ "$USEPURVIEW" = "Yes" ]; then
 	else
 		echo $"The "$PURVIEWCOLLECTIONID" collection name provided was found. Continuing checks."
 	fi
-fi 
+fi
 
 #If using Key Vault, checks to make sure that the Deployment Managed Identity has been assigned the Managed Identity Contributor role AND User Access Administrator as Subscription level.
 if [ "$USEKEYVAULT" = "Yes" ]; then
