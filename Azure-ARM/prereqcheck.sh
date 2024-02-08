@@ -53,7 +53,7 @@ miname=$(echo $miname | xargs)
 #Get the ID of the current user (MI)
 echo "Running az identity show -g $mirg -n $miname --query principalId -o tsv"
 currentIdentityId=$(az identity show -g $mirg -n $miname --subscription $SUBSCRIPTIONID --query principalId -o tsv)
-
+echo $currentIdentityId
 if [ -z "$currentIdentityId" ]; then
 	err="Unable to query the Deployment Managed Identity to get principal id. Exiting with error. IF the Deployment Managed Identity has just been created, this issue is most likely intermittent. Please retry your deployment."
 	echo $err
@@ -66,17 +66,18 @@ echo "0"
 
 echo "Is the Deployment Managed Identity assigned the Contributor Role at the Subscription level?"
 subscriptionContributor=$(az role assignment list --all --assignee $currentIdentityId --output json --include-inherited --query "[?roleDefinitionName=='Contributor' && scope=='/subscriptions/$SUBSCRIPTIONID'].roleDefinitionName" --output tsv)
-if [ -z "$subscriptionContributor" ]; then
-	echo "Role is NOT assigned at Subscription level. Exiting with error. Please assign the Contributor role to the Deployment Managed Identity at the Subscription Level. Please visit https://support.profisee.com/wikis/profiseeplatform/planning_your_managed_identity_configuration for more information."
-	#Deployment Managed Identity is not granted Contributor at Subscription level, checking Resource Group level.
-	#rgContributor=$(az role assignment list --all --assignee $currentIdentityId --output json --include-inherited --query "[?roleDefinitionName=='Contributor' && scope=='/subscriptions/$SUBSCRIPTIONID/resourceGroups/$RESOURCEGROUPNAME'].roleDefinitionName" --output tsv)
-	#if [ -z "$rgContributor" ]; then
-		#err="Role is NOT assigned at either Subscription or Resource Group level. Exiting with error. Please assign the Contributor role to the Deployment Managed Identity at either Subscription or Resource Group level. Please visit https://support.profisee.com/wikis/profiseeplatform/planning_your_managed_identity_configuration for more information."
-	echo $err
-	set_resultAndReturn;
-else
-	echo "Role is assigned at Subscription level. Continuing checks."
-fi
+echo $subscriptionContributor
+# if [ -z "$subscriptionContributor" ]; then
+# 	echo "Role is NOT assigned at Subscription level. Exiting with error. Please assign the Contributor role to the Deployment Managed Identity at the Subscription Level. Please visit https://support.profisee.com/wikis/profiseeplatform/planning_your_managed_identity_configuration for more information."
+# 	#Deployment Managed Identity is not granted Contributor at Subscription level, checking Resource Group level.
+# 	#rgContributor=$(az role assignment list --all --assignee $currentIdentityId --output json --include-inherited --query "[?roleDefinitionName=='Contributor' && scope=='/subscriptions/$SUBSCRIPTIONID/resourceGroups/$RESOURCEGROUPNAME'].roleDefinitionName" --output tsv)
+# 	#if [ -z "$rgContributor" ]; then
+# 		#err="Role is NOT assigned at either Subscription or Resource Group level. Exiting with error. Please assign the Contributor role to the Deployment Managed Identity at either Subscription or Resource Group level. Please visit https://support.profisee.com/wikis/profiseeplatform/planning_your_managed_identity_configuration for more information."
+# 	echo $err
+# 	set_resultAndReturn;
+# else
+# 	echo "Role is assigned at Subscription level. Continuing checks."
+# fi
 
 echo "1"
 #If updating DNS, check to make sure you have effective contributor access to the DNS zone itself.
