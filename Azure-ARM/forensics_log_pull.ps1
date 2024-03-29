@@ -10,7 +10,6 @@ copy c:\profisee\gateway\logfiles\systemlog.log $env:TEMP\all-Logs\$DT\ProfiseeL
 copy c:\profisee\services\attachments\logfiles\systemlog.log $env:TEMP\all-Logs\$DT\ProfiseeLogs\attachments-log.log
 copy c:\profisee\services\auth\logfiles\systemlog.log $env:TEMP\all-Logs\$DT\ProfiseeLogs\auth-log.log
 copy c:\profisee\services\governance\logfiles\systemlog.log $env:TEMP\all-Logs\$DT\ProfiseeLogs\governance-log.log
-copy c:\profisee\services\machinelearning\logfiles\systemlog.log $env:TEMP\all-Logs\$DT\ProfiseeLogs\ml-log.log
 copy c:\profisee\services\monolith\logfiles\systemlog.log $env:TEMP\all-Logs\$DT\ProfiseeLogs\monolith-log.log
 copy c:\profisee\services\workflows\logfiles\systemlog.log $env:TEMP\all-Logs\$DT\ProfiseeLogs\workflows-log.log
 copy c:\profisee\web\logfiles\systemlog.log $env:TEMP\all-Logs\$DT\ProfiseeLogs\web-log.log
@@ -22,3 +21,6 @@ Get-NetTCPConnection | Group-Object -Property State, OwningProcess | Select -Pro
 #Compress and copy to fileshare
 compress-archive -Path "$env:TEMP\all-Logs\$DT\" -DestinationPath "$env:TEMP\all-Logs-$DT.zip"
 copy "$env:TEMP\all-Logs-$DT.zip" "C:\fileshare\"
+
+#delete older zipped log files more than 30 days
+Get-ChildItem -Path C:\Fileshare\* -Include all-logs-*.zip -Recurse | Where-Object {$_.LastWriteTime -lt (Get-Date).AddDays(-30)} | Remove-Item

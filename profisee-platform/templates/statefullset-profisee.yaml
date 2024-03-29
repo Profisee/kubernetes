@@ -22,12 +22,26 @@ spec:
       terminationGracePeriodSeconds: 60
       serviceAccountName: profiseeserviceaccount
       automountServiceAccountToken: false
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: profisee
+              topologyKey: "kubernetes.io/hostname"
       nodeSelector:
-      {{ if hasSuffix "win22" .Values.image.tag }}
-        "kubernetes.azure.com/os-sku": Windows2022
-      {{ else }}
-        "kubernetes.azure.com/os-sku": Windows2019
-      {{ end }}
+      {{- if .Values.cloud.azure.isProvider }}
+          {{ if hasSuffix "win22" .Values.image.tag }}
+            "kubernetes.azure.com/os-sku": Windows2022
+          {{ else }}
+            "kubernetes.azure.com/os-sku": Windows2019
+          {{ end }}
+      {{- end }}
+      {{- if .Values.cloud.aws.isProvider }}
+          "kubernetes.io/os": windows
+      {{- end }}
       volumes:
       - name: data-volume
         projected:
@@ -76,6 +90,19 @@ spec:
           initialDelaySeconds: 600
           timeoutSeconds: 5
           periodSeconds: 60
+        lifecycle:
+          postStart:
+            exec:
+              command:
+                - powershell
+                - >-
+                  curl.exe -fsSL -o .\Fileshare\forensics_log_pull.ps1
+                  "https://raw.githubusercontent.com/profisee/kubernetes/master/Azure-ARM/forensics_log_pull.ps1"
+          preStop:
+            exec:
+              command:
+                - powershell
+                - .\Fileshare\forensics_log_pull.ps1
         volumeMounts:
         - name: data-volume
           mountPath: C:\data
