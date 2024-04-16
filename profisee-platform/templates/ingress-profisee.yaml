@@ -4,7 +4,7 @@ kind: Ingress
 metadata:
   name: profisee-ingress
   annotations:
-    kubernetes.io/ingress.class: nginx
+    # kubernetes.io/ingress.class: nginx
     #kubernetes.io/ingress.class: azure/application-gateway
     nginx.ingress.kubernetes.io/client_body_buffer_size: "512k"
     nginx.ingress.kubernetes.io/client-header-buffer-size: "512k"
@@ -17,12 +17,13 @@ metadata:
     {{- if .Values.profiseeRunTime.isPaaS }}
     nginx.ingress.kubernetes.io/rewrite-target: /$1
     {{- end }}
-    
+
     {{- if .Values.profiseeRunTime.useLetsEncrypt }}
     cert-manager.io/cluster-issuer: letsencrypt
     {{- end }}
 
 spec:
+  ingressClassName: nginx
   tls:
   - hosts:
     - {{.Values.profiseeRunTime.externalDnsName}}

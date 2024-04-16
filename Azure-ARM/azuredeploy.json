@@ -105,6 +105,9 @@
     "AuthenticationType":{
       "type": "string"
     },
+    "InfraAdminAccount":{
+      "type": "string"
+    },
     "SQLServerCreateNew": {
       "type": "String"
     },
@@ -205,6 +208,7 @@
     "KubernetesLinuxNodeCount": "[int(parameters('KubernetesLinuxNodeCount'))]",
     "KubernetesLinuxNodeSize": "[parameters('KubernetesLinuxNodeSize')]",
     "AuthenticationType": "[parameters('AuthenticationType')]",
+    "InfraAdminAccount": "[parameters('InfraAdminAccount')]",
     "KubernetesWindowsNodeCount": "[int(parameters('KubernetesWindowsNodeCount'))]",
     "KubernetesWindowsNodeSize": "[parameters('KubernetesWindowsNodeSize')]",
     "WindowsNodeVersion": "[parameters('WindowsNodeVersion')]",
@@ -389,7 +393,7 @@
                         "name": "[tolower(parameters('SQLServerName'))]",
                         "type": "Microsoft.Sql/servers",
                         "location": "[resourceGroup().location]",
-                        "apiVersion": "2022-05-01-preview",
+                        "apiVersion": "2023-05-01-preview",
                         "dependsOn": [],
                         "tags": {
                             "displayName": "SQLServer"
@@ -404,7 +408,7 @@
                                 "name": "AllowAllWindowsAzureIps",
                                 "type": "firewallrules",
                                 "location": "[resourceGroup().location]",
-                                "apiVersion": "2022-05-01-preview",
+                                "apiVersion": "2023-05-01-preview",
                                 "dependsOn": [
                                     "[concat('Microsoft.Sql/servers/', tolower(parameters('SQLServerName')))]"
                                 ],
@@ -416,7 +420,7 @@
                             {
                             "condition": "[equals(tolower(parameters('SQLServerCreateNew')),tolower('Yes'))]",
                             "type": "databases",
-                            "apiVersion": "2022-05-01-preview",
+                            "apiVersion": "2023-05-01-preview",
                             "name": "[parameters('SQLServerDatabaseName')]",
                             "location": "[resourceGroup().location]",
                             "dependsOn": [
@@ -493,7 +497,7 @@
         },
         {
             "type": "Microsoft.ContainerService/managedClusters",
-            "apiVersion": "2023-05-02-preview",
+            "apiVersion": "2024-01-01",
             "name": "[variables('KubernetesClusterName')]",
             "location": "[resourceGroup().location]",
             "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
@@ -504,13 +508,21 @@
             "properties": {
                 "kubernetesVersion": "[variables('KubernetesVersion')]",
                 "dnsPrefix": "profisee",
+                "oidcIssuerProfile": {
+                  "enabled": true
+                },
+                "securityProfile": {
+                  "workloadIdentity": {
+                    "enabled": true
+                  }
+                },
                 "agentPoolProfiles": [
                     {
                         "name": "nplinux1",
                         "count": "[variables('KubernetesLinuxNodeCount')]",
                         "vmSize": "[variables('KubernetesLinuxNodeSize')]",
                         "osDiskSizeGB": 100,
-                        "maxPods": 30,
+                        "maxPods": 45,
                         "type": "VirtualMachineScaleSets",
                         "orchestratorVersion": "[variables('KubernetesVersion')]",
                         "enableNodePublicIP": false,
@@ -525,7 +537,7 @@
                         "count": "[variables('KubernetesWindowsNodeCount')]",
                         "vmSize": "[variables('KubernetesWindowsNodeSize')]",
                         "osDiskSizeGB": 100,
-                        "maxPods": 30,
+                        "maxPods": 15,
                         "type": "VirtualMachineScaleSets",
                         "orchestratorVersion": "[variables('KubernetesVersion')]",
                         "enableNodePublicIP": false,
@@ -554,7 +566,7 @@
             "name": "[tolower(parameters('SQLServerName'))]",
             "type": "Microsoft.Sql/servers",
             "location": "[resourceGroup().location]",
-            "apiVersion": "2022-05-01-preview",
+            "apiVersion": "2023-05-01-preview",
             "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
             "tags": {
                 "displayName": "SQLServer"
@@ -569,7 +581,7 @@
                     "name": "AllowAllWindowsAzureIps",
                     "type": "firewallrules",
                     "location": "[resourceGroup().location]",
-                    "apiVersion": "2022-05-01-preview",
+                    "apiVersion": "2023-05-01-preview",
                     "dependsOn": [
                         "[concat('Microsoft.Sql/servers/', tolower(parameters('SQLServerName')))]"
                     ],
@@ -581,7 +593,7 @@
                 {
                 "condition": "[and(equals(tolower(parameters('SQLServerCreateNew')),tolower('Yes')),equals(tolower(parameters('UseKeyVault')),tolower('No')))]",
                 "type": "databases",
-                "apiVersion": "2022-05-01-preview",
+                "apiVersion": "2023-05-01-preview",
                 "name": "[parameters('SQLServerDatabaseName')]",
                 "location": "[resourceGroup().location]",
                 "dependsOn": [
@@ -595,7 +607,7 @@
             "name": "[tolower(variables('StorageAccountName'))]",
             "type": "Microsoft.Storage/storageAccounts",
             "location": "[resourceGroup().location]",
-            "apiVersion": "2022-09-01",
+            "apiVersion": "2023-01-01",
             "dependsOn": ["[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]"],
             "tags": {
                 "displayName": "[variables('StorageAccountName')]"
@@ -608,7 +620,7 @@
         {
             "condition": "[equals(tolower(variables('StorageAccountCreateNew')),tolower('Yes'))]",
             "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
-            "apiVersion": "2022-09-01",
+            "apiVersion": "2023-01-01",
             "name": "[concat(tolower(variables('StorageAccountName')), '/default/', tolower(variables('StorageAccountFileShareName')))]",
             "dependsOn": [
                 "[resourceId('Microsoft.Resources/deploymentScripts', 'PreReqChecks')]",
@@ -810,6 +822,10 @@
                     {
                       "name": "AUTHENTICATIONTYPE",
                       "value": "[variables('AuthenticationType')]"
+                    },
+                    {
+                      "name": "INFRAADMINACCOUNT",
+                      "value": "[variables('InfraAdminAccount')]"
                     },
                     {
                       "name": "WINDOWSNODEVERSION",

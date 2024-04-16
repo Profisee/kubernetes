@@ -121,11 +121,11 @@
                 {
                   "label": "2023R2.0-win22",
                   "value": "profiseeplatform:2023r2.0-win22"
-                }
+                }              
               ]
             },
             "visible": true
-          },          
+          },
           {
             "name": "ProfiseeAdminUserAccount",
             "type": "Microsoft.Common.TextBox",
@@ -287,7 +287,7 @@
             "type": "Microsoft.Solutions.ArmApiControl",
             "request": {
               "method": "GET",
-              "path": "[concat(subscription().id,'/resourceGroups/',last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5)),'/providers/Microsoft.Purview/accounts/',steps('profisee').PurviewAccountName.name,'?api-version=2021-07-01')]",
+              "path": "[concat(subscription().id,'/resourceGroups/',last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5)),'/providers/Microsoft.Purview/accounts/',steps('profisee').PurviewAccountName.name,'?api-version=2021-12-01')]",
               "body": ""
             }
           },
@@ -636,7 +636,7 @@
             "type": "Microsoft.Solutions.ArmApiControl",
             "request": {
               "method": "POST",
-              "path": "[concat(subscription().id,'/providers/Microsoft.Sql/checkNameAvailability?api-version=2021-08-01-preview')]",
+              "path": "[concat(subscription().id,'/providers/Microsoft.Sql/checkNameAvailability?api-version=2023-05-01-preview')]",
               "body": "[parse(concat('{\"name\":\"',steps('sql').SQLServerName,'\",\"type\":\"Microsoft.Sql/servers\"}'))]"
             }
           },
@@ -763,7 +763,7 @@
             "type": "Microsoft.Solutions.ArmApiControl",
             "request": {
               "method": "POST",
-              "path": "[concat(subscription().id,'/resourceGroups/',steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,'/providers/Microsoft.Storage/storageAccounts/',steps('storage').StorageAccountNameSection.StorageAccountName.name,'/listKeys?api-version=2022-09-01')]",
+              "path": "[concat(subscription().id,'/resourceGroups/',steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,'/providers/Microsoft.Storage/storageAccounts/',steps('storage').StorageAccountNameSection.StorageAccountName.name,'/listKeys?api-version=2023-01-01')]",
               "body": ""
             }
           },
@@ -783,7 +783,7 @@
             "type": "Microsoft.Solutions.ArmApiControl",
             "request": {
               "method": "GET",
-              "path": "[concat(subscription().id,'/resourceGroups/',steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,'/providers/Microsoft.Storage/storageAccounts/',steps('storage').StorageAccountNameSection.StorageAccountName.name,'/fileServices/default/shares?api-version=2022-09-01')]",
+              "path": "[concat(subscription().id,'/resourceGroups/',steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,'/providers/Microsoft.Storage/storageAccounts/',steps('storage').StorageAccountNameSection.StorageAccountName.name,'/fileServices/default/shares?api-version=2023-01-01')]",
               "body": ""
             }
           },
@@ -918,6 +918,20 @@
             "visible": "[equals(steps('networking').DNSUpdate,'Yes')]"
           },
           {
+          "name": "InfraAdminAccount",
+          "type": "Microsoft.Common.TextBox",
+          "label": "Certificate Expirations User",
+          "defaultValue": "",
+          "placeholder": "first.last@company.com",
+          "toolTip": "Please specify an email address for the user, or group, that should receive email notifications for certificate expiration.",
+          "constraints": {
+            "required": true,
+            "regex": "",
+            "validationMessage": ""
+          },
+          "visible": "[not(equals(steps('networking').HttpsConfigure, 'Yes'))]"
+        },
+          {
             "name": "UserDefinedHTTPS",
             "type": "Microsoft.Common.Section",
             "label": "User provided TLS certificate",
@@ -1018,6 +1032,7 @@
       "UseLetsEncrypt": "[if(equals(coalesce(steps('networking').HttpsConfigure,'No'),'No'),'Yes','No')]",
       "HttpsCertificate": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('networking').UserDefinedHTTPS.HttpsCertificateSecret, steps('networking').UserDefinedHTTPS.HttpsCertificate)]",
       "HttpsCertificatePrivateKey": "[steps('networking').UserDefinedHTTPS.HttpsCertificatePrivateKey]",
+      "InfraAdminAccount": "[steps('networking').InfraAdminAccount]",
       "UseKeyVault": "[steps('profisee').UseKeyVault]",
       "KeyVault": "[steps('profisee').KeyVault.id]",
       "UsePurview": "[steps('profisee').UsePurview]",
