@@ -56,7 +56,7 @@ helm repo update
 helm upgrade -n profisee profiseeplatform profisee/profisee-platform --reuse-values --set cloud.azure.purview.collectionId=YourCollectionId --set image.tag=2022r2.0  
 kubectl logs -n profisee profisee-0 -f #this will allow you to follow the upgrade as it is happening  
 4. This will upgrade your installation to version 2022r2.0 and provide the required collection Id while keeping the rest of the values. Failure to provide the collection Id would result in a failed upgrade.
-5. To run the Histroy tables upgrade please follow the steps as outlined [here](https://support.profisee.com/wikis/release_notes/upgrade_considerations_and_prerequisites)
+5. To run the History tables upgrade please follow the steps as outlined [here](https://support.profisee.com/wikis/release_notes/upgrade_considerations_and_prerequisites)
 
 
 ## Deployment steps
