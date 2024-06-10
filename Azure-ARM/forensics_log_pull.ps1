@@ -1,5 +1,5 @@
-#Pull Product Services, IIS, Event Viewer logs as well as Netstat and TCPConnection logs
-$DT = get-date -Format "ddd-MM-dd-yy-HHmmss-ffff-Z" 
+# Pull Product Services, IIS, Event Viewer logs as well as Netstat and TCPConnection logs
+$DT = get-date -UFormat "%m-%d-%Y-%H%M%S-UTC-%a" 
 mkdir "$env:TEMP\all-Logs\$DT\ProfiseeLogs\Config" 
 mkdir "$env:TEMP\all-Logs\$DT\ProfiseeLogs\Gateway"
 mkdir "$env:TEMP\all-Logs\$DT\ProfiseeLogs\Attachments"
@@ -26,9 +26,12 @@ robocopy "c:\inetpub\logs\LogFiles\W3SVC1" "$env:TEMP\all-Logs\$DT\IISLogs" /E /
 netstat -anobq > $env:TEMP\all-Logs\$DT\TCPLogs\netstat.txt
 Get-NetTCPConnection | Group-Object -Property State, OwningProcess | Select -Property Count, Name, @{Name="ProcessName";Expression={(Get-Process -PID ($_.Name.Split(',')[-1].Trim(' '))).Name}}, Group | Sort Count -Descending | out-file $env:TEMP\all-Logs\$DT\TCPLogs\TCPconnections.txt
 
-#Compress and copy to fileshare
-compress-archive -Path "$env:TEMP\all-Logs\$DT\" -DestinationPath "$env:TEMP\all-Logs-$DT.zip"
-copy "$env:TEMP\all-Logs-$DT.zip" "C:\fileshare\"
+# Make Webapp name w/ Capital letter
+$WebAppName = $env:ProfiseeWebAppName.substring(0, 1).ToUpper() + $env:ProfiseeWebAppName.Substring(1)
 
-#delete older zipped log files more than 30 days
-Get-ChildItem -Path C:\Fileshare\* -Include all-logs-*.zip -Recurse | Where-Object {$_.LastWriteTime -lt (Get-Date).AddDays(-30)} | Remove-Item
+# Compress and copy to fileshare
+compress-archive -Path "$env:TEMP\all-Logs\$DT\" -DestinationPath "$env:TEMP\$WebAppName-All-Logs-$DT.zip"
+copy "$env:TEMP\$WebAppName-All-Logs-$DT.zip" "C:\fileshare\"
+
+# Delete older zipped log files more than 30 days
+Get-ChildItem -Path C:\Fileshare\* -Include *all-logs-*.zip -Recurse | Where-Object {$_.LastWriteTime -lt (Get-Date).AddDays(-30)} | Remove-Item
