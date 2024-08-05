@@ -97,7 +97,7 @@
             "name": "ProfiseeVersion",
             "type": "Microsoft.Common.DropDown",
             "label": "Profisee version",
-            "defaultValue": "2023R2.0-win22",
+            "defaultValue": "2024R1.0-win22",
             "toolTip": "Which release of the Profisee Platform to deploy.",
             "constraints": {
               "required": true,
@@ -121,7 +121,15 @@
                 {
                   "label": "2023R2.0-win22",
                   "value": "profiseeplatform:2023r2.0-win22"
-                }              
+                },
+                {
+                  "label": "2024R1.0-win19",
+                  "value": "profiseeplatform:2024r1.0-win19"
+                },
+                {
+                  "label": "2024R1.0-win22",
+                  "value": "profiseeplatform:2024r1.0-win22"
+                }
               ]
             },
             "visible": true
@@ -267,7 +275,7 @@
               ],
               "required": true
             },
-            "visible": "[or(equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r1.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r2.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r1.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win19'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win22'))]"
+            "visible": "[or(equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r1.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r2.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r1.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win19'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win22'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2024r1.0-win19'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2024r1.0-win22'))]"
           },
           {
             "name": "PurviewAccountName",
@@ -303,7 +311,7 @@
               "regex": "",
               "validationMessage": ""
             },
-            "visible": "[and(equals(steps('profisee').UsePurview,'Yes'), or(equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r2.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r1.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win19'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win22')))]"
+            "visible": "[and(equals(steps('profisee').UsePurview,'Yes'), or(equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r2.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r1.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win19'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win22'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2024r1.0-win19'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2024r1.0-win22')))]"
           },
           {
             "name": "PurviewClientID",
