@@ -60,7 +60,7 @@ $WebAppName = $env:ProfiseeWebAppName.substring(0, 1).ToUpper() + $env:ProfiseeW
 
 # Compress and copy to fileshare
 compress-archive -Path "$env:TEMP\all-Logs\$DT\" -DestinationPath "$env:TEMP\$WebAppName-All-Logs-$DT.zip"
-copy "$env:TEMP\$WebAppName-All-Logs-$DT.zip" "C:\fileshare\alllogs"
+copy "$env:TEMP\$WebAppName-All-Logs-$DT.zip" "C:\fileshare\alllogs\"
 
 # Delete older zipped log files more than 30 days
 Get-ChildItem -Path C:\Fileshare\* -Include *all-logs-*.zip -Recurse | Where-Object {$_.LastWriteTime -lt (Get-Date).AddDays(-30)} | Remove-Item
