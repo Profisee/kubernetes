@@ -103,14 +103,6 @@
               "required": true,
               "allowedValues": [
                 {
-                  "label": "2022R1.0",
-                  "value": "profiseeplatform:2022r1.0"
-                },
-                {
-                  "label": "2022R2.0",
-                  "value": "profiseeplatform:2022r2.0"
-                },
-                {
                   "label": "2023R1.0",
                   "value": "profiseeplatform:2023r1.0"
                 },
@@ -275,7 +267,7 @@
               ],
               "required": true
             },
-            "visible": "[or(equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r1.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r2.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r1.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win19'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win22'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2024r1.0-win19'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2024r1.0-win22'))]"
+            "visible": true
           },
           {
             "name": "PurviewAccountName",
@@ -304,14 +296,14 @@
             "type": "Microsoft.Common.TextBox",
             "label": "Purview Collection Friendly Name",
             "defaultValue": "",
-            "placeholder": "tHiS iS CaSe SenSiTiVe!",
+            "placeholder": "THiS iS CaSe SenSiTiVe!",
             "toolTip": "Please provide the Purview Collection Friendly Name that you see in your Purview account. Profisee will deploy to that collection. If you would like to deploy in the root collection, please specify its friendly name.",
             "constraints": {
               "required": true,
               "regex": "",
               "validationMessage": ""
             },
-            "visible": "[and(equals(steps('profisee').UsePurview,'Yes'), or(equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2022r2.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r1.0'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win19'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2023r2.0-win22'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2024r1.0-win19'), equals(steps('profisee').ProfiseeVersion, 'profiseeplatform:2024r1.0-win22')))]"
+            "visible": "[equals(steps('profisee').UsePurview,'Yes')]"
           },
           {
             "name": "PurviewClientID",
