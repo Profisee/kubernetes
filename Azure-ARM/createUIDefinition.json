@@ -929,7 +929,7 @@
             "regex": "",
             "validationMessage": ""
           },
-          "visible": true
+          "visible": "[not(equals(steps('networking').HttpsConfigure, 'Yes'))]"
         },
           {
             "name": "UserDefinedHTTPS",
