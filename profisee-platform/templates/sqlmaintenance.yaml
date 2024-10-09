@@ -42,7 +42,7 @@ spec:
             command: ["Powershell"]
             args:
             - $sqlScriptPath="C:\sqlMaintenance.sql";
-            - Invoke-WebRequest -outfile $sqlScriptPath -usebasicparsing "https://raw.githubusercontent.com/Profiseedev/kubernetes/master/Azure-ARM/sqlmaintenance.sql";
+            - Invoke-WebRequest -outfile $sqlScriptPath -usebasicparsing "https://raw.githubusercontent.com/Profisee/kubernetes/master/Azure-ARM/sqlmaintenance.sql";
             - $sqlText = Get-Content $sqlScriptPath -Raw;
             - $SqlConnection = New-Object System.Data.SqlClient.SqlConnection;
             - $SqlConnection.ConnectionString = 'Data Source={0};database={1};User ID={2};Password={3}' -f $env:ProfiseeSqlServer,$env:ProfiseeSqlDatabase,$env:ProfiseeSqlUserName,$env:ProfiseeSqlPassword;
