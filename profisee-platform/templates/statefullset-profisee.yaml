@@ -22,6 +22,8 @@ spec:
       terminationGracePeriodSeconds: 60
       serviceAccountName: profiseeserviceaccount
       automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
