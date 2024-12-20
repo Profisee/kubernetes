@@ -657,8 +657,8 @@
               "required": true,
               "validations": [
                 {
-                  "isValid": "[equals(steps('sql').CheckSqlNameRestApiResponse.available,true)]",
-                  "message": "[steps('sql').CheckSqlNameRestApiResponse.message]"
+                  "regex": "^[a-z0-9A-Z -.:\n]{1,60}$",
+                  "message": "Only 1-60 alphanumeric characters, hyphens, spaces, periods, and colons are allowed."
                 }
               ]
             },
@@ -777,11 +777,10 @@
           },
           {
             "name": "StorageAccountAccessKey",
-            "type": "Microsoft.Common.DropDown",
-            "label": "Access Keys",
-            "toolTip": "Pick which storage account access key to use.",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Access Key",
+            "toolTip": "Storage account access key to use.",
             "constraints": {
-              "allowedValues": "[map(steps('storage').GetStorageAccessKeysRestApiResponse.keys, (item) => parse(concat('{\"label\":\"', item.keyName, '\",\"value\":\"', item.value, '\"}')))]",
               "required": true
             },
             "visible": "[equals(steps('storage').StorageAccountNameSection.StorageAccountName.newOrExisting, 'existing')]"
