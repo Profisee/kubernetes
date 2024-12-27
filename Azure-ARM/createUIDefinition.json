@@ -771,7 +771,7 @@
             "type": "Microsoft.Solutions.ArmApiControl",
             "request": {
               "method": "POST",
-              "path": "[concat(subscription().id,'/resourceGroups/',steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,'/providers/Microsoft.Storage/storageAccounts/',steps('storage').StorageAccountNameSection.StorageAccountName.name,'/listKeys?api-version=2023-01-01')]",
+              "path": "[concat(subscription().id,'/resourceGroups/',steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,'/providers/Microsoft.Storage/storageAccounts/',steps('storage').StorageAccountNameSection.StorageAccountName.name,'/listKeys?api-version=2023-05-01')]",
               "body": ""
             }
           },
