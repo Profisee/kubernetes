@@ -8,7 +8,7 @@ spec:
   schedule: "0 3 * * 0"
   jobTemplate:
     spec:
-      ttlSecondsAfterFinished: 1200
+      ttlSecondsAfterFinished: 14400
       template:
         spec:
           nodeSelector:
