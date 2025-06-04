@@ -75,6 +75,10 @@ mkdir "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Webportal"
 mkdir "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Monitor"
 mkdir "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Data"
 mkdir "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\ConnEx"
+mkdir "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Chatbot"
+mkdir "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Matching"
+mkdir "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Matching.BulkScoring"
+mkdir "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Modeling"
 mkdir "$env:TEMP\all-Logs\$logsFolder\EventViewerLogs"
 mkdir "$env:TEMP\all-Logs\$logsFolder\TCPLogs"
 mkdir "$env:TEMP\all-Logs\$logsFolder\IISLogs"
@@ -90,6 +94,10 @@ robocopy "c:\profisee\services\workflows\logfiles" "$env:TEMP\all-Logs\$logsFold
 robocopy "C:\Profisee\Services\Monitor\LogFiles" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Monitor" /E /COPYALL /DCOPY:T
 robocopy "C:\Profisee\Services\Data\LogFiles" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Data" /E /COPYALL /DCOPY:T
 robocopy "C:\Profisee\Services\ConnEx\LogFiles" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\ConnEx" /E /COPYALL /DCOPY:T
+robocopy "C:\Profisee\Services\Chatbot\LogFiles" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Chatbot" /E /COPYALL /DCOPY:T
+robocopy "C:\Profisee\Services\Matching\LogFiles" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Matching" /E /COPYALL /DCOPY:T
+robocopy "C:\Profisee\Services\Matching.BulkScoring\LogFiles" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Matching.BulkScoring" /E /COPYALL /DCOPY:T
+robocopy "C:\Profisee\Services\Modeling\LogFiles" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Modeling" /E /COPYALL /DCOPY:T
 robocopy "c:\profisee\web\logfiles" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Web" /E /COPYALL /DCOPY:T
 robocopy "c:\profisee\webportal\logfiles" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Webportal" /E /COPYALL /DCOPY:T
 robocopy "c:\inetpub\logs\LogFiles\W3SVC1" "$env:TEMP\all-Logs\$logsFolder\IISLogs" /E /COPYALL /DCOPY:T
