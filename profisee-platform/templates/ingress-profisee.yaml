@@ -23,7 +23,6 @@ metadata:
     {{- end }}
 
 spec:
-  progressDeadlineSeconds: 600
   ingressClassName: nginx
   tls:
   - hosts:
