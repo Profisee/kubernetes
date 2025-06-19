@@ -608,7 +608,7 @@ if [ "$USELETSENCRYPT" = "Yes" ]; then
 	        sleep 20;
         fi
 	# Install the cert-manager Helm chart
-	helm install cert-manager jetstack/cert-manager -n profisee --set crds.enabled=true --set nodeSelector."kubernetes\.io/os"=linux --set webhook.nodeSelector."kubernetes\.io/os"=linux --set cainjector.nodeSelector."kubernetes\.io/os"=linux --set startupapicheck.nodeSelector."kubernetes\.io/os"=linux
+	helm install cert-manager jetstack/cert-manager -n profisee --version v1.17.0 --set crds.enabled=true --set nodeSelector."kubernetes\.io/os"=linux --set webhook.nodeSelector."kubernetes\.io/os"=linux --set cainjector.nodeSelector."kubernetes\.io/os"=linux --set startupapicheck.nodeSelector."kubernetes\.io/os"=linux
 	# Wait for the cert manager to be ready
 	echo $"Let's Encrypt is waiting for certificate manager to be ready, sleeping for 30 seconds.";
 	sleep 30;
