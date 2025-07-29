@@ -77,10 +77,6 @@ resource "azurerm_monitor_diagnostic_setting" "sql_server" {
   log_analytics_workspace_id = azurerm_log_analytics_workspace.profisee.id
 
   enabled_log {
-    category = "SQLSecurityAuditEvents"
-  }
-
-  enabled_log {
     category = "DevOpsOperationsAudit"
   }
 
