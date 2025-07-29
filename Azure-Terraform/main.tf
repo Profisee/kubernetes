@@ -69,16 +69,12 @@ resource "azurerm_mssql_firewall_rule" "allow_azure" {
   end_ip_address   = "0.0.0.0"
 }
 
-# Create diagnostic settings for SQL Server
+# Create diagnostic settings for SQL Server (metrics only)
 resource "azurerm_monitor_diagnostic_setting" "sql_server" {
   count                      = var.sql_server_create_new == "Yes" ? 1 : 0
   name                       = "sql-server-diagnostics"
   target_resource_id         = azurerm_mssql_server.profisee[0].id
   log_analytics_workspace_id = azurerm_log_analytics_workspace.profisee.id
-
-  enabled_log {
-    category = "DevOpsOperationsAudit"
-  }
 
   metric {
     category = "AllMetrics"
