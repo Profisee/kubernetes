@@ -44,6 +44,27 @@ Before deploying, ensure you have:
    - **Contributor** role on the subscription or resource group
    - **Application Administrator** role in Azure AD (if creating AD app)
    - **User Access Administrator** (for role assignments)
+   - **Key Vault Administrator** (if using Key Vault integration)
+
+## Version Requirements
+
+| Tool | Minimum Version | Recommended | Notes |
+|------|----------------|-------------|-------|
+| Terraform | 1.0+ | 1.5+ | Uses modern provider syntax |
+| Azure CLI | 2.30+ | Latest | Required for authentication |
+| kubectl | 1.20+ | Latest | For AKS cluster management |
+| Helm | 3.7+ | Latest | For Profisee deployment |
+| PowerShell | 5.1+ | 7.3+ | For Windows deployment scripts |
+
+## Compatibility
+
+- **Azure Cloud**: Public, Government, and China clouds supported
+- **Kubernetes**: Supports Kubernetes 1.24+ (AKS supported versions)
+- **Operating Systems**: Windows 10/11, Linux, macOS
+- **Terraform Providers**: 
+  - azurerm ~> 3.80
+  - azuread ~> 2.41
+  - random ~> 3.4
 
 ## Quick Start
 
@@ -66,6 +87,10 @@ Before deploying, ensure you have:
    sql_server_password           = "YourSecurePassword123!"
    storage_account_name          = "youruniquestorage"
    storage_account_file_share_name = "profisee-fileshare"
+   
+   # Optional: Enable Azure Key Vault for secure secrets storage
+   use_key_vault = "Yes"
+   key_vault     = "profisee-keyvault-001"
    ```
 
 3. **Deploy with Terraform**
@@ -74,6 +99,17 @@ Before deploying, ensure you have:
    terraform plan
    terraform apply
    ```
+   
+   **Alternative: Use deployment scripts**
+   ```powershell
+   # Windows
+   .\deploy.bat
+   
+   # Linux/Mac
+   ./deploy.sh
+   ```
+   
+   The deployment scripts automatically run `terraform init`, `plan`, and `apply` with proper error handling.
 
 4. **Get AKS credentials and deploy Profisee**
    ```bash
@@ -99,6 +135,8 @@ Before deploying, ensure you have:
 | `sql_server_password` | SQL Server admin password | `"YourSecurePassword123!"` |
 | `storage_account_name` | Storage account name (globally unique) | `"profiseestorage"` |
 | `storage_account_file_share_name` | File share name | `"profisee-fileshare"` |
+| `use_key_vault` | Enable Key Vault for secrets | `"Yes"` or `"No"` |
+| `key_vault` | Key Vault name (if enabled) | `"profisee-keyvault-001"` |
 
 ### Optional Configuration
 
@@ -113,7 +151,8 @@ Before deploying, ensure you have:
   - `https_configure`, `use_lets_encrypt`: SSL certificate options
 
 - **Azure Services:**
-  - `use_key_vault`: Enable Azure Key Vault integration
+  - `use_key_vault`: Enable Azure Key Vault integration ("Yes" or "No")
+  - `key_vault`: Key Vault name for secrets storage (when enabled)
   - `use_purview`: Enable Azure Purview integration
 
 ## Architecture
@@ -143,6 +182,143 @@ Before deploying, ensure you have:
 │  │   (Optional)    │    │   (Optional)    │                │
 │  └─────────────────┘    └─────────────────┘                │
 └─────────────────────────────────────────────────────────────┘
+```
+
+## Azure Key Vault Integration
+
+This deployment supports optional Azure Key Vault integration for secure secrets management. When enabled, sensitive configuration values are stored in Azure Key Vault instead of plain text.
+
+### Enabling Key Vault
+
+To enable Key Vault integration, update your `terraform.tfvars`:
+
+```hcl
+use_key_vault = "Yes"
+key_vault     = "profisee-keyvault-001"  # Must be globally unique
+```
+
+### What Gets Stored in Key Vault
+
+When Key Vault is enabled, the following secrets are automatically stored:
+
+| Secret Name | Description | Example Value |
+|-------------|-------------|---------------|
+| `sql-admin-password` | SQL Server administrator password | `YourSecurePassword123!` |
+| `sql-connection-string` | Complete SQL connection string | `Server=tcp:...` |
+| `storage-account-key` | Storage account primary access key | `base64-encoded-key` |
+| `storage-connection-string` | Storage account connection string | `DefaultEndpointsProtocol=https...` |
+| `profisee-license` | Profisee platform license key | `your-license-key` |
+
+### Key Vault Configuration
+
+The Key Vault is configured with:
+
+- **Access Policies**: Managed Identity has Get/List permissions
+- **Network Access**: Can be restricted to virtual network (configurable)
+- **Soft Delete**: Enabled for data protection (90-day retention)
+- **Purge Protection**: Optional additional security layer
+- **RBAC Integration**: Azure AD authentication for administrative access
+
+### Accessing Secrets from AKS
+
+The deployment configures the AKS cluster to access Key Vault secrets using:
+
+1. **Azure Workload Identity**: Modern, secure authentication method
+2. **Managed Identity**: Eliminates need for stored credentials
+3. **CSI Secret Store Driver**: Mounts secrets as volumes in pods
+
+Example pod configuration:
+```yaml
+apiVersion: v1
+kind: Pod
+spec:
+  serviceAccountName: profisee-workload-identity
+  containers:
+  - name: profisee-app
+    volumeMounts:
+    - name: secrets-store
+      mountPath: "/mnt/secrets"
+      readOnly: true
+  volumes:
+  - name: secrets-store
+    csi:
+      driver: secrets-store.csi.k8s.io
+      parameters:
+        secretProviderClass: "profisee-secrets"
+```
+
+### Key Vault Best Practices
+
+**Security:**
+- Use separate Key Vaults for different environments (dev/staging/prod)
+- Enable diagnostic logging to monitor access patterns
+- Implement least privilege access policies
+- Regular audit of access permissions
+
+**Operations:**
+- Use descriptive names for secrets
+- Implement secret rotation policies
+- Monitor Key Vault capacity and throttling limits
+- Set up alerts for unauthorized access attempts
+
+**Cost Optimization:**
+- Key Vault operations are charged per transaction
+- Monitor usage through Azure Cost Management
+- Consider consolidating secrets to reduce transaction costs
+
+### Migration to Key Vault
+
+If you have an existing deployment without Key Vault:
+
+1. **Enable Key Vault** in `terraform.tfvars`:
+   ```hcl
+   use_key_vault = "Yes"
+   key_vault     = "your-unique-keyvault-name"
+   ```
+
+2. **Apply Terraform changes**:
+   ```bash
+   terraform plan -out=tfplan
+   terraform apply tfplan
+   ```
+
+3. **Update application configuration** to reference Key Vault secrets instead of environment variables
+
+4. **Verify secret access**:
+   ```bash
+   # Check if secrets are accessible from AKS
+   kubectl exec -it <pod-name> -- cat /mnt/secrets/sql-admin-password
+   ```
+
+### Troubleshooting Key Vault Issues
+
+**Common Problems:**
+
+1. **Access Denied Errors**:
+   - Verify Managed Identity has proper Key Vault access policies
+   - Check that Workload Identity is properly configured
+   - Ensure CSI Secret Store Driver is installed
+
+2. **Secret Not Found**:
+   - Verify secret names match exactly (case-sensitive)
+   - Check that secrets were properly created during deployment
+   - Confirm Key Vault name is correct in configuration
+
+3. **CSI Driver Issues**:
+   - Verify the Azure Key Vault Provider for Secrets Store CSI Driver is installed
+   - Check pod logs for detailed error messages
+   - Ensure SecretProviderClass is properly configured
+
+**Diagnostic Commands:**
+```bash
+# Check Key Vault access from AKS node
+az keyvault secret show --vault-name <vault-name> --name sql-admin-password
+
+# Verify CSI driver installation
+kubectl get pods -n kube-system | grep secrets-store
+
+# Check SecretProviderClass
+kubectl describe secretproviderclass profisee-secrets
 ```
 
 ## Monitoring & Logging
@@ -216,8 +392,16 @@ This Terraform configuration implements security best practices:
 - **Network Security**: Configures appropriate network policies
 - **Encrypted Storage**: Enables encryption for storage accounts
 - **SQL Security**: Configures Azure AD authentication for SQL Server
-- **Key Vault Integration**: Optional integration for secrets management
-- **Least Privilege**: Role assignments follow principle of least privilege
+- **Key Vault Integration**: 
+  - Optional integration for centralized secrets management
+  - Workload Identity for secure pod-to-Key Vault authentication
+  - CSI Secret Store Driver for mounting secrets as volumes
+  - Soft delete and purge protection enabled
+  - Access policies following principle of least privilege
+- **Certificate Management**: Integration with Let's Encrypt for automated SSL certificates
+- **Network Isolation**: Virtual network integration with private endpoints (configurable)
+- **Audit Logging**: All Key Vault access and administrative actions are logged
+- **Least Privilege**: All role assignments follow principle of least privilege
 
 ## Post-Deployment
 
@@ -250,7 +434,7 @@ After successful deployment:
 ### Common Issues
 
 1. **Terraform validation errors**:
-   - Ensure all required variables are set in `terraform.tfvars.json`
+   - Ensure all required variables are set in `terraform.tfvars`
    - Check that resource names are globally unique (SQL Server, Storage Account)
 
 2. **Authentication issues**:
@@ -265,6 +449,11 @@ After successful deployment:
    - Check Azure subscription quotas for VM cores
    - Consider reducing node counts if hitting limits
 
+5. **Key Vault access issues**:
+   - Ensure Key Vault name is globally unique
+   - Verify Managed Identity permissions on Key Vault
+   - Check that CSI Secret Store Driver is properly installed in AKS
+
 ### Getting Help
 
 - Check Terraform output for detailed error messages
@@ -272,25 +461,6 @@ After successful deployment:
 - Review Azure Activity Log in the portal for resource-level errors
 - Check the deployment script logs for detailed error information
 
-## Migration from ARM Template
-
-This Terraform configuration replaces the ARM template deployment with these improvements:
-
-✅ **Version Control**: Infrastructure code can be versioned and tracked  
-✅ **Repeatability**: Consistent deployments across environments  
-✅ **State Management**: Terraform tracks resource state for updates  
-✅ **Dependency Management**: Automatic resource dependency resolution  
-✅ **Validation**: Built-in validation for configuration values  
-✅ **Preview Changes**: See what will be changed before deployment  
-✅ **Modularity**: Easier to customize and extend  
-
-### Key Differences from ARM:
-
-- Uses `.tf` files instead of `.json` ARM templates
-- Configuration in `terraform.tfvars.json` instead of parameters file
-- Deployment via `terraform apply` instead of `az deployment`
-- State file tracking (stored locally or in remote backend)
-- More granular resource management and updates
 
 ## Cleanup
 
@@ -306,14 +476,27 @@ terraform destroy
 
 ```
 Azure-Terraform/
-├── main.tf                           # Main Terraform configuration
-├── variables.tf                      # Variable definitions  
-├── outputs.tf                        # Output definitions
+├── main.tf                           # Main Terraform configuration with Key Vault support
+├── variables.tf                      # Variable definitions including Key Vault options
+├── outputs.tf                        # Output definitions with Key Vault information
 ├── versions.tf                       # Provider version constraints
 ├── terraform.tfvars                  # Variable values (customize this)
-├── sample.tfvars                     # Sample configuration with examples
-├── QUICK-START.md                   # Quick deployment guide
-└── README-terraform.md              # This documentation
+├── terraform.tfstate                 # Terraform state file (auto-generated)
+├── terraform.tfstate.backup          # State backup (auto-generated)
+├── .terraform.lock.hcl               # Provider lock file (auto-generated)
+├── deploy.bat                        # Windows deployment script
+├── deploy.sh                         # Linux/Mac deployment script
+├── QUICK-START.md                    # Quick deployment guide
+├── DEPLOYMENT-GUIDE.md               # Detailed deployment instructions
+├── MIGRATION-NOTES.md                # Notes for migrating from ARM templates
+└── README.md                         # This comprehensive documentation
+
+# Legacy ARM Template Files (for reference):
+├── azuredeploy.json                  # Original ARM template
+├── azuredeploy.parameters.json       # ARM template parameters
+├── deployprofisee.sh                 # Legacy deployment script
+├── Settings.yaml                     # Legacy configuration
+└── nginxSettings.yaml                # NGINX configuration
 ```
 
 ## Support
