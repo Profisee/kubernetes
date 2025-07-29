@@ -153,7 +153,7 @@ resource "azurerm_kubernetes_cluster" "profisee" {
 
 # Create Windows node pool
 resource "azurerm_kubernetes_cluster_node_pool" "windows" {
-  name                  = "winpool"
+  name                  = "winpl"
   kubernetes_cluster_id = azurerm_kubernetes_cluster.profisee.id
   vm_size               = var.kubernetes_windows_node_size
   node_count            = var.kubernetes_windows_node_count
