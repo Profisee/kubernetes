@@ -69,6 +69,72 @@ resource "azurerm_mssql_firewall_rule" "allow_azure" {
   end_ip_address   = "0.0.0.0"
 }
 
+# Create diagnostic settings for SQL Server
+resource "azurerm_monitor_diagnostic_setting" "sql_server" {
+  count                      = var.sql_server_create_new == "Yes" ? 1 : 0
+  name                       = "sql-server-diagnostics"
+  target_resource_id         = azurerm_mssql_server.profisee[0].id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.profisee.id
+
+  enabled_log {
+    category = "SQLSecurityAuditEvents"
+  }
+
+  enabled_log {
+    category = "DevOpsOperationsAudit"
+  }
+
+  metric {
+    category = "AllMetrics"
+    enabled  = true
+  }
+}
+
+# Create diagnostic settings for SQL Database
+resource "azurerm_monitor_diagnostic_setting" "sql_database" {
+  count                      = var.sql_server_create_new == "Yes" ? 1 : 0
+  name                       = "sql-database-diagnostics"
+  target_resource_id         = azurerm_mssql_database.profisee[0].id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.profisee.id
+
+  enabled_log {
+    category = "SQLInsights"
+  }
+
+  enabled_log {
+    category = "QueryStoreRuntimeStatistics"
+  }
+
+  enabled_log {
+    category = "QueryStoreWaitStatistics"
+  }
+
+  enabled_log {
+    category = "Errors"
+  }
+
+  enabled_log {
+    category = "DatabaseWaitStatistics"
+  }
+
+  enabled_log {
+    category = "Timeouts"
+  }
+
+  enabled_log {
+    category = "Blocks"
+  }
+
+  enabled_log {
+    category = "Deadlocks"
+  }
+
+  metric {
+    category = "AllMetrics"
+    enabled  = true
+  }
+}
+
 # Create Storage Account (if new)
 resource "azurerm_storage_account" "profisee" {
   count                      = var.storage_account_create_new == "Yes" ? 1 : 0
@@ -94,6 +160,83 @@ resource "azurerm_storage_share" "profisee" {
   name                 = var.storage_account_file_share_name
   storage_account_name = azurerm_storage_account.profisee[0].name
   quota                = 50
+}
+
+# Create Log Analytics Workspace
+resource "azurerm_log_analytics_workspace" "profisee" {
+  name                = "${var.profisee_web_app_name}-logs"
+  location            = data.azurerm_resource_group.main.location
+  resource_group_name = data.azurerm_resource_group.main.name
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+
+  tags = {
+    displayName = "LogAnalyticsWorkspace"
+    Environment = "Profisee"
+  }
+}
+
+# Create diagnostic settings for Storage Account
+resource "azurerm_monitor_diagnostic_setting" "storage_account" {
+  count                      = var.storage_account_create_new == "Yes" ? 1 : 0
+  name                       = "storage-account-diagnostics"
+  target_resource_id         = azurerm_storage_account.profisee[0].id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.profisee.id
+
+  metric {
+    category = "AllMetrics"
+    enabled  = true
+  }
+}
+
+# Create diagnostic settings for Storage Account Blob Service
+resource "azurerm_monitor_diagnostic_setting" "storage_blob" {
+  count                      = var.storage_account_create_new == "Yes" ? 1 : 0
+  name                       = "storage-blob-diagnostics"
+  target_resource_id         = "${azurerm_storage_account.profisee[0].id}/blobServices/default"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.profisee.id
+
+  enabled_log {
+    category = "StorageRead"
+  }
+
+  enabled_log {
+    category = "StorageWrite"
+  }
+
+  enabled_log {
+    category = "StorageDelete"
+  }
+
+  metric {
+    category = "AllMetrics"
+    enabled  = true
+  }
+}
+
+# Create diagnostic settings for Storage Account File Service
+resource "azurerm_monitor_diagnostic_setting" "storage_file" {
+  count                      = var.storage_account_create_new == "Yes" ? 1 : 0
+  name                       = "storage-file-diagnostics"
+  target_resource_id         = "${azurerm_storage_account.profisee[0].id}/fileServices/default"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.profisee.id
+
+  enabled_log {
+    category = "StorageRead"
+  }
+
+  enabled_log {
+    category = "StorageWrite"
+  }
+
+  enabled_log {
+    category = "StorageDelete"
+  }
+
+  metric {
+    category = "AllMetrics"
+    enabled  = true
+  }
 }
 
 # Generate a random password for Windows admin if not provided
@@ -144,6 +287,11 @@ resource "azurerm_kubernetes_cluster" "profisee" {
 
   # Basic RBAC - without Azure AD integration for initial deployment
   role_based_access_control_enabled = true
+
+  # Enable Azure Monitor for containers
+  oms_agent {
+    log_analytics_workspace_id = azurerm_log_analytics_workspace.profisee.id
+  }
 
   tags = {
     displayName = "AKSCluster"

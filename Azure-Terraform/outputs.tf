@@ -101,6 +101,27 @@ output "managed_identity_client_id" {
   value       = length(var.managed_identity_name) > 0 && var.managed_identity_name.name != "" ? azurerm_user_assigned_identity.profisee[0].client_id : null
 }
 
+output "log_analytics_workspace_id" {
+  description = "ID of the Log Analytics workspace"
+  value       = azurerm_log_analytics_workspace.profisee.id
+}
+
+output "log_analytics_workspace_name" {
+  description = "Name of the Log Analytics workspace"
+  value       = azurerm_log_analytics_workspace.profisee.name
+}
+
+output "log_analytics_workspace_workspace_id" {
+  description = "Workspace ID (GUID) of the Log Analytics workspace"
+  value       = azurerm_log_analytics_workspace.profisee.workspace_id
+}
+
+output "log_analytics_primary_shared_key" {
+  description = "Primary shared key for the Log Analytics workspace"
+  value       = azurerm_log_analytics_workspace.profisee.primary_shared_key
+  sensitive   = true
+}
+
 output "azure_ad_application_id" {
   description = "Azure AD Application ID"
   value       = var.active_directory_create_app == "Yes" && var.active_directory_client_id == "" ? azuread_application.profisee[0].client_id : var.active_directory_client_id
@@ -121,13 +142,14 @@ output "azure_ad_tenant_id" {
 output "deployment_summary" {
   description = "Summary of deployed resources"
   value = {
-    resource_group  = data.azurerm_resource_group.main.name
-    location        = data.azurerm_resource_group.main.location
-    aks_cluster     = azurerm_kubernetes_cluster.profisee.name
-    sql_server      = var.sql_server_create_new == "Yes" ? azurerm_mssql_server.profisee[0].fully_qualified_domain_name : "${var.sql_server_name}.database.windows.net"
-    storage_account = var.storage_account_create_new == "Yes" ? azurerm_storage_account.profisee[0].name : var.storage_account_name
-    subscription_id = data.azurerm_client_config.current.subscription_id
-    tenant_id       = data.azurerm_client_config.current.tenant_id
+    resource_group         = data.azurerm_resource_group.main.name
+    location              = data.azurerm_resource_group.main.location
+    aks_cluster           = azurerm_kubernetes_cluster.profisee.name
+    sql_server            = var.sql_server_create_new == "Yes" ? azurerm_mssql_server.profisee[0].fully_qualified_domain_name : "${var.sql_server_name}.database.windows.net"
+    storage_account       = var.storage_account_create_new == "Yes" ? azurerm_storage_account.profisee[0].name : var.storage_account_name
+    log_analytics_workspace = azurerm_log_analytics_workspace.profisee.name
+    subscription_id       = data.azurerm_client_config.current.subscription_id
+    tenant_id            = data.azurerm_client_config.current.tenant_id
   }
 }
 
@@ -139,6 +161,20 @@ output "next_steps" {
     add_helm_repo       = "helm repo add profisee https://profisee.github.io/kubernetes"
     install_profisee    = "helm install profisee profisee/profisee-platform --namespace profisee --create-namespace"
     azure_portal_url    = "https://portal.azure.com/#@${data.azurerm_client_config.current.tenant_id}/resource/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${data.azurerm_resource_group.main.name}"
+    log_analytics_url   = "https://portal.azure.com/#@${data.azurerm_client_config.current.tenant_id}/resource${azurerm_log_analytics_workspace.profisee.id}"
+  }
+}
+
+# Monitoring and Logging Information
+output "monitoring_info" {
+  description = "Information about monitoring and logging setup"
+  value = {
+    log_analytics_workspace = azurerm_log_analytics_workspace.profisee.name
+    aks_monitoring_enabled  = "Azure Monitor for containers is enabled"
+    sql_diagnostics_enabled = var.sql_server_create_new == "Yes" ? "SQL Server and Database diagnostics are enabled" : "N/A"
+    storage_diagnostics_enabled = var.storage_account_create_new == "Yes" ? "Storage Account diagnostics are enabled" : "N/A"
+    retention_days = azurerm_log_analytics_workspace.profisee.retention_in_days
+    workspace_id = azurerm_log_analytics_workspace.profisee.workspace_id
   }
 }
 
