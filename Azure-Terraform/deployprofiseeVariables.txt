@@ -1,0 +1,80 @@
+#Notes on the variables that need to be set in order to run the deployprofisee.sh manually.
+#If running thru the arm template, they are set automatically
+
+#Leave the null as it will be pulled from the license
+#ACRUSER=
+#ACRUSERPASSWORD=
+
+ADMINACCOUNTNAME=chuck.thompson@profisee.com
+AKSINFRARESOURCEGROUPNAME=MC_MainResourceGroupName_ClusterName_location
+
+UPDATEAAD=Yes
+#If UPDATEAAD=No, then set this
+CLIENTID=
+
+#Name of AKS Cluster
+CLUSTERNAME=ProfiseeAKSCluster
+
+#ClientID used by kubernetes
+#run this to get it
+#az aks show -g <AKSResourceGroup> -n <AKSClusterName> --query identityProfile.kubeletidentity.clientId -o tsv
+KUBERNETESCLIENTID=aksClientIdGuid
+
+UPDATEDNS=Yes
+#If UPDATEDNS=Yes, then set these, if not then leave blank but you have to manually update the dns to the inbound ip of the cluster
+#Run this to get the inbound ip of the cluster after the deployprofisee.sh script has been run
+#kubectl --namespace profisee get services nginx-ingress-nginx-controller --output="jsonpath={.status.loadBalancer.ingress[0].ip}"
+DNSDOMAINNAME=dev.profisee.com
+DNSHOSTNAME=mdmsample
+DOMAINNAMERESOURCEGROUP=dnsZoneResourceGroupName
+
+EXTERNALDNSNAME=mdmsample.dev.profisee.com
+EXTERNALDNSURL=https://mdmsample.dev.profisee.com
+
+USEKEYVAULT=Yes
+#If USEKEYVAULT=Yes, then set this
+KEYVAULT=/subscriptions/MyAzureSubscriptionId/resourceGroups/KVResourceGroupName/providers/Microsoft.KeyVault/vaults/KVName
+
+#If using not using keyvault, the set to license string
+LICENSEDATA=
+#If using keyvault, the set to secret name in vault
+LICENSEDATASECRETNAME=profiseeLicense-keyvault-secret-name
+
+OIDCURL=https://login.microsoftonline.com/MyAzureTennantId
+PROFISEEVERSION=profiseeplatform:2021r2.0
+
+USEPURVIEW=
+#If USEPURVIEW=Yes, then set these
+PURVIEWACCOUNTRESOURCEGROUP=
+PURVIEWCLIENTID=
+PURVIEWCLIENTSECRET=
+PURVIEWURL=
+
+RESOURCEGROUPNAME=resourceGroupNameWhereAKSClusterIsInstalled
+SQLDBNAME=Profisee
+SQLNAME=mysqlservername.database.windows.net
+
+#If yes, then a firewall rule is added to allow the cluster ip in
+SQLSERVERCREATENEW=Yes
+#If using keyvault, the set to secret name in vault, otherwise set to sql username
+SQLUSERNAME=SqlUserName-keyvault-secret-name
+#If using keyvault, the set to secret name in vault, otherwise set to the password
+SQLUSERPASSWORD=SqlPassword-keyvault-secret-name
+
+#If null, then the pw/token will be retrieved
+FILEREPOPASSWORD=
+STORAGEACCOUNTFILESHARENAME=files
+STORAGEACCOUNTNAME=mystorageaccountname
+
+SUBSCRIPTIONID=MyAzureSubscriptionId
+TENANTID=MyAzureTennantId
+
+#Set to Yes if supplying own certs.  If using Lets Encrypt, then set to No
+CONFIGUREHTTPS=Yes
+#If using keyvault, the set to secret name in vault, if not then set to tls cert string
+TLSCERT=httpsCert-keyvault-secret-name
+#If using keyvault, the set to null as its not used, if not then set to tls cert key string
+TLSKEY=
+
+#Set to Yes it using LE or No if using own certificates
+USELETSENCRYPT=No

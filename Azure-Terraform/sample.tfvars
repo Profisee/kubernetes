@@ -1,0 +1,47 @@
+# Sample Terraform Variables File for Profisee Platform
+# Copy this file to terraform.tfvars and customize with your values
+
+# Resource Group (REQUIRED)
+resource_group_name = "profisee-prod-rg"
+
+# Basic Configuration (REQUIRED)
+profisee_admin_user_account = "admin@yourcompany.com"
+profisee_license           = "YOUR_PROFISEE_LICENSE_KEY_HERE"
+profisee_web_app_name      = "profisee-prod"
+
+# SQL Server Configuration (REQUIRED)
+sql_server_name     = "profisee-sql-prod-001"
+sql_server_user     = "sqladmin"
+sql_server_password = "YourSecurePassword123!"
+sql_server_database_name = "Profisee"
+
+# Storage Configuration (REQUIRED)
+storage_account_name           = "profiseeprod001"
+storage_account_file_share_name = "profisee-fileshare"
+
+# Kubernetes Configuration (Optional)
+kubernetes_cluster_name      = "profisee-aks-prod"
+kubernetes_linux_node_count = 3
+kubernetes_windows_node_count = 2
+kubernetes_linux_node_size   = "Standard_D4as_v5"
+kubernetes_windows_node_size = "Standard_D8as_v5"
+
+# DNS and HTTPS (Optional)
+dns_host_name       = "profisee"
+dns_domain_name     = "yourcompany.com"
+https_configure     = "Yes"
+use_lets_encrypt    = "Yes"
+
+# Azure Services Integration (Optional)
+use_key_vault = "Yes"
+use_purview   = "No"
+
+# Active Directory (Optional)
+active_directory_create_app = "Yes"
+
+# Network Configuration (Optional - for existing VNet)
+# kubernetes_vnet_name              = "existing-vnet"
+# kubernetes_vnet_resource_group    = "network-rg"
+# kubernetes_subnet_name            = "aks-subnet"
+kubernetes_service_cidr    = "10.0.0.0/16"
+kubernetes_dns_service_ip  = "10.0.0.10"

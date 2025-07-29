@@ -1,0 +1,100 @@
+sqlServer:
+    name: "$SQLNAME"
+    databaseName: "$SQLDBNAME"
+    userName: "$SQLUSERNAME"
+    password: "$SQLUSERPASSWORD"
+profiseeRunTime:
+    useLetsEncrypt: $USELETSENCRYPT
+    adminAccount: "$ADMINACCOUNTNAME"
+    InfraAdminAccount: "$INFRAADMINACCOUNT"
+    fileRepository:
+        accountName: "$FILEREPOACCOUNTNAME"
+        userName: "$FILEREPOUSERNAME"
+        password: "$FILEREPOPASSWORD"
+        logonType: "NewCredentials"
+        location: "$FILEREPOURL"
+        fileShareName: "$FILEREPOSHARENAME"
+    externalDnsUrl: "$EXTERNALDNSURL"
+    externalDnsName: "$EXTERNALDNSNAME"
+    webAppName: "$WEBAPPNAME"
+    deployIngressRule: true
+    isPaaS: true
+    oidc:
+        name: "$OIDCNAME"
+        authority: "$OIDCURL"
+        clientId: "$CLIENTID"
+        clientSecret: "$OIDCCLIENTSECRET"
+        usernameClaim: "$OIDCCMUserName"
+        userIdClaim: "$OIDCCMUserID"
+        firstNameClaim: "$OIDCCMFirstName"
+        lastNameClaim: "$OIDCCMLastName"
+        emailClaim: "$OIDCCMEmailAddress"
+        groupsClaim: "groups"
+    clusterNodeCount: "$PodCount"
+clusterNode:
+    limits:
+      cpu: $CPULIMITSVALUE
+      memory: $MEMORYLIMITSVALUE
+    requests:
+      cpu: 1
+      memory: 1000M
+image:
+    registry: "profisee.azurecr.io"
+    repository: "$ACRREPONAME"
+    tag: "$ACRREPOLABEL"
+    auth: |
+        {
+           "auths":{
+              "profisee.azurecr.io":{
+                 "username":"$ACRUSER",
+                 "password":"$ACRPASSWORD",
+                 "email":"$ACREMAIL",
+                 "auth":"$ACRAUTH"
+              }
+           }
+        }
+licenseFileData: $LICENSEDATA
+preInitScriptData: $preInitScriptData
+postInitScriptData: $postInitScriptData
+oidcFileData: |
+    $OIDCFileData
+tlsCert: |
+    $TLSCERT
+tlsKey: |
+    $TLSKEY
+cloud:
+    azure:
+      isProvider: true
+      useKeyVault: $USEKEYVAULT
+      keyVault:
+        identity: #must be created in the AKS node resource group and have Get policies for key vault or Key Vault Secrets User for an RBAC key vault.
+          clientId: "$KEYVAULTIDENTITCLIENTID"
+          resourceId: $KEYVAULTIDENTITYRESOURCEID
+        secrets:
+          sqlUserName: $SQL_USERNAMESECRET
+          sqlPassword: $SQL_USERPASSWORDSECRET
+          tlsCertificate: $TLS_CERTSECRET
+          license: $LICENSE_DATASECRET
+        name: "$KEYVAULTNAME"
+        resourceGroup: "$KEYVAULTRESOURCEGROUP"
+        subscriptionId: "$AZURESUBSCRIPTIONID"
+        tenantId: "$AZURETENANTID"
+        clusterClientId: "$KUBERNETESCLIENTID" #clientId of the AKSCluster-agentpool identity; The "Managed Identity Operator" role must be assigned to the RG and Node RG; "Virtual Machine Contributor" role must be assigned to the Node RG.
+      useManagedIdentity: false
+      managedIdentity:
+        name: ""
+        clientId: ""
+        resourceId: ""
+      purview:
+        tenantId: "$PURVIEWTENANTID"
+        url: "$PURVIEWURL"
+        collectionId: "$PURVIEWCOLLECTIONID"
+        clientId: "$PURVIEWCLIENTID"
+        clientSecret: "$PURVIEWCLIENTSECRET"
+    aws:
+      isProvider: false
+      ebsVolumeId: ""
+    google:
+      isProvider: false
+      gceVolumeName: ""
+
