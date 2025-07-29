@@ -8,6 +8,9 @@ This Terraform configuration deploys:
 - Azure Kubernetes Service (AKS) cluster with Linux and Windows node pools
 - Azure SQL Server and Database
 - Azure Storage Account with File Share
+- **Log Analytics Workspace with comprehensive monitoring**
+- **Diagnostic settings for all resources**
+- **Azure Monitor for Containers integration**
 - User-assigned Managed Identity
 - Azure AD Application (optional)
 - Role assignments and permissions
@@ -141,6 +144,68 @@ Before deploying, ensure you have:
 │  └─────────────────┘    └─────────────────┘                │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+## Monitoring & Logging
+
+This deployment includes comprehensive monitoring and logging capabilities through Azure Log Analytics:
+
+### Log Analytics Workspace
+- **Name**: `{profisee_web_app_name}-logs`
+- **Retention**: 30 days (configurable)
+- **SKU**: PerGB2018 (pay-as-you-go)
+- **Integration**: Connected to all deployed resources
+
+### Monitoring Coverage
+- ✅ **AKS Cluster**: Azure Monitor for containers, pod/node metrics, Kubernetes events
+- ✅ **SQL Database**: Query performance, errors, blocking, deadlocks, wait statistics
+- ✅ **SQL Server**: Performance metrics and operational data
+- ✅ **Storage Account**: Transaction metrics and capacity information
+- ✅ **Storage Services**: Blob and File service operation logs (read/write/delete)
+
+### Access Your Monitoring Data
+After deployment, access monitoring through:
+```bash
+# Get Log Analytics workspace URL from Terraform output
+terraform output log_analytics_workspace_id
+
+# Or visit Azure Portal -> Log Analytics workspaces -> {workspace-name}
+```
+
+### Sample Monitoring Queries
+
+**Container CPU Usage**:
+```kusto
+Perf
+| where ObjectName == "K8SContainer" and CounterName == "cpuUsageNanoCores"
+| summarize avg(CounterValue) by bin(TimeGenerated, 5m), InstanceName
+```
+
+**SQL Database Errors**:
+```kusto
+AzureDiagnostics
+| where Category == "Errors"
+| summarize count() by bin(TimeGenerated, 1h)
+```
+
+**Storage File Operations**:
+```kusto
+StorageFileLogs
+| where OperationName in ("PutFile", "GetFile", "DeleteFile")
+| summarize count() by bin(TimeGenerated, 1h), OperationName
+```
+
+**AKS Pod Status**:
+```kusto
+KubePodInventory
+| summarize count() by PodStatus, bin(TimeGenerated, 5m)
+```
+
+### Monitoring Best Practices
+- Review dashboards regularly for performance trends
+- Set up alerts for critical metrics (CPU > 80%, memory > 90%)
+- Monitor SQL database DTU consumption
+- Track storage account capacity and IOPS
+- Use Application Insights for application-level monitoring
 
 ## Security Features
 
