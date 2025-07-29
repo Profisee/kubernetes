@@ -142,15 +142,8 @@ resource "azurerm_kubernetes_cluster" "profisee" {
     type = "SystemAssigned"
   }
 
-  # Azure AD integration - using managed Azure AD integration (default)
-  dynamic "azure_active_directory_role_based_access_control" {
-    for_each = var.authentication_type == "AAD" ? [1] : []
-    content {
-      azure_rbac_enabled     = true
-      admin_group_object_ids = []
-      tenant_id              = data.azurerm_client_config.current.tenant_id
-    }
-  }
+  # Basic RBAC - without Azure AD integration for initial deployment
+  role_based_access_control_enabled = true
 
   tags = {
     displayName = "AKSCluster"
