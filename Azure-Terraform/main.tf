@@ -142,12 +142,13 @@ resource "azurerm_kubernetes_cluster" "profisee" {
     type = "SystemAssigned"
   }
 
-  # Azure AD integration
+  # Azure AD integration - using managed Azure AD integration (default)
   dynamic "azure_active_directory_role_based_access_control" {
     for_each = var.authentication_type == "AAD" ? [1] : []
     content {
       azure_rbac_enabled     = true
       admin_group_object_ids = []
+      tenant_id              = data.azurerm_client_config.current.tenant_id
     }
   }
 
@@ -201,8 +202,11 @@ resource "azuread_application" "profisee" {
   display_name = "${var.profisee_web_app_name}-app"
 
   web {
-    homepage_url  = "https://${var.dns_host_name}.${var.dns_domain_name}"
-    redirect_uris = ["https://${var.dns_host_name}.${var.dns_domain_name}/profisee/auth/signin-oidc"]
+    homepage_url = var.dns_host_name != "" && var.dns_domain_name != "" ? "https://${var.dns_host_name}.${var.dns_domain_name}" : null
+    
+    redirect_uris = var.dns_host_name != "" && var.dns_domain_name != "" ? [
+      "https://${var.dns_host_name}.${var.dns_domain_name}/profisee/auth/signin-oidc"
+    ] : []
 
     implicit_grant {
       access_token_issuance_enabled = true
