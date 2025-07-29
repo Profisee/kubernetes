@@ -1,69 +1,271 @@
-# Deploying Profisee Platform on AKS using the ARM template
+# Profisee Platform - Terraform Deployment for Azure
 
+This directory contains Terraform configurations to deploy the Profisee Platform on Azure Kubernetes Service (AKS) with supporting infrastructure. This replaces the ARM template deployment with a more maintainable and version-controlled Infrastructure as Code approach.
+
+## Overview
+
+This Terraform configuration deploys:
+- Azure Kubernetes Service (AKS) cluster with Linux and Windows node pools
+- Azure SQL Server and Database
+- Azure Storage Account with File Share
+- User-assigned Managed Identity
+- Azure AD Application (optional)
+- Role assignments and permissions
 
 ## Prerequisites
 
-Please **DO** review the guide and links below **before** you run the Azure ARM template. We have a pre-requisites script that runs before the deployment to check on the permissions needed.
+Before deploying, ensure you have:
 
-Click [here](https://support.profisee.com/wikis/profiseeplatform/deploying_the_AKS_cluster_with_the_arm_template) for a detailed deployment guide for the latest Profisee version and [here](https://support.profisee.com/lms/courseinfo?id=00u00000000002b00aM&mode=browsecourses) for video training course and slide deck.
+1. **Terraform installed** (>= 1.0)
+   ```powershell
+   winget install HashiCorp.Terraform
+   ```
 
+2. **Azure CLI installed and authenticated**
+   ```bash
+   az login
+   az account set --subscription "your-subscription-id"
+   ```
 
-Here's **what** you will need. You will need a license tied to the DNS URL that will be used by the environment (ex. customer.eastus2.cloudapp.azure.com OR YourOwnEnvironment.Customer.com) This license can be acquired from [Profisee Support](https://support.profisee.com/aspx/ProfiseeCustomerHome). 
+3. **kubectl installed** (optional, for cluster management)
+   ```powershell
+   winget install Kubernetes.kubectl
+   ```
 
-Here's **what** will be deployed, or used if available, by the ARM template:
-1. An AKS Cluster with a **publicly** accessible Management API.
-2. Two Public IPs for Ingress and Egress.
-3. A Load Balancer needed for Nginx.
-4. A SQL Server, or we'll use one that you already have. You can either pre-create the database or let the Managed Identity create one for you.
-5. A Storage account, or use one that you already have. If you precreate the storage account, please make sure to precreate the files share that you'd like to use.
-6. A DNS entry into a zone, assuming the necessary permissions are there. If you use external DNS, you'd have to update/create the record to match the Egress IP.
-7. A free Let's Encrypt certificate, if you choose that option. Please be aware that if you plan on using your own domain with Let's Encrypt you'll need to make sure that if there is a [CAA record set](https://letsencrypt.org/docs/caa/) on your domain it allows Let's Encrypt as the Issuing Authority.
-8. Profisee downloads a powershell script to the container's c:\fileshare (this is the Azure Storage account share) and it is used during the preStop step to collect container, IIS, product and event logs prior to container restart. The script will also auto-delete any log archives (in the all-logs-datetime.zip name format) older than 30 days. These logs can help Profisee Support in their troubleshooting effots. If you do not want to use this script, please feel free to amend the stateful set and either edit or remove it from there.
+4. **Helm installed** (optional, for Profisee deployment)
+   ```powershell
+   winget install Helm.Helm
+   ```
 
-Here's **how** it will be deployed. You must have a Managed Identity created to run the deployment. This Managed Identity must have the following permissions ONLY when running a deployment. After it is done, the Managed Identity can be deleted. Based on your ARM template choices, you will need some or all of the following permissions assigned to your Managed Identity:
-1. **Contributor** role to the Subscription where AKS will be deployed. **Note:** The permissions to create a Federated Identity Credential and to register ContainerService provider are presently not included in any MS specific RBAC role. This necessitates a change to where the Deployment Managed Identity must be granted Contributor to the subscription where Profisee is deployed. 
-2. **DNS Zone Contributor** role to the particular DNS zone where the entry will be created OR **Contributor** role to the DNS Zone Resource Group.This is needed only if updating DNS hosted in Azure. To follow best practice for least access, the DNS Zone Contributor on the zone itself is the recommended option.
-3. **Application Administrator** role in Azure Active Directory, so the Application registration can be created by the Deployment Managed Identity and the required permissions can be assigned to it.
-4. **Managed Identity Contributor** and **User Access Administrator** at the Subscription level. These two are needed in order for the ARM template Deployment Managed Identity to be able to create the Key Vault specific Managed Identity that will be used by Profisee to pull the values stored in the Key Vault, as well as to assign the AKSCluster-agentpool the Managed Identity Operator role (to the Resource and Infrastructure Resource groups) and Virtual Machine Operator role (to the Infrastructure Resource group). If Key Vault will not be used, these roles are not required.
-5. **Key Vault requirements**. If you are using a Key Vault, please make sure that your Access Policy page has a checkmark on "Azure Resource Manager for template deployment". Otherwise, MS will not be able to validate the ARM template's access against your Key Vault and will result in validation failure in the ARM template before it begins deployment.
-6. **Purview Integration requirements**. If Profisee will be configured to integrate with Microsoft Purview, a Purview specific Application Registration will need to be created and have the **Collections Admin** and **Data Curator Role** assigned in the Purview account at either collection or account level. It will also have to be assigned the User.Read **delegated** permission as well as the User.Read.All, Group.Read.All and GroupMember.Read.All **application** permissions (these 3 required Global Admin consent). During the ARM template deployment you will now have to provide the Purview collection friendly name, as seen in the Purview web portal, regardless if this is a sub-collection or the root collection of Purview. 
+5. **Required Azure permissions**: Your account needs the following permissions:
+   - **Contributor** role on the subscription or resource group
+   - **Application Administrator** role in Azure AD (if creating AD app)
+   - **User Access Administrator** (for role assignments)
 
+## Quick Start
 
-## Upgrade instructions
+1. **Navigate to the Terraform directory**
+   ```bash
+   cd Azure-Terraform
+   ```
 
-For customers upgrading **from** v2022**R1** and earlier. There are two changes that require careful consideration:
-1. Purview Collections integration necessitated changes in the ARM template, container and deployment templates. Please **DO** review the upgrade instructions posted below **before** you start the upgrade process.
-2. History tables improvements - you will need to run this immediately **after** the upgrade to 2022**R2**, one time **only**. 
+2. **Copy and customize configuration**
+   ```bash
+   copy sample.tfvars terraform.tfvars
+   ```
+   Edit `terraform.tfvars` with your specific values:
+   ```hcl
+   resource_group_name            = "your-resource-group"
+   profisee_admin_user_account    = "admin@yourcompany.com"
+   profisee_license              = "your-license-key"
+   profisee_web_app_name         = "profisee-app"
+   sql_server_name               = "your-unique-sql-server"
+   sql_server_password           = "YourSecurePassword123!"
+   storage_account_name          = "youruniquestorage"
+   storage_account_file_share_name = "profisee-fileshare"
+   ```
 
-Please read through the upgrade instructions both here and in our Support portal and prepare for the upgrade process. The instructions below are combined for both Purview Collections and the History table improvements. 
+3. **Deploy with Terraform**
+   ```bash
+   terraform init
+   terraform plan
+   terraform apply
+   ```
 
-For customers who do **NOT** use Purview.
-1. Connect to your cluster from the Azure portal or powershell. For customers running Private PaaS please connect to your jumpbox first, then connect via powershell or Lens.
-2. Run the following commands (if you do not have the repo added that would be the first step):  
-helm -n profisee repo add profisee https://profisee.github.io/kubernetes  
-helm repo update  
-helm upgrade -n profisee profiseeplatform profisee/profisee-platform --reuse-values --set image.tag=2022r2.0  
-kubectl logs -n profisee profisee-0 -f #this will allow you to follow the upgrade as it is happening  
-3. This will upgrade your installation to version 2022r2.0 while keeping the rest of the values.
-4. To run the Histroy tables upgrade please follow the steps as outlined [here](https://support.profisee.com/wikis/release_notes/upgrade_considerations_and_prerequisites)
-    
-For customers who **DO** use Purview.
-1. Connect to your cluster from the Azure portal or powershell. For customers running Private PaaS please connect to your jumpbox first, then connect via powershell or Lens.
-2. Locate your Purview collection Id by visiting your MS Purview Governance Portal. Go to the collection where you would like Profisee to deploy to. Your URL will look like so: web.purview.azure.com/resource/**YourPurviewAccountName**/main/datasource/collections?collection=**ThisIsTheCollectionId**&feature.tenant=**YourAzureTenantId**
-3. Run the following commands (if you do not have the repo added that would be the first step):  
-helm -n profisee repo add profisee https://profisee.github.io/kubernetes  
-helm repo update  
-helm upgrade -n profisee profiseeplatform profisee/profisee-platform --reuse-values --set cloud.azure.purview.collectionId=YourCollectionId --set image.tag=2022r2.0  
-kubectl logs -n profisee profisee-0 -f #this will allow you to follow the upgrade as it is happening  
-4. This will upgrade your installation to version 2022r2.0 and provide the required collection Id while keeping the rest of the values. Failure to provide the collection Id would result in a failed upgrade.
-5. To run the History tables upgrade please follow the steps as outlined [here](https://support.profisee.com/wikis/release_notes/upgrade_considerations_and_prerequisites)
+4. **Get AKS credentials and deploy Profisee**
+   ```bash
+   # Get AKS credentials
+   az aks get-credentials --resource-group $(terraform output -raw resource_group_name) --name $(terraform output -raw kubernetes_cluster_name)
+   
+   # Deploy Profisee using Helm
+   helm repo add profisee https://profisee.github.io/kubernetes
+   helm install profisee profisee/profisee-platform --namespace profisee --create-namespace
+   ```
 
+## Configuration Variables
 
-## Deployment steps
+### Required Variables
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fprofisee%2Fkubernetes%2Fmaster%2FAzure-ARM%2Fazuredeploy.json/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Fprofisee%2Fkubernetes%2Fmaster%2FAzure-ARM%2FcreateUIDefinition.json)
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `resource_group_name` | Azure resource group name | `"profisee-rg"` |
+| `profisee_admin_user_account` | Admin user email | `"admin@company.com"` |
+| `profisee_license` | Profisee license key | `"your-license-key"` |
+| `profisee_web_app_name` | Web application name | `"profisee-app"` |
+| `sql_server_name` | SQL Server name (globally unique) | `"profisee-sql-server"` |
+| `sql_server_password` | SQL Server admin password | `"YourSecurePassword123!"` |
+| `storage_account_name` | Storage account name (globally unique) | `"profiseestorage"` |
+| `storage_account_file_share_name` | File share name | `"profisee-fileshare"` |
+
+### Optional Configuration
+
+- **Kubernetes Settings:**
+  - `kubernetes_cluster_name`: AKS cluster name (default: "ProfiseeAKSCluster")
+  - `kubernetes_linux_node_count`: Linux node count (default: 2)  
+  - `kubernetes_windows_node_count`: Windows node count (default: 1)
+  - VM sizes, networking settings, etc.
+
+- **DNS and HTTPS:**
+  - `dns_host_name`, `dns_domain_name`: For custom domain
+  - `https_configure`, `use_lets_encrypt`: SSL certificate options
+
+- **Azure Services:**
+  - `use_key_vault`: Enable Azure Key Vault integration
+  - `use_purview`: Enable Azure Purview integration
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Azure Resource Group                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────────────┐    ┌─────────────────┐                │
+│  │   AKS Cluster   │    │   SQL Server    │                │
+│  │                 │    │                 │                │
+│  │ • Linux Nodes   │    │ • Database      │                │
+│  │ • Windows Nodes │    │ • Firewall      │                │
+│  │ • RBAC Enabled  │    │ • AAD Auth      │                │
+│  └─────────────────┘    └─────────────────┘                │
+│                                                             │
+│  ┌─────────────────┐    ┌─────────────────┐                │
+│  │ Storage Account │    │ Managed Identity│                │
+│  │                 │    │                 │                │
+│  │ • File Share    │    │ • Role Assign.  │                │
+│  │ • Encrypted     │    │ • AKS Access    │                │
+│  └─────────────────┘    └─────────────────┘                │
+│                                                             │
+│  ┌─────────────────┐    ┌─────────────────┐                │
+│  │  AD Application │    │   Key Vault     │                │
+│  │   (Optional)    │    │   (Optional)    │                │
+│  └─────────────────┘    └─────────────────┘                │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Security Features
+
+This Terraform configuration implements security best practices:
+
+- **Managed Identity**: Uses Azure Managed Identity for secure authentication
+- **RBAC**: Implements Azure AD RBAC for AKS cluster  
+- **Network Security**: Configures appropriate network policies
+- **Encrypted Storage**: Enables encryption for storage accounts
+- **SQL Security**: Configures Azure AD authentication for SQL Server
+- **Key Vault Integration**: Optional integration for secrets management
+- **Least Privilege**: Role assignments follow principle of least privilege
+
+## Post-Deployment
+
+After successful deployment:
+
+1. **Get AKS credentials**:
+   ```bash
+   az aks get-credentials --resource-group <resource-group> --name <cluster-name>
+   ```
+
+2. **Verify cluster access**:
+   ```bash
+   kubectl get nodes
+   kubectl get namespaces
+   ```
+
+3. **Deploy Profisee** (if not done automatically):
+   ```bash
+   helm repo add profisee https://profisee.github.io/kubernetes
+   helm repo update
+   helm install profisee profisee/profisee-platform --namespace profisee --create-namespace
+   ```
+
+4. **Access your deployment**:
+   - Check the deployment outputs for URLs and connection information
+   - Use the Azure Portal link provided to monitor resources
 
 ## Troubleshooting
 
-All troubleshooting is in the [Wiki](https://github.com/profisee/kubernetes/wiki)
+### Common Issues
 
+1. **Terraform validation errors**:
+   - Ensure all required variables are set in `terraform.tfvars.json`
+   - Check that resource names are globally unique (SQL Server, Storage Account)
+
+2. **Authentication issues**:
+   - Verify Azure CLI authentication: `az account show`
+   - Ensure you have proper permissions on the subscription
+
+3. **Resource naming conflicts**:
+   - SQL Server and Storage Account names must be globally unique
+   - Use a naming convention with your organization prefix
+
+4. **Quota limitations**:
+   - Check Azure subscription quotas for VM cores
+   - Consider reducing node counts if hitting limits
+
+### Getting Help
+
+- Check Terraform output for detailed error messages
+- Use `terraform plan` to preview changes before applying
+- Review Azure Activity Log in the portal for resource-level errors
+- Check the deployment script logs for detailed error information
+
+## Migration from ARM Template
+
+This Terraform configuration replaces the ARM template deployment with these improvements:
+
+✅ **Version Control**: Infrastructure code can be versioned and tracked  
+✅ **Repeatability**: Consistent deployments across environments  
+✅ **State Management**: Terraform tracks resource state for updates  
+✅ **Dependency Management**: Automatic resource dependency resolution  
+✅ **Validation**: Built-in validation for configuration values  
+✅ **Preview Changes**: See what will be changed before deployment  
+✅ **Modularity**: Easier to customize and extend  
+
+### Key Differences from ARM:
+
+- Uses `.tf` files instead of `.json` ARM templates
+- Configuration in `terraform.tfvars.json` instead of parameters file
+- Deployment via `terraform apply` instead of `az deployment`
+- State file tracking (stored locally or in remote backend)
+- More granular resource management and updates
+
+## Cleanup
+
+To destroy the infrastructure:
+
+```bash
+terraform destroy
+```
+
+**⚠️ Warning**: This will permanently delete all resources created by Terraform. Ensure you have backups of any important data.
+
+## File Structure
+
+```
+Azure-Terraform/
+├── main.tf                           # Main Terraform configuration
+├── variables.tf                      # Variable definitions  
+├── outputs.tf                        # Output definitions
+├── versions.tf                       # Provider version constraints
+├── terraform.tfvars                  # Variable values (customize this)
+├── sample.tfvars                     # Sample configuration with examples
+├── QUICK-START.md                   # Quick deployment guide
+└── README-terraform.md              # This documentation
+```
+
+## Support
+
+For assistance:
+
+- **Terraform Issues**: Check Terraform documentation and this README
+- **Profisee Platform**: Contact [Profisee Support](https://support.profisee.com)
+- **Azure Services**: Refer to Azure documentation
+- **Configuration Questions**: Review the variable descriptions in `variables.tf`
+
+## Contributing
+
+When making changes:
+
+1. Follow HashiCorp's Terraform style guide
+2. Run `terraform fmt` to format code  
+3. Run `terraform validate` to check syntax
+4. Test in development environment first
+5. Update documentation as needed

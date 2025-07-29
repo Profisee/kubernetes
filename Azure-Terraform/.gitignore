@@ -35,6 +35,3 @@ Thumbs.db
 *.backup
 *.tmp
 
-# Deprecated complex deployment scripts
-deploy-profisee-terraform.ps1
-deploy-profisee-terraform.sh
