@@ -1,0 +1,1079 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+  "handler": "Microsoft.Azure.CreateUIDef",
+  "version": "0.1.2-preview",
+  "parameters": {
+    "resourceTypes": [
+      "microsoft.containerservice/managedclusters",
+      "microsoft.sql/servers",
+      "microsoft.storage/storageaccounts",
+      "microsoft.resources/deploymentscripts",
+      "microsoft.resources/resourcegroups"
+    ],
+    "basics": [
+      {
+        "name": "text2",
+        "type": "Microsoft.Common.TextBlock",
+        "visible": true,
+        "options": {
+          "text": " ",
+          "link": {
+            "label": "",
+            "uri": ""
+          }
+        }
+      },
+      {
+        "name": "ManagedIdentityName",
+        "type": "Microsoft.ManagedIdentity.IdentitySelector",
+        "label": "Managed Identity",
+        "toolTip": {
+          "systemAssignedIdentity": "",
+          "userAssignedIdentity": "Pick the Managed Identity that will run the Profisee deployment."
+        },
+        "defaultValue": {
+          "systemAssignedIdentity": "OffOnly"
+        },
+        "options": {
+          "hideSystemAssignedIdentity": true,
+          "hideUserAssignedIdentity": false
+        },
+        "constraints": {
+          "required": true
+        },
+        "visible": true
+      },
+      {
+        "name": "text1",
+        "type": "Microsoft.Common.InfoBox",
+        "visible": true,
+        "options": {
+          "icon": "Info",
+          "text": "Click here to learn how Profisee uses Managed Identities.",
+          "uri": "https://support.profisee.com/wikis/profiseeplatform/planning_your_managed_identity_configuration"
+        }
+      }
+    ],
+    "steps": [
+      {
+        "name": "profisee",
+        "label": "Profisee",
+        "elements": [
+          {
+            "name": "UseKeyVault",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Use Key Vault?",
+            "defaultValue": "No, I will supply the required values.",
+            "toolTip": "Profisee can pull a TLS certificate from a Key Vault, as well as these secrets: SQL Username, SQL Password and Profisee License.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Yes, pull sensitive information from Key Vault.",
+                  "value": "Yes"
+                },
+                {
+                  "label": "No, I will supply the required values.",
+                  "value": "No"
+                }
+              ],
+              "required": true
+            },
+            "visible": true
+          },
+          {
+            "name": "KeyVault",
+            "type": "Microsoft.Solutions.ResourceSelector",
+            "label": "Key Vault",
+            "resourceType": "Microsoft.KeyVault/vaults",
+            "options": {
+              "filter": {
+                "subscription": "All",
+                "location": "All"
+              }
+            },
+            "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
+          },
+          {
+            "name": "ProfiseeVersion",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Profisee version",
+            "defaultValue": "2025r2.0-win22",
+            "toolTip": "Which release of the Profisee Platform to deploy.",
+            "constraints": {
+              "required": true,
+              "allowedValues": [
+                {
+                  "label": "2023R1.0",
+                  "value": "profiseeplatform:2023r1.0"
+                },
+                {
+                  "label": "2023R2.0-win19",
+                  "value": "profiseeplatform:2023r2.0-win19"
+                },
+                {
+                  "label": "2023R2.0-win22",
+                  "value": "profiseeplatform:2023r2.0-win22"
+                },
+                {
+                  "label": "2024R1.0-win19",
+                  "value": "profiseeplatform:2024r1.0-win19"
+                },
+                {
+                  "label": "2024R1.0-win22",
+                  "value": "profiseeplatform:2024r1.0-win22"
+                },
+                {
+                  "label": "2024R2.0-win19",
+                  "value": "profiseeplatform:2024r2.0-win19"
+                },
+                {
+                  "label": "2024R2.0-win22",
+                  "value": "profiseeplatform:2024r2.0-win22"
+                },
+                {
+                  "label": "2025r0.0-win19",
+                  "value": "profiseeplatform:2025r0.0-win19"
+                },
+                {
+                  "label": "2025r0.0-win22",
+                  "value": "profiseeplatform:2025r0.0-win22"
+                },
+                {
+                  "label": "2025r1.0-win19",
+                  "value": "profiseeplatform:2025r1.0-win19"
+                },
+                {
+                  "label": "2025r1.0-win22",
+                  "value": "profiseeplatform:2025r1.0-win22"
+                },
+                {
+                  "label": "2025r2.0-win19",
+                  "value": "profiseeplatform:2025r2.0-win19"
+                },
+                {
+                  "label": "2025r2.0-win22",
+                  "value": "profiseeplatform:2025r2.0-win22"
+                }                
+              ]
+            },
+            "visible": true
+          },
+          {
+            "name": "ProfiseeAdminUserAccount",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Super Admin Account",
+            "defaultValue": "",
+            "placeholder": "first.last@company.com",
+            "toolTip": "The first Super User, who will be able to log in and add other users.",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": true
+          },
+          {
+            "name": "ProfiseeLicense",
+            "type": "Microsoft.Common.FileUpload",
+            "label": "Profisee license",
+            "toolTip": "This file will be provided by Profisee Support. Please provide the file in txt format.",
+            "constraints": {
+              "required": true,
+              "accept": ".txt"
+            },
+            "options": {
+              "multiple": false,
+              "uploadMode": "file",
+              "openMode": "text",
+              "encoding": "UTF-8"
+            },
+            "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
+          },
+          {
+            "name": "ProfiseeLicenseSecret",
+            "type": "Microsoft.Common.TextBox",
+            "label": " Profisee License",
+            "defaultValue": "",
+            "placeholder": "License secret name in Key Vault",
+            "toolTip": "This file will be provided by Profisee Support. Please provide the name of the secret that holds the Profisee license: ex. profisee-license",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
+          },
+          {
+            "name": "ProfiseeWebAppName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Web app name",
+            "defaultValue": "profisee",
+            "placeholder": "",
+            "toolTip": "https://host.domain.com/{webAppName}",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": true
+          },
+          {
+            "name": "ActiveDirectoryCreateApp",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Create a new Azure AD application registration for you?",
+            "defaultValue": "Yes, create and configure it for me.",
+            "toolTip": "An Azure AD application registration will be used for authentication via ID tokens. For more information please visit https://support.profisee.com/wikis/profiseeplatform/deploying_the_AKS_cluster_with_the_arm_template.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Yes, create and configure it for me.",
+                  "value": "Yes"
+                },
+                {
+                  "label": "No, I will specify the client ID of an existing Azure Active Directory app registration.",
+                  "value": "No"
+                }
+              ],
+              "required": true
+            },
+            "visible": true
+          },
+          {
+            "name": "UserSuppliedClientId",
+            "type": "Microsoft.Common.Section",
+            "label": "",
+            "elements": [
+              {
+                "name": "ActiveDirectoryClientId",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Application Registration Client Id",
+                "defaultValue": "",
+                "toolTip": "Please provide the client ID of the Azure AD application to be used by Profisee for authentication.",
+                "constraints": {
+                  "required": "[equals(steps('profisee').ActiveDirectoryCreateApp,'No')]",
+                  "regex": "",
+                  "validationMessage": ""
+                },
+                "visible": true
+              }
+            ],
+            "visible": "[equals(steps('profisee').ActiveDirectoryCreateApp,'No')]"
+          },
+          {
+            "name": "UserSuppliedClientSecret",
+            "type": "Microsoft.Common.Section",
+            "label": "",
+            "elements": [
+              {
+                "name": "ActiveDirectoryClientSecret",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Application Registration Client Secret",
+                "defaultValue": "",
+                "toolTip": "Please provide the client secret of the Azure AD application to be used by Profisee for authentication.",
+                "constraints": {
+                  "required": "[or(contains(steps('profisee').ProfiseeVersion, '-win19'), contains(steps('profisee').ProfiseeVersion, '-win22'))]",
+                  "regex": "",
+                  "validationMessage": ""
+                },
+                "visible": true
+              }
+            ],
+            "visible": "[equals(steps('profisee').ActiveDirectoryCreateApp,'No')]"
+          },
+          {
+            "name": "UsePurview",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Integrate Profisee with Microsoft Purview?",
+            "defaultValue": "No, no need at this point.",
+            "toolTip": "Profisee can integrate with Microsoft Purview during initial configuration or at a later time.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Yes, integrate with Microsoft Purview.",
+                  "value": "Yes"
+                },
+                {
+                  "label": "No, no need at this point.",
+                  "value": "No"
+                }
+              ],
+              "required": true
+            },
+            "visible": true
+          },
+          {
+            "name": "PurviewAccountName",
+            "type": "Microsoft.Solutions.ResourceSelector",
+            "label": "Select Purview Account",
+            "resourceType": "Microsoft.Purview/accounts",
+            "options": {
+              "filter": {
+                "subscription": "All",
+                "location": "All"
+              }
+            },
+            "visible": "[equals(steps('profisee').UsePurview,'Yes')]"
+          },
+          {
+            "name": "GetPurviewUrlRestApiResponse",
+            "type": "Microsoft.Solutions.ArmApiControl",
+            "request": {
+              "method": "GET",
+              "path": "[concat(subscription().id,'/resourceGroups/',last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5)),'/providers/Microsoft.Purview/accounts/',steps('profisee').PurviewAccountName.name,'?api-version=2021-12-01')]",
+              "body": ""
+            }
+          },
+          {
+            "name": "PurviewCollectionFriendlyName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Purview Collection Friendly Name",
+            "defaultValue": "",
+            "placeholder": "THiS iS CaSe SenSiTiVe!",
+            "toolTip": "Please provide the Purview Collection Friendly Name that you see in your Purview account. Profisee will deploy to that collection. If you would like to deploy in the root collection, please specify its friendly name.",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[equals(steps('profisee').UsePurview,'Yes')]"
+          },
+          {
+            "name": "PurviewClientID",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Purview application client ID",
+            "defaultValue": "",
+            "placeholder": "",
+            "toolTip": "A Purview specific Azure AD application client ID. This application registration must be added as Data Curator to Purview and have the appropriate permissions assigned to it by a Global Admin.",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[equals(steps('profisee').UsePurview,'Yes')]"
+          },
+          {
+            "name": "PurviewClientSecret",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Purview application secret",
+            "defaultValue": "",
+            "placeholder": "",
+            "toolTip": "Please generate a secret in the Purview specific application and paste its value here.",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[equals(steps('profisee').UsePurview,'Yes')]"
+          }
+        ]
+      },
+      {
+        "name": "kubernetes",
+        "label": "Kubernetes",
+        "elements": [
+          {
+            "name": "KubernetesClusterName",
+            "type": "Microsoft.Common.TextBox",
+            "label": " AKS Cluster Name",
+            "defaultValue": "ProfiseeAKSCluster",
+            "toolTip": "Can only contain letters, numbers, underscores, and hyphens, must start and end with a letter or number, and must be unique in the current resource group.",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": true
+          },
+          {
+            "name": "KubenetesInfrastructureResourceGroupName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Infrastructure Resource Group Name",
+            "defaultValue": "",
+            "toolTip": "Leave blank for default of MC_ResourceGroupName_ClusterName_Location, or enter the resouce group name you want to use. You can only specify the name, you can NOT precreate it.",
+            "constraints": {
+              "required": false,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": true
+          },
+          {
+            "name": "KubernetesVersion",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Version",
+            "defaultValue": "",
+            "toolTip": "Leave blank for latest AKS version, or enter the specific version you want to use.",
+            "constraints": {
+              "required": false,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": true
+          },
+          {
+            "name": "AuthenticationType",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Authentication and Authorization",
+            "defaultValue": "Local Accounts with Kubernetes RBAC",
+            "toolTip": "Choose among native Kubernetes RBAC managed locally or leverage Azure AD to manage identities for your Kubernetes RBAC needs. Azure RBAC for AKS is a fully managed RBAC solution providing both authentication and authorization through Azure IAM.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Local Accounts with Kubernetes RBAC",
+                  "value": "LocalAccounts"
+                },
+                {
+                  "label": "Azure AD authentication with Azure RBAC",
+                  "value": "AzureRBAC"
+                }
+              ],
+              "required": true
+            },
+            "visible": true
+          },
+          {
+            "name": "KubernetesLinuxNodeSizeSection",
+            "type": "Microsoft.Common.Section",
+            "label": "Linux Nodepool",
+            "elements": [
+              {
+                "name": "KubernetesLinuxNodeSize",
+                "type": "Microsoft.Compute.SizeSelector",
+                "label": "VM Size",
+                "toolTip": "Pick VM size for the instances in the Linux nodepool. An 's' in the size will result in use of a Premium SSD. Ex. Standard_D4s_v5 will use Premium SSD, Standard_D4_v5 will use HDD.",
+                "recommendedSizes": [
+                  "Standard_D4as_v5"
+                ],
+                "constraints": {
+                  "allowedSizes": []
+                },
+                "options": {
+                  "hideDiskTypeFilter": false
+                },
+                "osPlatform": "Linux",
+                "count": 2,
+                "visible": true
+              }
+            ],
+            "visible": true
+          },
+          {
+            "name": "KubernetesLinuxNodeCount",
+            "type": "Microsoft.Common.Slider",
+            "min": 2,
+            "max": 12,
+            "label": "Linux node count",
+            "subLabel": "",
+            "defaultValue": 2,
+            "showStepMarkers": false,
+            "toolTip": "",
+            "constraints": {
+              "required": false
+            },
+            "visible": true
+          },
+          {
+            "name": "KubernetesWindowsNodeSizeSection",
+            "type": "Microsoft.Common.Section",
+            "label": "Windows Nodepool",
+            "elements": [
+              {
+                "name": "KubernetesWindowsNodeSize",
+                "type": "Microsoft.Compute.SizeSelector",
+                "label": "VM Size",
+                "toolTip": "Pick VM size for the instances in the Windows nodepool. An 's' in the size will result in use of a Premium SSD. Ex. Standard_D8s_v5 will use Premium SSD, Standard_D8_v5 will use HDD.",
+                "recommendedSizes": [
+                  "Standard_D8as_v5"
+                ],
+                "constraints": {
+                  "allowedSizes": []
+                },
+                "options": {
+                  "hideDiskTypeFilter": false
+                },
+                "osPlatform": "Windows",
+                "imageReference": {
+                  "publisher": "MicrosoftWindowsServer",
+                  "offer": "WindowsServer",
+                  "sku": "2019-Datacenter"
+                },
+                "count": 1,
+                "visible": true
+              }
+            ],
+            "visible": true
+          },
+          {
+            "name": "KubernetesWindowsNodeCount",
+            "type": "Microsoft.Common.Slider",
+            "min": 1,
+            "max": 12,
+            "label": "Windows node count",
+            "subLabel": "",
+            "defaultValue": 1,
+            "showStepMarkers": false,
+            "toolTip": "Equal to the number of server licenses for Profisee.",
+            "constraints": {
+              "required": false
+            },
+            "visible": true
+          },
+          {
+            "name": "KubernetesAdvancedYesNo",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Configure advanced Kubernetes networking settings?",
+            "defaultValue": "No, use default settings",
+            "toolTip": "Kubernetes might fail deploying if the default settings overlap with any vnets in your tenant. It is recommended that you configure these.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "No, use default settings",
+                  "value": "No"
+                },
+                {
+                  "label": "Yes, configure advanced settings",
+                  "value": "Yes"
+                }
+              ],
+              "required": true
+            },
+            "visible": true
+          },
+          {
+            "name": "KubernetesAdvanced",
+            "type": "Microsoft.Common.Section",
+            "label": "Advanced Kubernetes settings",
+            "elements": [
+              {
+                "name": "KubernetesVnetName",
+                "type": "Microsoft.Network.VirtualNetworkCombo",
+                "label": {
+                  "virtualNetwork": "Virtual network",
+                  "subnets": "Subnets"
+                },
+                "toolTip": {
+                  "virtualNetwork": "",
+                  "subnets": ""
+                },
+                "defaultValue": {
+                  "name": "vnet01",
+                  "addressPrefixSize": "/24"
+                },
+                "constraints": {
+                  "minAddressPrefixSize": "/28"
+                },
+                "options": {
+                  "hideExisting": false
+                },
+                "subnets": {
+                  "subnet1": {
+                    "label": "Subnet",
+                    "defaultValue": {
+                      "name": "subnet-1",
+                      "addressPrefixSize": "/24"
+                    },
+                    "constraints": {
+                      "minAddressPrefixSize": "/24",
+                      "minAddressCount": 12,
+                      "requireContiguousAddresses": true
+                    }
+                  }
+                },
+                "visible": true
+              },
+              {
+                "name": "KubernetesServiceCidr",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Service CIDR",
+                "defaultValue": "10.0.0.0/24",
+                "toolTip": "A CIDR notation IP range from which to assign IP addresses for cluster services. This range MUST differ from the AKS subnet selected above. This range can be reused between clusters.",
+                "constraints": {
+                  "required": false,
+                  "regex": "",
+                  "validationMessage": ""
+                },
+                "visible": true
+              },
+              {
+                "name": "KubernetesDNSServiceIP",
+                "type": "Microsoft.Common.TextBox",
+                "label": "DNS Service IP",
+                "defaultValue": "10.0.0.10",
+                "toolTip": "IP address of the cluster DNS service discovery. Do not use the first IP in the address range.",
+                "constraints": {
+                  "required": false,
+                  "regex": "",
+                  "validationMessage": ""
+                },
+                "visible": true
+              },
+              {
+                "name": "KubernetesDockerBridgeCidr",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Docker Bridge CIDR",
+                "defaultValue": "172.17.0.1/16",
+                "toolTip": "A CIDR notation IP for Docker bridge. This is not used in Azure CNI. Leave as is.",
+                "constraints": {
+                  "required": false,
+                  "regex": "",
+                  "validationMessage": ""
+                },
+                "visible": true
+              }
+            ],
+            "visible": "[equals(steps('kubernetes').KubernetesAdvancedYesNo,'Yes')]"
+          }
+        ]
+      },
+      {
+        "name": "sql",
+        "label": "SQL",
+        "elements": [
+          {
+            "name": "SQLServerCreateNew",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Create a new SQL Server?",
+            "defaultValue": "Yes, create a new SQL Server.",
+            "toolTip": "",
+            "constraints": {
+              "required": true,
+              "allowedValues": [
+                {
+                  "label": "Yes, create a new SQL Server.",
+                  "value": "Yes"
+                },
+                {
+                  "label": "No, use an existing Azure SQL Server.",
+                  "value": "No"
+                }
+              ]
+            },
+            "visible": true
+          },
+          {
+            "name": "SQLServerNameExisting",
+            "type": "Microsoft.Solutions.ResourceSelector",
+            "label": "Select SQL Server",
+            "resourceType": "Microsoft.Sql/servers",
+            "options": {
+              "filter": {
+                "subscription": "All",
+                "location": "All"
+              }
+            },
+            "visible": "[equals(steps('sql').SQLServerCreateNew,'No')]"
+          },
+          {
+            "name": "CheckSqlNameRestApiResponse",
+            "type": "Microsoft.Solutions.ArmApiControl",
+            "request": {
+              "method": "POST",
+              "path": "[concat(subscription().id,'/providers/Microsoft.Sql/checkNameAvailability?api-version=2023-05-01-preview')]",
+              "body": "[parse(concat('{\"name\":\"',steps('sql').SQLServerName,'\",\"type\":\"Microsoft.Sql/servers\"}'))]"
+            }
+          },
+          {
+            "name": "SQLServerName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Server Name",
+            "toolTip": "Enter a globally unique Azure SQL Server name. Name can contain only lowercase letters, numbers, and hyphens. The name cannot start or end with a hyphen or contain more than 63 characters.",
+            "constraints": {
+              "required": true,
+              "validations": [
+                {
+                  "isValid": "[equals(steps('sql').CheckSqlNameRestApiResponse.available,true)]",
+                  "message": "[steps('sql').CheckSqlNameRestApiResponse.message]"
+                }
+              ]
+            },
+            "visible": "[equals(steps('sql').SQLServerCreateNew,'Yes')]"
+          },
+          {
+            "name": "SQLServerUser",
+            "type": "Microsoft.Common.TextBox",
+            "label": "SQL Username",
+            "defaultValue": "sqladmin",
+            "toolTip": "Administrator SQL login name to create with the new SQL Server OR provide the login to connect to an existing SQL Server.  Your login name must not contain a SQL Identifier or a typical system name (like admin, administrator, sa, root, dbmanager, loginmanager, etc.) or a built-in database user or role (like dbo, guest, public, etc.).  Your login name must not include non-alphanumeric characters.  Your login name must not start with numbers or symbols.",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
+          },
+          {
+            "name": "SQLServerUserSecret",
+            "type": "Microsoft.Common.TextBox",
+            "label": "SQL Username",
+            "placeholder": "Key Vault secret name: ex. profisee-sql-username",
+            "toolTip": "Administrator SQL login name to create with the new SQL Server OR provide the login to connect to existing SQL Server.  Your login name must not contain a SQL Identifier or a typical system name (like admin, administrator, sa, root, dbmanager, loginmanager, etc.) or a built-in database user or role (like dbo, guest, public, etc.).  Your login name must not include non-alphanumeric characters.  Your login name must not start with numbers or symbols.",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
+          },
+          {
+            "name": "SQLServerPassword",
+            "type": "Microsoft.Common.PasswordBox",
+            "label": {
+              "password": " SQL Password",
+              "confirmPassword": "Confirm password"
+            },
+            "toolTip": "",
+            "constraints": {
+              "required": true,
+              "regex": "^((?=.*[A-Z])(?=.*\\d)(?=.*[~`!@#$%^&*()\\-_+={[}\\]|\\\\:;\"'<,>.?\\\/])|(?=.*[a-z])(?=.*\\d)(?=.*[~`!@#$%^&*()\\-_+={[}\\]|\\\\:;\"'<,>.?\\\/])|(?=.*[a-z])(?=.*\\d)(?=.*[A-Z])|(?=.*[a-z])(?=.*[~`!@#$%^&*()\\-_+={[}\\]|\\\\:;\"'<,>.?\\\/])(?=.*[A-Z]))[\\w~`!@#$%^&*()\\-+={[}\\]|\\\\:;\"'<,>.?\\\/]{8,128}$",
+              "validationMessage": "Your password must be at least 8 characters in length.  Your password must be no more than 128 characters in length.  Your password must contain characters from three of the following categories – English uppercase letters, English lowercase letters, numbers (0-9), and non-alphanumeric characters (!, $, #, %, etc.).  Your password cannot contain all or part of the login name. Part of a login name is defined as three or more consecutive alphanumeric characters."
+            },
+            "options": {
+              "hideConfirmation": false
+            },
+            "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
+          },
+          {
+            "name": "SQLServerPasswordSecret",
+            "type": "Microsoft.Common.TextBox",
+            "label": "SQL Password",
+            "defaultValue": "",
+            "placeholder": "Key Vault secret name: ex. profisee-sql-password",
+            "toolTip": "",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
+          },
+          {
+            "name": "SQLServerDatabaseName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Database Name",
+            "defaultValue": "Profisee",
+            "toolTip": "Cannot contain special characters or reserved words. Should be less than 128 characters and unique within the SQL Server.",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": true
+          }
+        ]
+      },
+      {
+        "name": "storage",
+        "label": "Storage",
+        "elements": [
+          {
+            "name": "StorageAccountNameSection",
+            "type": "Microsoft.Common.Section",
+            "label": "Storage Account Name",
+            "elements": [
+              {
+                "name": "StorageAccountName",
+                "type": "Microsoft.Storage.StorageAccountSelector",
+                "label": "Storage account",
+                "toolTip": "Create new or pick an existing storage account.",
+                "defaultValue": {
+                  "name": "",
+                  "type": "Standard_LRS"
+                },
+                "constraints": {
+                  "allowedTypes": []
+                },
+                "options": {
+                  "hideExisting": false
+                },
+                "visible": true
+              }
+            ],
+            "visible": true
+          },
+          {
+            "name": "GetStorageAccessKeysRestApiResponse",
+            "type": "Microsoft.Solutions.ArmApiControl",
+            "request": {
+              "method": "POST",
+              "path": "[concat(subscription().id,'/resourceGroups/',steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,'/providers/Microsoft.Storage/storageAccounts/',steps('storage').StorageAccountNameSection.StorageAccountName.name,'/listKeys?api-version=2023-05-01')]",
+              "body": ""
+            }
+          },
+          {
+            "name": "StorageAccountAccessKey",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Access Keys",
+            "toolTip": "Pick which storage account access key to use.",
+            "constraints": {
+              "allowedValues": "[map(steps('storage').GetStorageAccessKeysRestApiResponse.keys, (item) => parse(concat('{\"label\":\"', item.keyName, '\",\"value\":\"', item.value, '\"}')))]",
+              "required": true
+            },
+            "visible": "[equals(steps('storage').StorageAccountNameSection.StorageAccountName.newOrExisting, 'existing')]"
+          },
+          {
+            "name": "GetStorageFileSharesRestApiResponse",
+            "type": "Microsoft.Solutions.ArmApiControl",
+            "request": {
+              "method": "GET",
+              "path": "[concat(subscription().id,'/resourceGroups/',steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,'/providers/Microsoft.Storage/storageAccounts/',steps('storage').StorageAccountNameSection.StorageAccountName.name,'/fileServices/default/shares?api-version=2023-01-01')]",
+              "body": ""
+            }
+          },
+          {
+            "name": "StorageAccountFileShareName",
+            "type": "Microsoft.Common.DropDown",
+            "label": "File share",
+            "toolTip": "A file share must be created in the storage account.",
+            "constraints": {
+              "allowedValues": "[map(steps('storage').GetStorageFileSharesRestApiResponse.value, (item) => parse(concat('{\"label\":\"', item.name, '\",\"value\":\"', item.name, '\"}')))]",
+              "required": true
+            },
+            "visible": "[equals(steps('storage').StorageAccountNameSection.StorageAccountName.newOrExisting, 'existing')]"
+          }
+        ]
+      },
+      {
+        "name": "networking",
+        "label": "Networking",
+        "elements": [
+          {
+            "name": "DNSUpdate",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Use default Azure DNS?",
+            "defaultValue": "Yes, use default Azure DNS and Let’s Encrypt for certificates (ex. https://[profisee].[region].cloudapp.azure.com/profisee)",
+            "toolTip": "Profisee will configure Let's Encrypt to generate and auto-renew a TLS certificate for use with Azure hosted DNS. Ex. profisee.eastus2.cloudapp.azure.com/{web app name}.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Yes, use default Azure DNS and Let’s Encrypt for certificates (ex. https://[profisee].[region].cloudapp.azure.com/profisee)",
+                  "value": "No"
+                },
+                {
+                  "label": "No, I will provide my own DNS hostname and domain.",
+                  "value": "Yes"
+                }
+              ],
+              "required": true
+            },
+            "visible": true
+          },
+          {
+            "name": "UserDefinedDNS",
+            "type": "Microsoft.Common.Section",
+            "label": "User Defined DNS",
+            "elements": [
+              {
+                "name": "DNSUpdate2",
+                "type": "Microsoft.Common.OptionsGroup",
+                "label": "Are your domain DNS records hosted in an Azure Public DNS Zone?",
+                "defaultValue": "Yes, I use an Azure Public DNS zone to host my domain records.",
+                "toolTip": "You have an Azure DNS zone for your domain. The Name Servers of your domain at your domain registrar (ex. Google, Cloudflare, GoDaddy) are set as the Azure Public DNS zone ones.",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "Yes, I use an Azure Public DNS zone to host my domain records.",
+                      "value": "Yes"
+                    },
+                    {
+                      "label": "No, my domain and DNS records are hosted outside of Azure.",
+                      "value": "No"
+                    }
+                  ],
+                  "required": true
+                },
+                "visible": true
+              },
+              {
+                "name": "DNSHostName",
+                "type": "Microsoft.Common.TextBox",
+                "label": "DNS Host Name",
+                "defaultValue": "",
+                "placeholder": "profiseemdm",
+                "toolTip": "This is the subdomain part of your domain. Ex. If you will access Profisee at https://profiseemdm.mydomain.com/profisee you need to enter profiseemdm in this field.",
+                "constraints": {
+                  "required": true,
+                  "regex": "",
+                  "validationMessage": ""
+                },
+                "visible": true
+              },
+              {
+                "name": "DNSDomainName",
+                "type": "Microsoft.Common.TextBox",
+                "label": "DNS Domain Name",
+                "defaultValue": "",
+                "placeholder": "This value is CaSe SeNSitiVe! mydomain.com",
+                "toolTip": "This value is CaSe SeNSitiVe!",
+                "constraints": {
+                  "required": true,
+                  "regex": "",
+                  "validationMessage": ""
+                },
+                "visible": true
+              },
+              {
+                "name": "DNSDomainResourceGroup",
+                "type": "Microsoft.Common.TextBox",
+                "label": "DNS Zone Resource Group",
+                "defaultValue": "",
+                "placeholder": "This value is CaSe SeNSitiVe! mydnszoneresourcegroup",
+                "toolTip": "This value is CaSe SeNSitiVe! Please type the name of the Azure Resource group that contains your Azure DNS Zone. Check for case sensitivity by looking in Resource Groups in Azure vs which Resource Group the DNS zone itself belongs to.",
+                "constraints": {
+                  "required": true,
+                  "regex": "",
+                  "validationMessage": ""
+                },
+                "visible": "[equals(steps('networking').UserDefinedDNS.DNSUpdate2, 'Yes')]"
+              }
+            ],
+            "visible": "[equals(steps('networking').DNSUpdate,'Yes')]"
+          },
+          {
+            "name": "HttpsConfigure",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Use Let’s Encrypt?",
+            "defaultValue": "Yes, use Let’s Encrypt for certificates.",
+            "toolTip": "If yes, Profisee will configure Let's Encrypt to generate, use and auto-renew a free TLS certificate.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Yes, use Let’s Encrypt for certificates.",
+                  "value": "No"
+                },
+                {
+                  "label": "No, I will provide my certificate.",
+                  "value": "Yes"
+                }
+              ],
+              "required": true
+            },
+            "visible": "[equals(steps('networking').DNSUpdate,'Yes')]"
+          },
+          {
+          "name": "InfraAdminAccount",
+          "type": "Microsoft.Common.TextBox",
+          "label": "Certificate Expirations User",
+          "defaultValue": "",
+          "placeholder": "first.last@company.com",
+          "toolTip": "Please specify an email address for the user, or group, that should receive email notifications for certificate expiration.",
+          "constraints": {
+            "required": true,
+            "regex": "",
+            "validationMessage": ""
+          },
+          "visible": "[not(equals(steps('networking').HttpsConfigure, 'Yes'))]"
+        },
+          {
+            "name": "UserDefinedHTTPS",
+            "type": "Microsoft.Common.Section",
+            "label": "User provided TLS certificate",
+            "elements": [
+              {
+                "name": "HttpsCertificate",
+                "type": "Microsoft.Common.FileUpload",
+                "label": "TLS Certificate",
+                "toolTip": "Please provide a certificate in either txt or crt format.",
+                "constraints": {
+                  "required": true,
+                  "accept": ".txt,.crt"
+                },
+                "options": {
+                  "multiple": false,
+                  "uploadMode": "file",
+                  "openMode": "text",
+                  "encoding": "UTF-8"
+                },
+                "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
+              },
+              {
+                "name": "HttpsCertificateSecret",
+                "type": "Microsoft.Common.TextBox",
+                "label": "TLS Certificate",
+                "defaultValue": "",
+                "placeholder": "TLS Certificate name in KeyVault",
+                "toolTip": "Name of the certificate as stored in Key Vault. Ex. profisee-tls-certificate",
+                "constraints": {
+                  "required": true,
+                  "regex": "",
+                  "validationMessage": ""
+                },
+                "visible": "[equals(steps('profisee').UseKeyVault,'Yes')]"
+              },
+              {
+                "name": "HttpsCertificatePrivateKey",
+                "type": "Microsoft.Common.FileUpload",
+                "label": "TLS Certificate Private Key",
+                "toolTip": "Please provide the certificate's private key in either .txt or .key format.",
+                "constraints": {
+                  "required": true,
+                  "accept": ".txt,.key"
+                },
+                "options": {
+                  "multiple": false,
+                  "uploadMode": "file",
+                  "openMode": "text",
+                  "encoding": "UTF-8"
+                },
+                "visible": "[equals(steps('profisee').UseKeyVault,'No')]"
+              }
+            ],
+            "visible": "[equals(steps('networking').HttpsConfigure,'Yes')]"
+          }
+        ]
+      }
+    ],
+    "outputs": {
+      "ManagedIdentityName": "[basics('ManagedIdentityName')]",
+      "ProfiseeVersion": "[steps('profisee').ProfiseeVersion]",
+      "ProfiseeAdminUserAccount": "[steps('profisee').ProfiseeAdminUserAccount]",
+      "ProfiseeLicense": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('profisee').ProfiseeLicenseSecret, steps('profisee').ProfiseeLicense)]",
+      "ActiveDirectoryCreateApp": "[steps('profisee').ActiveDirectoryCreateApp]",
+      "ActiveDirectoryClientId": "[steps('profisee').UserSuppliedClientId.ActiveDirectoryClientId]",
+      "ActiveDirectoryClientSecret": "[steps('profisee').UserSuppliedClientSecret.ActiveDirectoryClientSecret]",
+      "WindowsNodeVersion": "[if(contains(steps('profisee').ProfiseeVersion, '-win22'), 'Windows2022', 'Windows2019')]",
+      "KubernetesClusterName": "[steps('kubernetes').KubernetesClusterName]",
+      "KubernetesVersion": "[steps('kubernetes').KubernetesVersion]",
+      "KubenetesInfrastructureResourceGroupName": "[steps('kubernetes').KubenetesInfrastructureResourceGroupName]",
+      "KubernetesLinuxNodeSize": "[steps('kubernetes').KubernetesLinuxNodeSizeSection.KubernetesLinuxNodeSize]",
+      "KubernetesLinuxNodeCount": "[steps('kubernetes').KubernetesLinuxNodeCount]",
+      "KubernetesWindowsNodeSize": "[steps('kubernetes').KubernetesWindowsNodeSizeSection.KubernetesWindowsNodeSize]",
+      "KubernetesWindowsNodeCount": "[steps('kubernetes').KubernetesWindowsNodeCount]",
+      "AuthenticationType": "[steps('kubernetes').AuthenticationType]",
+      "KubernetesVnetName": "[steps('kubernetes').KubernetesAdvanced.KubernetesVnetName.name]",
+      "KubernetesVnetResourceGroup": "[steps('kubernetes').KubernetesAdvanced.KubernetesVnetName.resourceGroup]",
+      "KubernetesSubnetName": "[steps('kubernetes').KubernetesAdvanced.KubernetesVnetName.subnets.subnet1.name]",
+      "KubernetesServiceCidr": "[steps('kubernetes').KubernetesAdvanced.KubernetesServiceCidr]",
+      "KubernetesDNSServiceIP": "[steps('kubernetes').KubernetesAdvanced.KubernetesDNSServiceIP]",
+      "KubernetesDockerBridgeCidr": "[steps('kubernetes').KubernetesAdvanced.KubernetesDockerBridgeCidr]",
+      "SQLServerCreateNew": "[steps('sql').SQLServerCreateNew]",
+      "SQLServerName": "[if(equals(steps('sql').SQLServerCreateNew, 'Yes'), steps('sql').SQLServerName, steps('sql').SQLServerNameExisting.name)]",
+      "SQLServerUser": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('sql').SQLServerUserSecret, steps('sql').SQLServerUser)]",
+      "SQLServerPassword": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('sql').SQLServerPasswordSecret, steps('sql').SQLServerPassword)]",
+      "SQLServerDatabaseName": "[steps('sql').SQLServerDatabaseName]",
+      "StorageAccountCreateNew": "[if(equals(steps('storage').StorageAccountNameSection.StorageAccountName.newOrExisting, 'new'), 'Yes', 'No')]",
+      "StorageAccountName": "[steps('storage').StorageAccountNameSection.StorageAccountName.name]",
+      "StorageAccountResourceGroupName": "[coalesce(steps('storage').StorageAccountNameSection.StorageAccountName.resourceGroup,resourceGroup().name)]",
+      "StorageAccountAccessKey": "[steps('storage').StorageAccountAccessKey]",
+      "StorageAccountType": "[steps('storage').StorageAccountNameSection.StorageAccountName.type]",
+      "StorageAccountFileShareName": "files",
+      "DNSUpdate": "[if(equals(steps('networking').DNSUpdate, 'No'), 'No', steps('networking').UserDefinedDNS.DNSUpdate2)]",
+      "DNSHostName": "[steps('networking').UserDefinedDNS.DNSHostName]",
+      "DNSDomainName": "[steps('networking').UserDefinedDNS.DNSDomainName]",
+      "DNSDomainResourceGroup": "[steps('networking').UserDefinedDNS.DNSDomainResourceGroup]",
+      "HttpsConfigure": "[coalesce(steps('networking').HttpsConfigure,'No')]",
+      "UseLetsEncrypt": "[if(equals(coalesce(steps('networking').HttpsConfigure,'No'),'No'),'Yes','No')]",
+      "HttpsCertificate": "[if(equals(steps('profisee').UseKeyVault, 'Yes'), steps('networking').UserDefinedHTTPS.HttpsCertificateSecret, steps('networking').UserDefinedHTTPS.HttpsCertificate)]",
+      "HttpsCertificatePrivateKey": "[steps('networking').UserDefinedHTTPS.HttpsCertificatePrivateKey]",
+      "InfraAdminAccount": "[steps('networking').InfraAdminAccount]",
+      "UseKeyVault": "[steps('profisee').UseKeyVault]",
+      "KeyVault": "[steps('profisee').KeyVault.id]",
+      "UsePurview": "[steps('profisee').UsePurview]",
+      "PurviewUrl": "[steps('profisee').GetPurviewUrlRestApiResponse.properties.endpoints.catalog]",
+      "PurviewClientId": "[steps('profisee').PurviewClientID]",
+      "PurviewCollectionFriendlyName": "[steps('profisee').PurviewCollectionFriendlyName]",
+      "PurviewClientSecret": "[steps('profisee').PurviewClientSecret]",
+      "PurviewAccountResourceGroup": "[last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5))]",
+      "ProfiseeWebAppName": "[steps('profisee').ProfiseeWebAppName]"
+    }
+  }
+}

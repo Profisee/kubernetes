@@ -1,0 +1,9 @@
+{
+  "$schema": "https://aka.ms/azure-quickstart-templates-metadata-schema#",
+  "type": "QuickStart",
+  "itemDisplayName": "Profisee Platform",
+  "description": "Deploy the Profisee platform to a managed Kubernetes Cluster (AKS).",
+  "summary": "A template that deploys the Profisee platform into AKS.",
+  "githubUsername": "chuckthompsonprofisee",
+  "dateUpdated": "2021-02-10"
+}

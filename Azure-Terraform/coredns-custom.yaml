@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns-custom
+  namespace: kube-system
+data:
+  Profisee.server: |
+    $EXTERNALDNSNAME:53 {
+        rewrite name $EXTERNALDNSNAME nginx-ingress-nginx-controller.profisee.svc.cluster.local
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+            pods insecure
+            fallthrough in-addr.arpa ipv6.arpa
+            ttl 30
+        }
+    }
