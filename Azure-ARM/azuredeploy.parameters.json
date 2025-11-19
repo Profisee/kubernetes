@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "ProfiseeVersion": {
-            "value": "profiseeplatform:2025r3.0-win22"
+            "value": "profiseeplatform:2025r4.0-win22"
         },
         "ProfiseeAdminUserAccount": {
             "value": ""
