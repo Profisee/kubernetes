@@ -105,13 +105,13 @@ echo $"Installation of Helm finished.";
 
 #Install kubectl
 echo $"Installation of kubectl started.";
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+curl -LO https://dl.k8s.io/release/v1.35.0/bin/linux/amd64/kubectl
 install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 echo $"Installation of kubectl finished.";
 
 #Create profisee namespace in AKS cluster.
 echo $"Creation of profisee namespace in cluster started. If present, we skip creation and use it.";
-
+sleep 30
 #If namespace exists, skip creating it.
 namespacepresent=$(kubectl get namespace -o jsonpath='{.items[?(@.metadata.name=="profisee")].metadata.name}')
 if [ "$namespacepresent" = "profisee" ]; then
