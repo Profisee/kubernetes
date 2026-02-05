@@ -126,7 +126,6 @@ sleep 60
 
 #Create profisee namespace in AKS cluster.
 echo $"Creation of profisee namespace in cluster started. If present, we skip creation and use it.";
-sleep 30
 #If namespace exists, skip creating it.
 namespacepresent=$(kubectl get namespace -o jsonpath='{.items[?(@.metadata.name=="profisee")].metadata.name}')
 if [ "$namespacepresent" = "profisee" ]; then
