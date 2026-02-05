@@ -126,6 +126,7 @@ sleep 60
 
 #Create profisee namespace in AKS cluster.
 echo $"Creation of profisee namespace in cluster started. If present, we skip creation and use it.";
+
 #If namespace exists, skip creating it.
 namespacepresent=$(kubectl get namespace -o jsonpath='{.items[?(@.metadata.name=="profisee")].metadata.name}')
 if [ "$namespacepresent" = "profisee" ]; then
@@ -134,6 +135,7 @@ else
 	kubectl create namespace profisee
 fi
 echo $"Creation of profisee namespace in cluster finished.";
+
 #Download Settings.yaml file from Profisee repo.
 curl -fsSL -o Settings.yaml "$REPOURL/Azure-ARM/Settings.yaml";
 
