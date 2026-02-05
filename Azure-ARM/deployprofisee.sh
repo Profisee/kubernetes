@@ -134,7 +134,6 @@ else
 	kubectl create namespace profisee
 fi
 echo $"Creation of profisee namespace in cluster finished.";
-
 #Download Settings.yaml file from Profisee repo.
 curl -fsSL -o Settings.yaml "$REPOURL/Azure-ARM/Settings.yaml";
 
