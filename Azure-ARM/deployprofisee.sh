@@ -105,11 +105,24 @@ echo $"Installation of Helm finished.";
 
 #Install kubectl
 echo $"Installation of kubectl started.";
-version=$(curl -sSL https://dl.k8s.io/release/stable.txt)
-echo $version
-curl -fSLO https://dl.k8s.io/release/$version/bin/linux/amd64/kubectl
+
+version="$(curl -fsSL https://dl.k8s.io/release/stable.txt || true)"
+echo $"kubectl version is $version"
+
+if [[ -z "$version" ]]; then
+  version="v1.35.0"
+  echo "Failed to fetch latest kubectl version. Falling back to $version"
+else
+  echo "Latest kubectl version is $version"
+fi
+
+curl -fsSLo kubectl "https://dl.k8s.io/release/$version/bin/linux/amd64/kubectl"
 install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-echo $"Installation of kubectl finished.";
+
+echo "Installation of kubectl finished."
+kubectl version --client --output=yaml
+
+sleep 60
 
 #Create profisee namespace in AKS cluster.
 echo $"Creation of profisee namespace in cluster started. If present, we skip creation and use it.";
