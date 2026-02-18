@@ -1,4 +1,6 @@
-{{- if not .Values.profiseeRunTime.isPaaS }}
+{{- if not .Values.profiseeRunTime.isPaaS -}}
+{{- $year := atoi (substr 0 4 .Values.image.tag) -}}
+{{- if le $year 2025 -}}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -57,4 +59,5 @@ spec:
           imagePullSecrets:
             - name: profisee-containerregistry
       backoffLimit: 0
+{{- end }}
 {{- end }}
