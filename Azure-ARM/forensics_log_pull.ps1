@@ -79,6 +79,11 @@ mkdir "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Chatbot"
 mkdir "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Matching"
 mkdir "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Matching.BulkScoring"
 mkdir "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Modeling"
+mkdir "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Mcp"
+mkdir "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\ScriptRunner"
+mkdir "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\PortalArtifacts"
+mkdir "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Proflow"
+mkdir "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Taskman"
 mkdir "$env:TEMP\all-Logs\$logsFolder\EventViewerLogs"
 mkdir "$env:TEMP\all-Logs\$logsFolder\TCPLogs"
 mkdir "$env:TEMP\all-Logs\$logsFolder\IISLogs"
@@ -98,8 +103,13 @@ robocopy "C:\Profisee\Services\Chatbot\LogFiles" "$env:TEMP\all-Logs\$logsFolder
 robocopy "C:\Profisee\Services\Matching\LogFiles" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Matching" /E /COPYALL /DCOPY:T
 robocopy "C:\Profisee\Services\Matching.BulkScoring\LogFiles" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Matching.BulkScoring" /E /COPYALL /DCOPY:T
 robocopy "C:\Profisee\Services\Modeling\LogFiles" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Modeling" /E /COPYALL /DCOPY:T
+robocopy "C:\Profisee\Services\ScriptRunner\LogFiles" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\ScriptRunner" /E /COPYALL /DCOPY:T
+robocopy "C:\Profisee\Services\PortalArtifacts\LogFiles" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\PortalArtifacts" /E /COPYALL /DCOPY:T
+robocopy "C:\Profisee\Services\Proflow\LogFiles" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Proflow" /E /COPYALL /DCOPY:T
+robocopy "C:\Profisee\Services\Taskman\LogFiles" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Taskman" /E /COPYALL /DCOPY:T
 robocopy "c:\profisee\web\logfiles" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Web" /E /COPYALL /DCOPY:T
 robocopy "c:\profisee\webportal\logfiles" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Webportal" /E /COPYALL /DCOPY:T
+robocopy "c:\profisee\Mcp\LogFiles\" "$env:TEMP\all-Logs\$logsFolder\ProfiseeLogs\Mcp" /E /COPYALL /DCOPY:T
 robocopy "c:\inetpub\logs\LogFiles\W3SVC1" "$env:TEMP\all-Logs\$logsFolder\IISLogs" /E /COPYALL /DCOPY:T
 netstat -anobq > $env:TEMP\all-Logs\$logsFolder\TCPLogs\netstat.txt
 Get-NetTCPConnection | Group-Object -Property State, OwningProcess | Select -Property Count, Name, @{Name="ProcessName";Expression={(Get-Process -PID ($_.Name.Split(',')[-1].Trim(' '))).Name}}, Group | Sort Count -Descending | out-file $env:TEMP\all-Logs\$logsFolder\TCPLogs\TCPconnections.txt
