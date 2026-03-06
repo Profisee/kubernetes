@@ -597,7 +597,7 @@ if [ "$USELETSENCRYPT" = "Yes" ]; then
 	#################################Lets Encrypt Start #####################################
 	# Label the namespace to disable resource validation
 	echo "Let's Encrypt installation started";
-	kubectl label namespace profisee cert-manager.io/disable-validation=true
+	#kubectl label namespace profisee cert-manager.io/disable-validation=true
 	helm repo add jetstack https://charts.jetstack.io
 	# Update your local Helm chart repository cache
 	helm repo update
