@@ -6,7 +6,7 @@ metadata:
 data:
   Profisee.server: |
     $EXTERNALDNSNAME:53 {
-        rewrite name $EXTERNALDNSNAME nginx-ingress-nginx-controller.profisee.svc.cluster.local
+        rewrite name $EXTERNALDNSNAME $INGRESSSERVICEFQDN
         kubernetes cluster.local in-addr.arpa ip6.arpa {
             pods insecure
             fallthrough in-addr.arpa ipv6.arpa

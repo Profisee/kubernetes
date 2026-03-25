@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "ProfiseeVersion": {
-            "value": "profiseeplatform:2025r4.0-win22"
+            "value": "profiseeplatformdev:2026r1.0-win22"
         },
         "ProfiseeAdminUserAccount": {
             "value": ""
@@ -23,6 +23,9 @@
         "ActiveDirectoryClientSecret": {
             "value": ""
         },
+        "UseGovernance": {
+            "value": "none"
+        },
         "PurviewUrl": {
             "value": ""
         },
@@ -33,6 +36,15 @@
             "value": ""
         },
         "PurviewClientSecret": {
+            "value": ""
+        },
+        "AlationUrl": {
+            "value": ""
+        },
+        "AlationUsername": {
+            "value": ""
+        },
+        "AlationPassword": {
             "value": ""
         },
         "ManagedIdentityName": {
@@ -146,6 +158,9 @@
         },
         "InfraAdminAccount":{
             "value": ""
-        }         
+        },
+        "PricingTier":{
+            "value": ""
+        }
     }
 }

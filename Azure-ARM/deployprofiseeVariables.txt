@@ -23,7 +23,7 @@ KUBERNETESCLIENTID=aksClientIdGuid
 UPDATEDNS=Yes
 #If UPDATEDNS=Yes, then set these, if not then leave blank but you have to manually update the dns to the inbound ip of the cluster
 #Run this to get the inbound ip of the cluster after the deployprofisee.sh script has been run
-#kubectl --namespace profisee get services nginx-ingress-nginx-controller --output="jsonpath={.status.loadBalancer.ingress[0].ip}"
+#kubectl --namespace profisee get services -l app.kubernetes.io/instance=nginx --output="jsonpath={.items[0].status.loadBalancer.ingress[0].ip}"
 DNSDOMAINNAME=dev.profisee.com
 DNSHOSTNAME=mdmsample
 DOMAINNAMERESOURCEGROUP=dnsZoneResourceGroupName
@@ -43,12 +43,18 @@ LICENSEDATASECRETNAME=profiseeLicense-keyvault-secret-name
 OIDCURL=https://login.microsoftonline.com/MyAzureTennantId
 PROFISEEVERSION=profiseeplatform:2021r2.0
 
-USEPURVIEW=
-#If USEPURVIEW=Yes, then set these
+USEGOVERNANCE=none
+#If USEGOVERNANCE=azurePurview, then set these
 PURVIEWACCOUNTRESOURCEGROUP=
 PURVIEWCLIENTID=
 PURVIEWCLIENTSECRET=
 PURVIEWURL=
+PURVIEWCOLLECTIONID=
+
+#If USEGOVERNANCE=alation, then set these
+ALATIONURL=
+ALATIONUSERNAME=
+ALATIONPASSWORD=
 
 RESOURCEGROUPNAME=resourceGroupNameWhereAKSClusterIsInstalled
 SQLDBNAME=Profisee

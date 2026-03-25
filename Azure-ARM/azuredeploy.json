@@ -25,8 +25,8 @@
       "defaultValue": "",
       "type": "String"
     },
-    "UsePurview": {
-      "defaultValue": "",
+    "UseGovernance": {
+      "defaultValue": "none",
       "type": "String"
     },
     "PurviewUrl": {
@@ -46,6 +46,18 @@
       "type": "String"
     },
     "PurviewAccountResourceGroup": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "AlationUrl": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "AlationUsername": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "AlationPassword": {
       "defaultValue": "",
       "type": "String"
     },
@@ -105,8 +117,11 @@
     "AuthenticationType":{
       "type": "string"
     },
+    "PricingTier":{
+      "type": "string"
+    },
     "InfraAdminAccount":{
-      "defaultValue": "",      
+      "defaultValue": "",
       "type": "string"
     },
     "SQLServerCreateNew": {
@@ -209,6 +224,7 @@
     "KubernetesLinuxNodeCount": "[int(parameters('KubernetesLinuxNodeCount'))]",
     "KubernetesLinuxNodeSize": "[parameters('KubernetesLinuxNodeSize')]",
     "AuthenticationType": "[parameters('AuthenticationType')]",
+    "PricingTier": "[parameters('PricingTier')]",
     "InfraAdminAccount": "[parameters('InfraAdminAccount')]",
     "KubernetesWindowsNodeCount": "[int(parameters('KubernetesWindowsNodeCount'))]",
     "KubernetesWindowsNodeSize": "[parameters('KubernetesWindowsNodeSize')]",
@@ -246,12 +262,15 @@
     "UseKeyVault":"[parameters('UseKeyVault')]",
     "KeyVault":"[parameters('KeyVault')]",
 
-    "UsePurview":"[parameters('UsePurview')]",
+    "UseGovernance":"[parameters('UseGovernance')]",
     "PurviewUrl":"[parameters('PurviewUrl')]",
     "PurviewCollectionId":"[parameters('PurviewCollectionFriendlyName')]",
     "PurviewClientId":"[parameters('PurviewClientId')]",
     "PurviewClientSecret":"[parameters('PurviewClientSecret')]",
-    "PurviewAccountResourceGroup":"[parameters('PurviewAccountResourceGroup')]"
+    "PurviewAccountResourceGroup":"[parameters('PurviewAccountResourceGroup')]",
+    "AlationUrl":"[parameters('AlationUrl')]",
+    "AlationUsername":"[parameters('AlationUsername')]",
+    "AlationPassword":"[parameters('AlationPassword')]"
   },
     "resources":
     [
@@ -307,8 +326,8 @@
                         "value": "[variables('KeyVault')]"
                     },
                     {
-                        "name": "USEPURVIEW",
-                        "value": "[variables('UsePurview')]"
+                        "name": "USEGOVERNANCE",
+                        "value": "[variables('UseGovernance')]"
                     },
                     {
                         "name": "PURVIEWURL",
@@ -394,7 +413,7 @@
                         "name": "[tolower(parameters('SQLServerName'))]",
                         "type": "Microsoft.Sql/servers",
                         "location": "[resourceGroup().location]",
-                        "apiVersion": "2023-05-01-preview",
+                        "apiVersion": "2024-05-01-preview",
                         "dependsOn": [],
                         "tags": {
                             "displayName": "SQLServer"
@@ -539,6 +558,9 @@
                         "vmSize": "[variables('KubernetesWindowsNodeSize')]",
                         "osDiskSizeGB": 100,
                         "maxPods": 15,
+                        "enableAutoScaling": true,
+                        "minCount": 1,
+                        "maxCount": 10,
                         "type": "VirtualMachineScaleSets",
                         "orchestratorVersion": "[variables('KubernetesVersion')]",
                         "enableNodePublicIP": false,
@@ -797,8 +819,8 @@
                       "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('KubernetesClusterName'))).identityProfile.kubeletidentity.objectId]"
                     },
                     {
-                      "name": "USEPURVIEW",
-                      "value": "[variables('UsePurview')]"
+                      "name": "USEGOVERNANCE",
+                      "value": "[variables('UseGovernance')]"
                     },
                     {
                         "name": "PURVIEWURL",
@@ -821,8 +843,24 @@
                       "value": "[variables('PurviewAccountResourceGroup')]"
                     },
                     {
+                      "name": "ALATIONURL",
+                      "value": "[variables('AlationUrl')]"
+                    },
+                    {
+                      "name": "ALATIONUSERNAME",
+                      "value": "[variables('AlationUsername')]"
+                    },
+                    {
+                      "name": "ALATIONPASSWORD",
+                      "value": "[variables('AlationPassword')]"
+                    },
+                    {
                       "name": "AUTHENTICATIONTYPE",
                       "value": "[variables('AuthenticationType')]"
+                    },
+                    {
+                      "name": "PRICINGTIER",
+                      "value": "[variables('PricingTier')]"
                     },
                     {
                       "name": "INFRAADMINACCOUNT",
