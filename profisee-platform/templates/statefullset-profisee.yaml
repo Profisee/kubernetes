@@ -95,14 +95,38 @@ spec:
             exec:
               command:
                 - powershell
-                - >-
-                  curl.exe -fsSL -o .\Fileshare\forensics_log_pull.ps1
-                  "https://raw.githubusercontent.com/profisee/kubernetes/master/Azure-ARM/forensics_log_pull.ps1"
+                - -Command
+                - |-
+                  Start-Sleep -Seconds 30; Remove-Item -Path .\Fileshare\forensics_log_pull.ps1 -Force -ErrorAction SilentlyContinue;
+                  $url = "https://raw.githubusercontent.com/profisee/kubernetes/master/Azure-ARM/forensics_log_pull.ps1";
+                  $out = ".\Fileshare\forensics_log_pull.ps1";
+                  for ($i = 0; $i -lt 3; $i++) {
+                    & curl.exe -fsSL -o $out $url;
+                    if ($LASTEXITCODE -eq 0) {
+                      echo "forensics_log_pull.ps1 download succeeded";
+                      exit 0
+                    }
+                    Start-Sleep -Seconds 5
+                  } echo "forensics_log_pull.ps1 download failed after 3 attempts; continuing pod startup"; exit 0
           preStop:
             exec:
               command:
                 - powershell
-                - .\Fileshare\forensics_log_pull.ps1
+                - -Command
+                - >-
+                  $script = ".\Fileshare\forensics_log_pull.ps1";
+                  try {
+                    if (Test-Path $script) {
+                      Write-Host "Running forensics_log_pull.ps1";
+                      & $script;
+                      Write-Host "forensics_log_pull.ps1 completed";
+                    }
+                    else {
+                      Write-Host "forensics_log_pull.ps1 not found, skipping preStop";
+                    }
+                  } catch {
+                    Write-Host "Error while running forensics_log_pull.ps1: $($_.Exception.Message)";
+                  } exit 0
         volumeMounts:
         - name: data-volume
           mountPath: C:\data
