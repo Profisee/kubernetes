@@ -97,50 +97,18 @@
             "name": "ProfiseeVersion",
             "type": "Microsoft.Common.DropDown",
             "label": "Profisee version",
-            "defaultValue": "2025r4.0-win22",
+            "defaultValue": "2026r1.0-win22",
             "toolTip": "Which release of the Profisee Platform to deploy.",
             "constraints": {
               "required": true,
               "allowedValues": [
                 {
-                  "label": "2023R1.0",
-                  "value": "profiseeplatform:2023r1.0"
-                },
-                {
-                  "label": "2023R2.0-win19",
-                  "value": "profiseeplatform:2023r2.0-win19"
-                },
-                {
-                  "label": "2023R2.0-win22",
-                  "value": "profiseeplatform:2023r2.0-win22"
-                },
-                {
-                  "label": "2024R1.0-win19",
-                  "value": "profiseeplatform:2024r1.0-win19"
-                },
-                {
-                  "label": "2024R1.0-win22",
-                  "value": "profiseeplatform:2024r1.0-win22"
-                },
-                {
-                  "label": "2024R2.0-win19",
-                  "value": "profiseeplatform:2024r2.0-win19"
-                },
-                {
                   "label": "2024R2.0-win22",
                   "value": "profiseeplatform:2024r2.0-win22"
                 },
                 {
-                  "label": "2025r0.0-win19",
-                  "value": "profiseeplatform:2025r0.0-win19"
-                },
-                {
                   "label": "2025r0.0-win22",
                   "value": "profiseeplatform:2025r0.0-win22"
-                },
-                {
-                  "label": "2025r1.0-win19",
-                  "value": "profiseeplatform:2025r1.0-win19"
                 },
                 {
                   "label": "2025r1.0-win22",
@@ -161,6 +129,10 @@
                 {
                   "label": "2025r4.0-win22",
                   "value": "profiseeplatform:2025r4.0-win22"
+                },
+                {
+                  "label": "2026r1.0-win22",
+                  "value": "profiseeplatformdev:2026r1.0-win22"                  
                 }
               ]
             },
@@ -289,20 +261,24 @@
             "visible": "[equals(steps('profisee').ActiveDirectoryCreateApp,'No')]"
           },
           {
-            "name": "UsePurview",
+            "name": "UseGovernance",
             "type": "Microsoft.Common.OptionsGroup",
-            "label": "Integrate Profisee with Microsoft Purview?",
-            "defaultValue": "No, no need at this point.",
-            "toolTip": "Profisee can integrate with Microsoft Purview during initial configuration or at a later time.",
+            "label": "Select governance integration",
+            "defaultValue": "none",
+            "toolTip": "Select whether Profisee should configure no governance integration, Microsoft Purview, or Alation during the initial deployment.",
             "constraints": {
               "allowedValues": [
                 {
-                  "label": "Yes, integrate with Microsoft Purview.",
-                  "value": "Yes"
+                  "label": "No",
+                  "value": "none"
                 },
                 {
-                  "label": "No, no need at this point.",
-                  "value": "No"
+                  "label": "Purview",
+                  "value": "azurePurview"
+                },
+                {
+                  "label": "Alation",
+                  "value": "alation"
                 }
               ],
               "required": true
@@ -320,7 +296,7 @@
                 "location": "All"
               }
             },
-            "visible": "[equals(steps('profisee').UsePurview,'Yes')]"
+            "visible": "[equals(steps('profisee').UseGovernance,'azurePurview')]"
           },
           {
             "name": "GetPurviewUrlRestApiResponse",
@@ -329,7 +305,8 @@
               "method": "GET",
               "path": "[concat(subscription().id,'/resourceGroups/',last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5)),'/providers/Microsoft.Purview/accounts/',steps('profisee').PurviewAccountName.name,'?api-version=2021-12-01')]",
               "body": ""
-            }
+            },
+            "visible": "[equals(steps('profisee').UseGovernance,'azurePurview')]"
           },
           {
             "name": "PurviewCollectionFriendlyName",
@@ -343,7 +320,7 @@
               "regex": "",
               "validationMessage": ""
             },
-            "visible": "[equals(steps('profisee').UsePurview,'Yes')]"
+            "visible": "[equals(steps('profisee').UseGovernance,'azurePurview')]"
           },
           {
             "name": "PurviewClientID",
@@ -357,7 +334,7 @@
               "regex": "",
               "validationMessage": ""
             },
-            "visible": "[equals(steps('profisee').UsePurview,'Yes')]"
+            "visible": "[equals(steps('profisee').UseGovernance,'azurePurview')]"
           },
           {
             "name": "PurviewClientSecret",
@@ -371,7 +348,50 @@
               "regex": "",
               "validationMessage": ""
             },
-            "visible": "[equals(steps('profisee').UsePurview,'Yes')]"
+            "visible": "[equals(steps('profisee').UseGovernance,'azurePurview')]"
+          },
+          {
+            "name": "AlationUrl",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Alation URL",
+            "defaultValue": "",
+            "placeholder": "",
+            "toolTip": "Provide the base URL for the Alation instance Profisee should integrate with.",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[equals(steps('profisee').UseGovernance,'alation')]"
+          },
+          {
+            "name": "AlationUsername",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Alation username",
+            "defaultValue": "",
+            "placeholder": "",
+            "toolTip": "Provide the username for the Alation account Profisee should use.",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[equals(steps('profisee').UseGovernance,'alation')]"
+          },
+          {
+            "name": "AlationPassword",
+            "type": "Microsoft.Common.PasswordBox",
+            "label": {
+              "password": "Alation password",
+              "confirmPassword": "Confirm password"
+            },
+            "toolTip": "Provide the password for the Alation account Profisee should use.",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[equals(steps('profisee').UseGovernance,'alation')]"
           }
         ]
       },
@@ -415,6 +435,27 @@
               "required": false,
               "regex": "",
               "validationMessage": ""
+            },
+            "visible": true
+          },
+          {
+            "name": "PricingTier",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Pricing tiers for Azure Kubernetes Service",
+            "defaultValue": "Free tier",
+            "toolTip": "AKS offers two pricing tiers for the managed Kubernetes control plane. Choose the pricing tier that best meets your needs.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Free tier",
+                  "value": "Free"
+                },
+                {
+                  "label": "Paid tier",
+                  "value": "Standard"
+                }
+              ],
+              "required": false
             },
             "visible": true
           },
@@ -503,7 +544,7 @@
                 "imageReference": {
                   "publisher": "MicrosoftWindowsServer",
                   "offer": "WindowsServer",
-                  "sku": "2019-Datacenter"
+                  "sku": "2022-Datacenter"
                 },
                 "count": 1,
                 "visible": true
@@ -689,8 +730,9 @@
               "required": true,
               "validations": [
                 {
+                  "regex": "^[a-z0-9A-Z -.:\n]{1,60}$",
                   "isValid": "[equals(steps('sql').CheckSqlNameRestApiResponse.available,true)]",
-                  "message": "[steps('sql').CheckSqlNameRestApiResponse.message]"
+                  "message": "Only 1-60 alphanumeric characters, hyphens, spaces, periods, and colons are allowed."
                 }
               ]
             },
@@ -1047,6 +1089,7 @@
       "KubernetesWindowsNodeSize": "[steps('kubernetes').KubernetesWindowsNodeSizeSection.KubernetesWindowsNodeSize]",
       "KubernetesWindowsNodeCount": "[steps('kubernetes').KubernetesWindowsNodeCount]",
       "AuthenticationType": "[steps('kubernetes').AuthenticationType]",
+      "PricingTier": "[steps('kubernetes').PricingTier]",
       "KubernetesVnetName": "[steps('kubernetes').KubernetesAdvanced.KubernetesVnetName.name]",
       "KubernetesVnetResourceGroup": "[steps('kubernetes').KubernetesAdvanced.KubernetesVnetName.resourceGroup]",
       "KubernetesSubnetName": "[steps('kubernetes').KubernetesAdvanced.KubernetesVnetName.subnets.subnet1.name]",
@@ -1075,12 +1118,15 @@
       "InfraAdminAccount": "[steps('networking').InfraAdminAccount]",
       "UseKeyVault": "[steps('profisee').UseKeyVault]",
       "KeyVault": "[steps('profisee').KeyVault.id]",
-      "UsePurview": "[steps('profisee').UsePurview]",
-      "PurviewUrl": "[steps('profisee').GetPurviewUrlRestApiResponse.properties.endpoints.catalog]",
-      "PurviewClientId": "[steps('profisee').PurviewClientID]",
-      "PurviewCollectionFriendlyName": "[steps('profisee').PurviewCollectionFriendlyName]",
-      "PurviewClientSecret": "[steps('profisee').PurviewClientSecret]",
-      "PurviewAccountResourceGroup": "[last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5))]",
+      "UseGovernance": "[steps('profisee').UseGovernance]",
+      "PurviewUrl": "[if(equals(steps('profisee').UseGovernance, 'azurePurview'), steps('profisee').GetPurviewUrlRestApiResponse.properties.endpoints.catalog, '')]",
+      "PurviewClientId": "[if(equals(steps('profisee').UseGovernance, 'azurePurview'), steps('profisee').PurviewClientID, '')]",
+      "PurviewCollectionFriendlyName": "[if(equals(steps('profisee').UseGovernance, 'azurePurview'), steps('profisee').PurviewCollectionFriendlyName, '')]",
+      "PurviewClientSecret": "[if(equals(steps('profisee').UseGovernance, 'azurePurview'), steps('profisee').PurviewClientSecret, '')]",
+      "PurviewAccountResourceGroup": "[if(equals(steps('profisee').UseGovernance, 'azurePurview'), last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5)), '')]",
+      "AlationUrl": "[if(equals(steps('profisee').UseGovernance, 'alation'), steps('profisee').AlationUrl, '')]",
+      "AlationUsername": "[if(equals(steps('profisee').UseGovernance, 'alation'), steps('profisee').AlationUsername, '')]",
+      "AlationPassword": "[if(equals(steps('profisee').UseGovernance, 'alation'), steps('profisee').AlationPassword, '')]",
       "ProfiseeWebAppName": "[steps('profisee').ProfiseeWebAppName]"
     }
   }

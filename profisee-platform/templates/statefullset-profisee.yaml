@@ -155,7 +155,7 @@ spec:
             secretKeyRef:
                 name: profisee-oidc-secret
                 key: ProfiseeOidcClientSecret
-        {{- if .Values.cloud.azure.isProvider }}
+        {{- if eq .Values.integrations.governance.provider "azurePurview" }}
         - name: ProfiseePurviewUrl
           valueFrom:
             secretKeyRef:
@@ -182,6 +182,23 @@ spec:
                 name: profisee-purview
                 key: ProfiseePurviewClientSecret
         {{- end }}
+        {{- if eq .Values.integrations.governance.provider "alation" }}
+        - name: ProfiseeAlationUrl
+          valueFrom:
+            secretKeyRef:
+                name: profisee-alation
+                key: ProfiseeAlationUrl
+        - name: ProfiseeAlationUsername
+          valueFrom:
+            secretKeyRef:
+                name: profisee-alation
+                key: ProfiseeAlationUsername
+        - name: ProfiseeAlationPassword
+          valueFrom:
+            secretKeyRef:
+                name: profisee-alation
+                key: ProfiseeAlationPassword
+        {{- end }}
         resources:
           limits:
             cpu: {{.Values.clusterNode.limits.cpu}}
@@ -193,3 +210,4 @@ spec:
           - containerPort: 80
       imagePullSecrets:
       - name: profisee-containerregistry
+

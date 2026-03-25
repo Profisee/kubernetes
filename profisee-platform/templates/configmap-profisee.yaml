@@ -15,6 +15,7 @@ data:
     ProfiseeAttachmentRepositoryLogonType: {{.Values.profiseeRunTime.fileRepository.logonType|quote}}
     ProfiseeExternalDNSUrl: {{.Values.profiseeRunTime.externalDnsUrl|quote}}
     ProfiseeWebAppName: {{.Values.profiseeRunTime.webAppName|quote}}
+    ProfiseeMetadataProvider: {{.Values.integrations.governance.provider|quote}}
     ProfiseeAdditionalOpenIdConnectProvidersFile: 'c:\data\oidc.json'
     ProfiseeOidcName: {{.Values.profiseeRunTime.oidc.name|quote}}
     ProfiseeOidcAuthority: {{.Values.profiseeRunTime.oidc.authority|quote}}

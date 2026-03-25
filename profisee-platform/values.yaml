@@ -1,4 +1,4 @@
-sqlServer: 
+sqlServer:
     name: "$SQLNAME"
     databaseName: "$SQLDBNAME"
     userName: "$SQLUSERNAME"
@@ -36,7 +36,7 @@ clusterNode:
       memory: 10T
     requests:
       cpu: 1
-      memory: 1000M        
+      memory: 1000M
 image:
     registry: "profisee.azurecr.io"
     repository: "$ACRREPONAME"
@@ -56,12 +56,12 @@ licenseFileData: $LICENSEDATA
 preInitScriptData: Cg==
 postInitScriptData: Cg==
 oidcFileData: |
-    {      
+    {
     }
 tlsCert: |
     $TLSCERT
 tlsKey: |
-    $TLSKEY  
+    $TLSKEY
 cloud:
     azure:
       isProvider: true
@@ -69,7 +69,7 @@ cloud:
       keyVault:
         identity: #must be created in the aks node resource group and have reader ploicy's on keyvault
           clientId: ""
-          resourceId: 
+          resourceId:
         secrets:
           sqlUserName: ""
           sqlPassword: ""
@@ -84,15 +84,22 @@ cloud:
       managedIdentity:
         name: ""
         clientId: ""
-      purview:
-        tenantId: "$PURVIEWTENANTID"
-        url: "$PURVIEWURL"
-        collectionId: "$PURVIEWCOLLECTIONID"
-        clientId: "$PURVIEWCLIENTID"
-        clientSecret: "$PURVIEWCLIENTSECRET"
     aws:
       isProvider: false
       ebsVolumeId: ""
     google:
       isProvider: false
-      gceVolumeName: "" 
+      gceVolumeName: ""
+integrations:
+  governance:
+    provider: "$GOVERNANCEPROVIDER"
+  purview:
+    tenantId: "$PURVIEWTENANTID"
+    url: "$PURVIEWURL"
+    collectionId: "$PURVIEWCOLLECTIONID"
+    clientId: "$PURVIEWCLIENTID"
+    clientSecret: "$PURVIEWCLIENTSECRET"
+  alation:
+    url: "$ALATIONURL"
+    username: "$ALATIONUSERNAME"
+    password: "$ALATIONPASSWORD"
