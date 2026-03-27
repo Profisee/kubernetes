@@ -241,12 +241,33 @@ fi
 
 #Installation of nginx
 echo $"Installation of nginx ingress started.";
-echo $"Adding ingress-nginx repo."
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+echo $"Adding NGINX OSS repo."
+helm repo add nginx-stable https://helm.nginx.com/stable
+helm repo update
 
 #Get profisee nginx settings
 echo $"Acquiring nginxSettings.yaml file from Profisee repo."
 curl -fsSL -o nginxSettings.yaml "$REPOURL/Azure-ARM/nginxSettings.yaml";
+
+#Read existing ingress helm values before uninstalling; either Azure LB DNS name or private IP
+# (i.e. don't read current public IP as that will be removed and replaced by nginx uninstall/reinstall).
+echo "Checking for existing ingress helm values..."
+existingIngressRelease=$(helm list -n profisee -o json | jq -r '.[] | select(.name|test("nginx")) | [.name] | @tsv')
+
+existingDnsLabel=""
+if [ -n "$existingIngressRelease" ]; then
+	echo $"Found existing ingress release: $existingIngressRelease";
+	ingressValues=$(helm get values -n profisee "$existingIngressRelease" -o json 2>/dev/null || echo "{}")
+	existingDnsLabel=$(echo "$ingressValues" | jq -r '.controller.service.annotations["service.beta.kubernetes.io/azure-dns-label-name"] // empty')
+
+	# DNS label annotation indicates public cluster style; keep DNS host label.
+	if [ -n "$existingDnsLabel" ]; then
+		DNSHOSTNAME="$existingDnsLabel"
+		echo $"Detected public ingress DNS label in values: $DNSHOSTNAME";
+	fi
+else
+	echo $"No existing ingress release found.";
+fi
 
 #If nginx is present, uninstall it.
 echo "If nginx is installed, we'll uninstall it first."
@@ -261,30 +282,36 @@ fi
 echo $"Installation of nginx started.";
 if [ "$USELETSENCRYPT" = "Yes" ]; then
 	echo $"Install nginx ready to integrate with Let's Encrypt's automatic certificate provisioning and renewal, and set the DNS FQDN to the load balancer's ingress public IP address."
-	helm install -n profisee nginx ingress-nginx/ingress-nginx --values nginxSettings.yaml --set controller.service.loadBalancerIP=$nginxip --set controller.service.appProtocol=false --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=$DNSHOSTNAME;
+	helm install -n profisee nginx nginx-stable/nginx-ingress --values nginxSettings.yaml --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=$DNSHOSTNAME;
 else
 	echo $"Install nginx without integration with Let's Encrypt's automatic certificate provisioning and renewal, also do not set the DNS FQDN to the load balancer's ingress public IP address."
-	helm install -n profisee nginx ingress-nginx/ingress-nginx --values nginxSettings.yaml --set controller.service.loadBalancerIP=$nginxip --set controller.service.appProtocol=false
+	helm install -n profisee nginx nginx-stable/nginx-ingress --values nginxSettings.yaml
 fi
 
 echo $"Installation of nginx finished, sleeping for 30 seconds to wait for the load balancer's public IP to become available.";
 sleep 30;
 
 #Get the load balancer's public IP so it can be used later on.
-echo $"Let's see if the the load balancer's IP address is available."
-nginxip=$(kubectl -n profisee get services nginx-ingress-nginx-controller --output="jsonpath={.status.loadBalancer.ingress[0].ip}");
-#
+echo $"Let's see if the load balancer's IP address is available."
+nginxservice=$(kubectl -n profisee get service -o wide | grep nginx | awk '{print $1}' | head -n 1)
+if [ -z "$nginxservice" ]; then
+	echo $"Nginx is not configured properly because no ingress service was found. Exiting with error.";
+	exit 1
+fi
+nginxip=$(kubectl -n profisee get services "$nginxservice" --output="jsonpath={.status.loadBalancer.ingress[0].ip}" 2>/dev/null || true);
 if [ -z "$nginxip" ]; then
 	#try again
 	echo $"Nginx is not configured properly because the load balancer's public IP is null, will wait for another minute.";
     sleep 60;
-	nginxip=$(kubectl -n profisee get services nginx-ingress-nginx-controller --output="jsonpath={.status.loadBalancer.ingress[0].ip}");
+	nginxip=$(kubectl -n profisee get services "$nginxservice" --output="jsonpath={.status.loadBalancer.ingress[0].ip}" 2>/dev/null || true);
 	if [ -z "$nginxip" ]; then
     	echo $"Nginx is not configured properly because the load balancer's public IP is null. Exiting with error.";
 		exit 1
 	fi
 fi
 echo $"The load balancer's public IP is $nginxip";
+INGRESSSERVICEFQDN="$nginxservice.profisee.svc.cluster.local"
+echo $"The ingress service FQDN is $INGRESSSERVICEFQDN";
 
 #Fix the TLS variables
 echo $"Correction of TLS variables started.";
@@ -559,6 +586,7 @@ echo $"The safe RAM value to assign to Profisee pod is $saferamvalueinkibibytes.
 # Setting DNSName value to custom coredns-configmap
 curl -fsSL -o coredns-custom.yaml "$REPOURL/Azure-ARM/coredns-custom.yaml";
 sed -i -e 's/$EXTERNALDNSNAME/'"$EXTERNALDNSNAME"'/g' coredns-custom.yaml
+sed -i -e 's/$INGRESSSERVICEFQDN/'"$INGRESSSERVICEFQDN"'/g' coredns-custom.yaml
 
 # Only Alation is user-supplied here; escape '&' for sed replacement and '~' for the chosen sed delimiter.
 ALATIONURL_ESCAPED=${ALATIONURLVALUE//&/\\&}

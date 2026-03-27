@@ -1,0 +1,144 @@
+# Export profisee values, as deployed
+helm get values -n profisee profiseeplatform -o yaml > profisee-values.yaml
+
+# Pull Purview values from existing k8s secret (keep empty if missing)
+get_purview_val () {
+  local key="$1"
+  kubectl -n profisee get secret profisee-purview \
+    -o go-template="{{with index .data \"$key\"}}{{. | base64decode}}{{end}}" 2>/dev/null || true
+}
+
+yaml_escape () {
+  printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
+PURVIEW_TENANT_ID="$(get_purview_val ProfiseePurviewTenantId)"
+PURVIEW_URL="$(get_purview_val ProfiseePurviewUrl)"
+PURVIEW_COLLECTION_ID="$(get_purview_val ProfiseePurviewCollectionId)"
+PURVIEW_CLIENT_ID="$(get_purview_val ProfiseePurviewClientId)"
+PURVIEW_CLIENT_SECRET="$(get_purview_val ProfiseePurviewClientSecret)"
+
+# Write override values (always writes keys, even empty)
+cat > purview-from-secret.yaml <<EOF
+integrations:
+  purview:
+    tenantId: "$(yaml_escape "$PURVIEW_TENANT_ID")"
+    url: "$(yaml_escape "$PURVIEW_URL")"
+    collectionId: "$(yaml_escape "$PURVIEW_COLLECTION_ID")"
+    clientId: "$(yaml_escape "$PURVIEW_CLIENT_ID")"
+    clientSecret: "$(yaml_escape "$PURVIEW_CLIENT_SECRET")"
+
+# Optional backward-compat section if older chart uses cloud.purview
+cloud:
+  purview:
+    tenantId: "$(yaml_escape "$PURVIEW_TENANT_ID")"
+    url: "$(yaml_escape "$PURVIEW_URL")"
+    collectionId: "$(yaml_escape "$PURVIEW_COLLECTION_ID")"
+    clientId: "$(yaml_escape "$PURVIEW_CLIENT_ID")"
+    clientSecret: "$(yaml_escape "$PURVIEW_CLIENT_SECRET")"
+EOF
+
+# Add profisee repo
+helm repo remove profisee
+helm repo add profisee https://profisee.github.io/kubernetes
+
+# Add ingress-nginx repo
+helm repo remove ingress-nginx
+helm repo add nginx-stable https://helm.nginx.com/stable
+
+# Update repos
+helm repo update
+
+# Grab ingress-nginx settings 
+curl -fsSL -o nginxSettings.yaml "https://raw.githubusercontent.com/profisee/kubernetes/master/Azure-ARM/nginxSettings.yaml"
+
+# Determine public or private cluster
+# Read existing ingress helm values before uninstalling; either Azure LB DNS name or private IP
+# (i.e. don't read current public IP as that will be removed and replaced by nginx uninstall/reinstall).
+echo "Checking for existing ingress helm values..."
+existingIngressRelease=$(helm list -n profisee -o json | jq -r '.[] | select(.name|test("nginx")) | [.name] | @tsv')
+
+reusePrivateLbIp=""
+existingDnsLabel=""
+if [ -n "$existingIngressRelease" ]; then
+	echo $"Found existing ingress release: $existingIngressRelease";
+	ingressValues=$(helm get values -n profisee "$existingIngressRelease" -o json 2>/dev/null || echo "{}")
+	existingLbIp=$(echo "$ingressValues" | jq -r '.controller.service.loadBalancerIP // .service.spec.loadBalancerIP // empty')
+	existingDnsLabel=$(echo "$ingressValues" | jq -r '.controller.service.annotations["service.beta.kubernetes.io/azure-dns-label-name"] // empty')
+
+	# 10.x means private cluster ingress IP, keep it stable across reinstall.
+	if [[ "$existingLbIp" =~ ^10\. ]]; then
+		reusePrivateLbIp="$existingLbIp"
+		echo $"Detected private ingress loadBalancerIP in values: $reusePrivateLbIp";
+	fi
+
+	# DNS label annotation indicates public cluster style; keep DNS host label.
+	if [ -n "$existingDnsLabel" ]; then
+		DNSHOSTNAME="$existingDnsLabel"
+		echo $"Detected public ingress DNS label in values: $DNSHOSTNAME";
+	fi
+else
+	echo $"No existing ingress release found.";
+fi
+
+if [ -n "$reusePrivateLbIp" ]; then
+	echo $"Will reuse private loadBalancerIP from helm values: $reusePrivateLbIp";
+else
+	echo $"No private loadBalancerIP found in helm values. AKS will allocate IP on reinstall.";
+fi
+
+#If nginx is present, uninstall it.
+echo "If nginx is installed, we'll uninstall it first."
+nginxpresent=$(helm list -n profisee -f nginx -o table --short)
+if [ "$nginxpresent" = "nginx" ]; then
+	helm uninstall -n profisee nginx;
+	echo $"Will sleep for a minute to allow clean uninstall of nginx."
+	sleep 60;
+fi
+
+# Check if Let's Encrypt is used
+USELETSENCRYPT=$(grep -E '^[[:space:]]*useLetsEncrypt:' profisee-values.yaml | awk '{print $2}')
+if [ "$USELETSENCRYPT" = "true" ]; then USELETSENCRYPT="Yes"; else USELETSENCRYPT="No"; fi
+echo "Are we using Let's Encrypt for certificates: $USELETSENCRYPT"
+
+#Install nginx either with or without Let's Encrypt
+echo $"Installation of nginx started.";
+if [ "$USELETSENCRYPT" = "Yes" ]; then
+	echo $"Install nginx ready to integrate with Let's Encrypt's automatic certificate provisioning and renewal, and set the DNS FQDN to the load balancer's ingress public IP address."
+	helm upgrade --install -n profisee nginx nginx-stable/nginx-ingress --values nginxSettings.yaml --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=$DNSHOSTNAME;
+else
+	echo $"Install nginx without integration with Let's Encrypt's automatic certificate provisioning and renewal, also do not set the DNS FQDN to the load balancer's ingress public IP address."
+	helm upgrade --install -n profisee nginx nginx-stable/nginx-ingress --values nginxSettings.yaml --set-string "controller.service.annotations.service\.beta\.kubernetes\.io/azure-load-balancer-ipv4=${reusePrivateLbIp}" --set-string 'controller.service.annotations.service\.beta\.kubernetes\.io/azure-load-balancer-internal=true';
+fi
+
+echo $"Installation of nginx finished, sleeping for 30 seconds to wait for the load balancer's public IP to become available.";
+sleep 30;
+
+#Get the load balancer's service name for Core DNS rewrite.
+echo $"Let's see if the load balancer's IP address is available."
+nginxservice=$(kubectl -n profisee get service -o wide | grep nginx | awk '{print $1}' | head -n 1)
+if [ -z "$nginxservice" ]; then
+	echo $"Nginx is not configured properly because no ingress service was found. Exiting with error.";
+	exit 1
+fi
+
+INGRESSSERVICEFQDN="$nginxservice.profisee.svc.cluster.local"
+echo $"The ingress service FQDN is $INGRESSSERVICEFQDN";
+
+# Update CoreDNS entry
+kubectl -n kube-system get cm coredns-custom -o yaml \
+| sed -E "s|(rewrite name [^ ]+ )[A-Za-z0-9.-]+\\.profisee\\.svc\\.cluster\\.local|\\1$INGRESSSERVICEFQDN|g" \
+| kubectl apply -f -
+
+kubectl -n kube-system rollout restart deployment coredns
+kubectl -n kube-system get cm coredns-custom -o yaml | grep -E "rewrite name|nginx-.*-ingress-controller"
+
+
+# Reinstall profisee using stored values
+helm upgrade --install  -n profisee profiseeplatform profisee/profisee-platform --values profisee-values.yaml --values purview-from-secret.yaml
+kubectl delete pod -n profisee profisee-0
+
+# Remove install files
+rm profisee-values.yaml
+rm nginxSettings.yaml
+rm purview-from-secret.yaml
