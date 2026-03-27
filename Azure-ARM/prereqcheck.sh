@@ -61,13 +61,11 @@ if [ -z "$currentIdentityId" ]; then
 	set_resultAndReturn;
 fi
 
-echo "0"
 #Check to make sure you have effective Contributor access at Subscription level. This is now required at Sub level due to the lack of specific roles to use that can grant Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials/write and Microsoft.ContainerService/register/action. Once these are made part of a role the we will rechecked if we can lower the permissions.
 #Checking Subscription level.
 
 echo "Is the Deployment Managed Identity assigned the Contributor Role at the Subscription level?"
 subscriptionContributor=$(az role assignment list --all --assignee $currentIdentityId --output json --include-inherited --query "[?roleDefinitionName=='Contributor' && scope=='/subscriptions/$SUBSCRIPTIONID'].roleDefinitionName" --output tsv)
-echo $subscriptionContributor
 if [ -z "$subscriptionContributor" ]; then
 	echo "Role is NOT assigned at Subscription level. Exiting with error. Please assign the Contributor role to the Deployment Managed Identity at the Subscription Level. Please visit https://support.profisee.com/wikis/profiseeplatform/planning_your_managed_identity_configuration for more information."
 	#Deployment Managed Identity is not granted Contributor at Subscription level, checking Resource Group level.
@@ -83,7 +81,7 @@ fi
 #If updating DNS, check to make sure you have effective contributor access to the DNS zone itself.
 if [ "$UPDATEDNS" = "Yes" ]; then
 	echo "Is the Deployment Managed Identity assigned the DNS Zone Contributor role to the DNS zone itself?"
-	dnsznContributor=$(az role assignment list --all --assignee $currentIdentityId --output json --include-inherited --query "[?roleDefinitionName=='DNS Zone Contributor' && scope=='/subscriptions/$SUBSCRIPTIONID/resourceGroups/$DOMAINNAMERESOURCEGROUP/providers/Microsoft.Network/dnszones/$DNSDOMAINNAME'].roleDefinitionName" --output tsv)
+	dnsznContributor=$(az role assignment list --assignee $currentIdentityId --include-inherited --query "[?roleDefinitionName=='DNS Zone Contributor'].roleDefinitionName" --scope /subscriptions/$SUBSCRIPTIONID/resourceGroups/$DOMAINNAMERESOURCEGROUP/providers/Microsoft.Network/dnszones/$DNSDOMAINNAME --output tsv)
 	if [ -z "$dnsznContributor" ]; then
 		err="Role is NOT assigned. Exiting with error. Please assign the DNS Zone Contributor role to the Deployment Managed Identity for the DNS zone you want updated. Please visit https://support.profisee.com/wikis/profiseeplatform/planning_your_managed_identity_configuration for more information."
 		echo $err

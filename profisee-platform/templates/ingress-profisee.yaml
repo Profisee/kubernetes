@@ -4,40 +4,61 @@ kind: Ingress
 metadata:
   name: profisee-ingress
   annotations:
-    # kubernetes.io/ingress.class: nginx
-    #kubernetes.io/ingress.class: azure/application-gateway
-    nginx.ingress.kubernetes.io/client_body_buffer_size: "512k"
-    nginx.ingress.kubernetes.io/client-header-buffer-size: "512k"
-    nginx.ingress.kubernetes.io/large-client-header-buffers: "32 512k"
-    nginx.ingress.kubernetes.io/proxy-body-size: "0"
-    nginx.ingress.kubernetes.io/proxy-buffers: "32 512k"
-    nginx.ingress.kubernetes.io/proxy-buffer-size: "512k"
-    nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "512k"
+    nginx.org/client-body-buffer-size: "512k"
+    nginx.org/client-max-body-size: "0"
 
-    {{- if .Values.profiseeRunTime.isPaaS }}
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
-    {{- end }}
-
+    nginx.org/proxy-buffering: "false"
+    nginx.org/proxy-buffers: "32 512k"
+    nginx.org/proxy-buffer-size: "512k"
+    nginx.org/proxy-busy-buffers-size: "512k"
+    
+    nginx.org/proxy-connect-timeout: "5400s"
+    nginx.org/proxy-read-timeout: "5400s"
+    nginx.org/proxy-send-timeout: "5400s"
+    nginx.org/websocket-services: "profisee-service"
+    
+    nginx.org/server-snippets: |
+      client_header_buffer_size 512k;
+      large_client_header_buffers 32 512k;
+      proxy_request_buffering off;
+      proxy_next_upstream off;
+      {{ if .Values.profiseeRunTime.useLetsEncrypt }}
+      set $redirect_https 1;
+      if ($scheme = https) {
+        set $redirect_https 0;
+      }
+      if ($request_uri ~* "^/\\.well-known/acme-challenge/") {
+        set $redirect_https 0;
+      }
+      if ($redirect_https = 1) {
+        return 301 https://$host$request_uri;
+      }
+      {{ end }}
+    
     {{- if .Values.profiseeRunTime.useLetsEncrypt }}
     cert-manager.io/cluster-issuer: letsencrypt
+    acme.cert-manager.io/http01-edit-in-place: "true"
+    ingress.kubernetes.io/ssl-redirect: "false"
     {{- end }}
 
 spec:
   ingressClassName: nginx
+  {{- if .Values.profiseeRunTime.isPaaS }}
   tls:
   - hosts:
     - {{.Values.profiseeRunTime.externalDnsName}}
     secretName: profisee-tls-ingress
+  {{- end }}  
   rules:
   - host: {{.Values.profiseeRunTime.externalDnsName}}
     http:
       paths:
       {{- if .Values.profiseeRunTime.isPaaS }}
-      - path: /(.*)
+      - path: /
       {{- else }}
-      - path: /{{.Values.profiseeRunTime.webAppName}}/?(.*)$
+      - path: /{{.Values.profiseeRunTime.webAppName}}
       {{- end }}
-        pathType: ImplementationSpecific
+        pathType: Prefix
         backend:
           service:
             name: profisee-service

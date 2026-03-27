@@ -1,8 +1,8 @@
 # **<span class="underline">Profisee Kubernetes</span>**
 
-This repository contains all the ways to deploy the Profisee platform to Kubernetes.
+This repository contains all the ways to deploy the Profisee platform.
 
-## AWS-ELS-CLI
+## AWS-EKS-CLI
 
 [Home](https://github.com/profisee/kubernetes/tree/master/AWS-EKS-CLI#deploy-profisee-platform-on-to-aws-elastic-kubernetes-services-eks) for all the scripts needed to deploy Profisee Platform to AWS EKS (Elastic Kubernetes services) via the aws cli.
 
