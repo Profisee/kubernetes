@@ -6,7 +6,7 @@ metadata:
   annotations:
     nginx.org/client-body-buffer-size: "512k"
     nginx.org/client-max-body-size: "0"
-    nginx.org/path-regex: "case_insensitive"
+
     nginx.org/proxy-buffering: "false"
     nginx.org/proxy-buffers: "32 512k"
     nginx.org/proxy-buffer-size: "512k"
