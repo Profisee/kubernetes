@@ -20,7 +20,7 @@ metadata:
     nginx.org/mergeable-ingress-type: "minion"
     nginx.org/path-regex: "case_insensitive"
     {{- end }}
-
+    {{- if .Values.profiseeRunTime.isPaaS }}
     nginx.org/server-snippets: |
       {{ if .Values.profiseeRunTime.useLetsEncrypt }}
       set $redirect_https 1;
@@ -34,6 +34,7 @@ metadata:
         return 301 https://$host$request_uri;
       }
       {{ end }}
+    {{- end }}  
 
     {{- if .Values.profiseeRunTime.useLetsEncrypt }}
     cert-manager.io/cluster-issuer: letsencrypt
@@ -65,3 +66,4 @@ spec:
             port:
               number: 80
 {{- end }}
+
