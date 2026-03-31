@@ -11,20 +11,17 @@ metadata:
     nginx.org/proxy-buffers: "32 512k"
     nginx.org/proxy-buffer-size: "512k"
     nginx.org/proxy-busy-buffers-size: "512k"
-    
+
     nginx.org/proxy-connect-timeout: "5400s"
     nginx.org/proxy-read-timeout: "5400s"
     nginx.org/proxy-send-timeout: "5400s"
     nginx.org/websocket-services: "profisee-service"
     {{- if not .Values.profiseeRunTime.isPaaS }}
     nginx.org/mergeable-ingress-type: "minion"
+    nginx.org/path-regex: "case_insensitive"
     {{- end }}
-    
+    {{- if .Values.profiseeRunTime.isPaaS }}
     nginx.org/server-snippets: |
-      client_header_buffer_size 512k;
-      large_client_header_buffers 32 512k;
-      proxy_request_buffering off;
-      proxy_next_upstream off;
       {{ if .Values.profiseeRunTime.useLetsEncrypt }}
       set $redirect_https 1;
       if ($scheme = https) {
@@ -37,7 +34,8 @@ metadata:
         return 301 https://$host$request_uri;
       }
       {{ end }}
-    
+    {{- end }}  
+
     {{- if .Values.profiseeRunTime.useLetsEncrypt }}
     cert-manager.io/cluster-issuer: letsencrypt
     acme.cert-manager.io/http01-edit-in-place: "true"
@@ -51,7 +49,7 @@ spec:
   - hosts:
     - {{.Values.profiseeRunTime.externalDnsName}}
     secretName: profisee-tls-ingress
-  {{- end }}  
+  {{- end }}
   rules:
   - host: {{.Values.profiseeRunTime.externalDnsName}}
     http:
@@ -59,7 +57,7 @@ spec:
       {{- if .Values.profiseeRunTime.isPaaS }}
       - path: /
       {{- else }}
-      - path: /{{.Values.profiseeRunTime.webAppName}}
+      - path: /{{.Values.profiseeRunTime.webAppName}}(?:/|$)
       {{- end }}
         pathType: Prefix
         backend:
@@ -68,3 +66,4 @@ spec:
             port:
               number: 80
 {{- end }}
+
