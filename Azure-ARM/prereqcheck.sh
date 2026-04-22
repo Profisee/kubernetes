@@ -140,7 +140,7 @@ if [ "$USEGOVERNANCE" = "azurePurview" ]; then
 	purviewtoken=$(curl --location --no-progress-meter --request GET "https://login.microsoftonline.com/$TENANTID/oauth2/token" --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "client_id=$PURVIEWCLIENTID" --data-urlencode "client_secret=$PURVIEWCLIENTSECRET" --data-urlencode 'grant_type=client_credentials' --data-urlencode 'resource=https://purview.azure.net' | jq --raw-output '.access_token');
 	#Strip /catalog from end of Purview URL
 	PURVIEWACCOUNTFQDN=${PURVIEWURL::-8}
-	collectionnamenotfound=$(curl --location --no-progress-meter --request GET "$PURVIEWACCOUNTFQDN/account/collections?api-version=2021-12-01" --header "Authorization: Bearer $purviewtoken" | jq --raw-output '.value | .[] | select(.friendlyName=="'$PURVIEWCOLLECTIONID'") | .name');
+	collectionnamenotfound=$(curl --location --no-progress-meter --request GET "$PURVIEWACCOUNTFQDN/account/collections?api-version=2019-11-01-preview" --header "Authorization: Bearer $purviewtoken" | jq --raw-output '.value | .[] | select(.friendlyName=="'$PURVIEWCOLLECTIONID'") | .name');
 	if [ -z "$collectionnamenotfound" ]; then
 		err=$"The "$PURVIEWCOLLECTIONID" collection name provided could NOT be found. Exiting with error."
 		echo $err
