@@ -7,6 +7,12 @@ controller:
   enableSnippets: true
   config:
     entries:
+      http-snippets: |
+        client_header_buffer_size 512k;
+        large_client_header_buffers 32 512k;
+      location-snippets: |
+        proxy_next_upstream off;
+        proxy_request_buffering off;
       server-tokens: "false"
   nodeSelector:
     kubernetes.io/os: linux
