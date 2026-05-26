@@ -50,6 +50,8 @@ PURVIEWCLIENTID=
 PURVIEWCLIENTSECRET=
 PURVIEWURL=
 PURVIEWCOLLECTIONID=
+#If using Purview and if Purview is in another tenant, then set these
+PURVIEWTENANTID=
 
 #If USEGOVERNANCE=alation, then set these
 ALATIONURL=

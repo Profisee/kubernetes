@@ -351,6 +351,20 @@
             "visible": "[equals(steps('profisee').UseGovernance,'azurePurview')]"
           },
           {
+            "name": "PurviewTenantId",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Purview Tenant ID",
+            "defaultValue": "",
+            "placeholder": "",
+            "toolTip": "If your Purview account is in a different tenant than the one you're deploying Profisee in, please provide the tenant ID of the tenant where Purview is. If Purview is in the same tenant, you can leave this blank.",
+            "constraints": {
+              "required": false,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[equals(steps('profisee').UseGovernance,'azurePurview')]"
+          },
+          {
             "name": "AlationUrl",
             "type": "Microsoft.Common.TextBox",
             "label": "Alation URL",
@@ -1124,6 +1138,7 @@
       "PurviewCollectionFriendlyName": "[if(equals(steps('profisee').UseGovernance, 'azurePurview'), steps('profisee').PurviewCollectionFriendlyName, '')]",
       "PurviewClientSecret": "[if(equals(steps('profisee').UseGovernance, 'azurePurview'), steps('profisee').PurviewClientSecret, '')]",
       "PurviewAccountResourceGroup": "[if(equals(steps('profisee').UseGovernance, 'azurePurview'), last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5)), '')]",
+      "PurviewTenantId": "[if(equals(steps('profisee').UseGovernance, 'azurePurview'), steps('profisee').PurviewTenantId, '')]",
       "AlationUrl": "[if(equals(steps('profisee').UseGovernance, 'alation'), steps('profisee').AlationUrl, '')]",
       "AlationUsername": "[if(equals(steps('profisee').UseGovernance, 'alation'), steps('profisee').AlationUsername, '')]",
       "AlationPassword": "[if(equals(steps('profisee').UseGovernance, 'alation'), steps('profisee').AlationPassword, '')]",
