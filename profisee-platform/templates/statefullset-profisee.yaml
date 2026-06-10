@@ -33,11 +33,13 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       nodeSelector:
       {{- if .Values.cloud.azure.isProvider }}
-          {{ if hasSuffix "win22" .Values.image.tag }}
+          {{- if hasSuffix "win25" .Values.image.tag }}
+            "kubernetes.azure.com/os-sku": Windows2025
+          {{- else if hasSuffix "win22" .Values.image.tag }}
             "kubernetes.azure.com/os-sku": Windows2022
-          {{ else }}
+          {{- else }}
             "kubernetes.azure.com/os-sku": Windows2019
-          {{ end }}
+          {{- end }}
       {{- end }}
       {{- if .Values.cloud.aws.isProvider }}
           "kubernetes.io/os": windows

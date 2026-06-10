@@ -3,9 +3,19 @@ entries:
   profisee-platform:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2026-03-27T09:16:25.9937319-04:00"
+    created: "2026-06-10T16:55:13.5556773-04:00"
     description: A Helm chart for Profisee Platform on Kubernetes
-    digest: b16e63b2ffce71b1a539a2ab94729577526b266c4fb8a8d891f9a8ae64d73647
+    digest: 73a2d1b7445ab3223d93c3425f54c9a238011784dab9abc7e5852f788d1e15fd
+    name: profisee-platform
+    type: application
+    urls:
+    - https://profisee.github.io/kubernetes/profisee-platform-0.1.44.tgz
+    version: 0.1.44
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2026-06-10T16:55:13.5551538-04:00"
+    description: A Helm chart for Profisee Platform on Kubernetes
+    digest: ae58de8074a1478a6ee16880564989d8ad03c8e5a1c84bfef224cfb88768be45
     name: profisee-platform
     type: application
     urls:
@@ -13,7 +23,7 @@ entries:
     version: 0.1.43
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2026-03-27T09:16:25.9923877-04:00"
+    created: "2026-06-10T16:55:13.5207401-04:00"
     description: A Helm chart for Profisee Platform on Kubernetes
     digest: dda6a1437ec3519b2582770771199d1e419bb8973f9fe0e0f7964a7b3b3aa1e0
     name: profisee-platform
@@ -23,7 +33,7 @@ entries:
     version: 0.1.42
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2026-03-27T09:16:25.9807516-04:00"
+    created: "2026-06-10T16:55:13.50031-04:00"
     description: A Helm chart for Profisee Platform on Kubernetes
     digest: b915699ae6b68a693e4b23f9dcc1d41b8146189450ea174d72b2c3068513f936
     name: profisee-platform
@@ -33,7 +43,7 @@ entries:
     version: 0.1.41
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2026-03-27T09:16:25.9690181-04:00"
+    created: "2026-06-10T16:55:13.4690539-04:00"
     description: A Helm chart for Profisee Platform on Kubernetes
     digest: d1d7d846810d840cd3832ad87a7a43d4392e012a7ec39c20a31db8a384cec75c
     name: profisee-platform
@@ -41,4 +51,4 @@ entries:
     urls:
     - https://profisee.github.io/kubernetes/profisee-platform-0.1.40.tgz
     version: 0.1.40
-generated: "2026-03-27T09:16:25.9527591-04:00"
+generated: "2026-06-10T16:55:13.4373236-04:00"

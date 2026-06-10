@@ -1080,7 +1080,7 @@
       "ActiveDirectoryCreateApp": "[steps('profisee').ActiveDirectoryCreateApp]",
       "ActiveDirectoryClientId": "[steps('profisee').UserSuppliedClientId.ActiveDirectoryClientId]",
       "ActiveDirectoryClientSecret": "[steps('profisee').UserSuppliedClientSecret.ActiveDirectoryClientSecret]",
-      "WindowsNodeVersion": "[if(contains(steps('profisee').ProfiseeVersion, '-win22'), 'Windows2022', 'Windows2019')]",
+      "WindowsNodeVersion": "[if(contains(steps('profisee').ProfiseeVersion, '-win22'), 'Windows2022', 'Windows2025')]",
       "KubernetesClusterName": "[steps('kubernetes').KubernetesClusterName]",
       "KubernetesVersion": "[steps('kubernetes').KubernetesVersion]",
       "KubenetesInfrastructureResourceGroupName": "[steps('kubernetes').KubenetesInfrastructureResourceGroupName]",
