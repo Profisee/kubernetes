@@ -479,7 +479,7 @@ case "$USEGOVERNANCE" in
 		GOVERNANCEPROVIDER="azurePurview"
 		echo "Obtain collection id from provided collection friendly name started.";
 		echo "Grab a token."
-		purviewtoken=$(curl --location --no-progress-meter --request GET "https://login.microsoftonline.com/$TENANTID/oauth2/token" --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "client_id=$PURVIEWCLIENTID" --data-urlencode "client_secret=$PURVIEWCLIENTSECRET" --data-urlencode 'grant_type=client_credentials' --data-urlencode 'resource=https://purview.azure.net'  | jq --raw-output '.access_token');
+		purviewtoken=$(curl --location --no-progress-meter --request GET "https://login.microsoftonline.com/$PURVIEWTENANTID/oauth2/token" --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "client_id=$PURVIEWCLIENTID" --data-urlencode "client_secret=$PURVIEWCLIENTSECRET" --data-urlencode 'grant_type=client_credentials' --data-urlencode 'resource=https://purview.azure.net'  | jq --raw-output '.access_token');
 		echo "Token acquired."
 		echo "Find collection Id.";
 		echo $"Stripping /catalog from $PURVIEWURL."
@@ -617,7 +617,7 @@ sed -i -e 's/$ACRREPONAME/'"$ACRREPONAME"'/g' Settings.yaml
 sed -i -e 's/$ACRREPOLABEL/'"$ACRREPOLABEL"'/g' Settings.yaml
 sed -i -e 's/$GOVERNANCEPROVIDER/'"$GOVERNANCEPROVIDER"'/g' Settings.yaml
 sed -i -e 's~$PURVIEWURL~'"$PURVIEWURL"'~g' Settings.yaml
-sed -i -e 's/$PURVIEWTENANTID/'"$TENANTID"'/g' Settings.yaml
+sed -i -e 's/$PURVIEWTENANTID/'"$PURVIEWTENANTID"'/g' Settings.yaml
 sed -i -e 's/$PURVIEWCOLLECTIONID/'"$COLLECTIONTRUEID"'/g' Settings.yaml
 sed -i -e 's/$PURVIEWCLIENTID/'"$PURVIEWCLIENTID"'/g' Settings.yaml
 sed -i -e 's/$PURVIEWCLIENTSECRET/'"$PURVIEWCLIENTSECRET"'/g' Settings.yaml

@@ -49,6 +49,10 @@
       "defaultValue": "",
       "type": "String"
     },
+    "PurviewTenantId": {
+      "defaultValue": "",
+      "type": "String"      
+    },
     "AlationUrl": {
       "defaultValue": "",
       "type": "String"
@@ -268,6 +272,7 @@
     "PurviewClientId":"[parameters('PurviewClientId')]",
     "PurviewClientSecret":"[parameters('PurviewClientSecret')]",
     "PurviewAccountResourceGroup":"[parameters('PurviewAccountResourceGroup')]",
+    "PurviewTenantId":"[if(and(equals(parameters('UseGovernance'), 'azurePurview'), equals(parameters('PurviewTenantId'), '')), subscription().tenantId, parameters('PurviewTenantId'))]",
     "AlationUrl":"[parameters('AlationUrl')]",
     "AlationUsername":"[parameters('AlationUsername')]",
     "AlationPassword":"[parameters('AlationPassword')]"
@@ -344,6 +349,10 @@
                     {
                         "name": "PURVIEWCLIENTSECRET",
                         "value": "[variables('PurviewClientSecret')]"
+                    },
+                    {
+                        "name": "PURVIEWTENANTID",
+                        "value": "[variables('PurviewTenantId')]"
                     }
                 ]
             }
@@ -841,6 +850,10 @@
                     {
                       "name": "PURVIEWACCOUNTRESOURCEGROUP",
                       "value": "[variables('PurviewAccountResourceGroup')]"
+                    },
+                    {
+                      "name": "PURVIEWTENANTID",
+                      "value": "[variables('PurviewTenantId')]"
                     },
                     {
                       "name": "ALATIONURL",
