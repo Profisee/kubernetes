@@ -38,6 +38,9 @@
         "PurviewClientSecret": {
             "value": ""
         },
+        "PurviewTenantID": {
+            "value": ""
+        },        
         "AlationUrl": {
             "value": ""
         },

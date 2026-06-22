@@ -479,7 +479,7 @@ case "$USEGOVERNANCE" in
 		GOVERNANCEPROVIDER="azurePurview"
 		echo "Obtain collection id from provided collection friendly name started.";
 		echo "Grab a token."
-		purviewtoken=$(curl --location --no-progress-meter --request GET "https://login.microsoftonline.com/$TENANTID/oauth2/token" --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "client_id=$PURVIEWCLIENTID" --data-urlencode "client_secret=$PURVIEWCLIENTSECRET" --data-urlencode 'grant_type=client_credentials' --data-urlencode 'resource=https://purview.azure.net'  | jq --raw-output '.access_token');
+		purviewtoken=$(curl --location --no-progress-meter --request GET "https://login.microsoftonline.com/$PURVIEWTENANTID/oauth2/token" --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "client_id=$PURVIEWCLIENTID" --data-urlencode "client_secret=$PURVIEWCLIENTSECRET" --data-urlencode 'grant_type=client_credentials' --data-urlencode 'resource=https://purview.azure.net'  | jq --raw-output '.access_token');
 		echo "Token acquired."
 		echo "Find collection Id.";
 		echo $"Stripping /catalog from $PURVIEWURL."
@@ -514,24 +514,24 @@ ACRREPOLABEL="${repostring[1],,}"
 
 #Installation of Azure File CSI Driver
 WINDOWS_NODE_VERSION="$(az aks show -n $CLUSTERNAME -g $RESOURCEGROUPNAME --query "agentPoolProfiles[1].osSku" -o tsv)"
-if [ "$WINDOWS_NODE_VERSION" = "Windows2019" ]; then
-	#Disable built-in AKS file driver, will install further down.
-	echo $"Disabling AKS Built-in CSI Driver to install Azure File CSI."
-	az aks update -n $CLUSTERNAME -g $RESOURCEGROUPNAME --disable-file-driver --yes
-	echo $"Installation of Azure File CSI Driver started. If present, we uninstall it first.";
-	azfilecsipresent=$(helm list -n kube-system -f azurefile-csi-driver -o table --short)
-	if [ "$azfilecsipresent" = "azurefile-csi-driver" ]; then
-		helm -n kube-system uninstall azurefile-csi-driver;
-		echo "Will sleep for 30 seconds to allow clean uninstall."
-		sleep 30;
-	fi
-	echo $"Adding Azure File CSI Driver repo."
-	helm repo add azurefile-csi-driver https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/charts
-	helm repo update azurefile-csi-driver
-	#Controller Replicas MUST be 2 in Prod, okay to be 1 in Dev (i.e. do NOT add --set controller.replica=1 in Prod). This is dependent on number of available Linux nodes in the nodepool. In Prod, it is minimum of 2, Dev is 1.
-	helm install azurefile-csi-driver azurefile-csi-driver/azurefile-csi-driver --namespace kube-system
-	echo $"Azure File CSI Driver installation finished."
-fi
+# if [ "$WINDOWS_NODE_VERSION" = "Windows2019" ]; then
+# 	#Disable built-in AKS file driver, will install further down.
+# 	echo $"Disabling AKS Built-in CSI Driver to install Azure File CSI."
+# 	az aks update -n $CLUSTERNAME -g $RESOURCEGROUPNAME --disable-file-driver --yes
+# 	echo $"Installation of Azure File CSI Driver started. If present, we uninstall it first.";
+# 	azfilecsipresent=$(helm list -n kube-system -f azurefile-csi-driver -o table --short)
+# 	if [ "$azfilecsipresent" = "azurefile-csi-driver" ]; then
+# 		helm -n kube-system uninstall azurefile-csi-driver;
+# 		echo "Will sleep for 30 seconds to allow clean uninstall."
+# 		sleep 30;
+# 	fi
+# 	echo $"Adding Azure File CSI Driver repo."
+# 	helm repo add azurefile-csi-driver https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/charts
+# 	helm repo update azurefile-csi-driver
+# 	#Controller Replicas MUST be 2 in Prod, okay to be 1 in Dev (i.e. do NOT add --set controller.replica=1 in Prod). This is dependent on number of available Linux nodes in the nodepool. In Prod, it is minimum of 2, Dev is 1.
+# 	helm install azurefile-csi-driver azurefile-csi-driver/azurefile-csi-driver --namespace kube-system --set controller.replicas=1
+# 	echo $"Azure File CSI Driver installation finished."
+# fi
 
 #Add AzureAD Claims and Pod Count
 OIDCNAME="Azure Active Directory"
@@ -617,7 +617,7 @@ sed -i -e 's/$ACRREPONAME/'"$ACRREPONAME"'/g' Settings.yaml
 sed -i -e 's/$ACRREPOLABEL/'"$ACRREPOLABEL"'/g' Settings.yaml
 sed -i -e 's/$GOVERNANCEPROVIDER/'"$GOVERNANCEPROVIDER"'/g' Settings.yaml
 sed -i -e 's~$PURVIEWURL~'"$PURVIEWURL"'~g' Settings.yaml
-sed -i -e 's/$PURVIEWTENANTID/'"$TENANTID"'/g' Settings.yaml
+sed -i -e 's/$PURVIEWTENANTID/'"$PURVIEWTENANTID"'/g' Settings.yaml
 sed -i -e 's/$PURVIEWCOLLECTIONID/'"$COLLECTIONTRUEID"'/g' Settings.yaml
 sed -i -e 's/$PURVIEWCLIENTID/'"$PURVIEWCLIENTID"'/g' Settings.yaml
 sed -i -e 's/$PURVIEWCLIENTSECRET/'"$PURVIEWCLIENTSECRET"'/g' Settings.yaml
