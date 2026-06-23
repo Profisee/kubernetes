@@ -290,7 +290,7 @@
             "type": "Microsoft.Common.TextBox",
             "label": "Purview Account Atlas endpoint",
             "defaultValue": "",
-            "placeholder": "THiS iS CaSe SenSiTiVe!",
+            "placeholder": "",
             "toolTip": "Please provide the Purview Atlas endpoint. it can be found under Properties",
             "constraints": {
               "required": true,
