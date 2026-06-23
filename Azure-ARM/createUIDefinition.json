@@ -132,8 +132,8 @@
                 },
                 {
                   "label": "2026r1.0-win22",
-                  "value": "profiseeplatform:2026r1.0-win22"                  
-                }                              
+                  "value": "profiseeplatform:2026r1.0-win22"
+                }
               ]
             },
             "visible": true
@@ -326,7 +326,7 @@
               "validationMessage": ""
             },
             "visible": "[equals(steps('profisee').UseGovernance,'azurePurview')]"
-          },          
+          },
           {
             "name": "PurviewClientID",
             "type": "Microsoft.Common.TextBox",
@@ -354,7 +354,7 @@
               "validationMessage": ""
             },
             "visible": "[equals(steps('profisee').UseGovernance,'azurePurview')]"
-          },          
+          },
           {
             "name": "AlationUrl",
             "type": "Microsoft.Common.TextBox",

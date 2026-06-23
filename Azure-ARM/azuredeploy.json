@@ -348,7 +348,7 @@
                     {
                         "name": "PURVIEWTENANTID",
                         "value": "[variables('PurviewTenantID')]"
-                    }                    
+                    }
                 ]
             }
         },
