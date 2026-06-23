@@ -132,7 +132,7 @@
                 },
                 {
                   "label": "2026r1.0-win22",
-                  "value": "profiseeplatform:2026r1.0-win22"                  
+                  "value": "profiseeplatform:2026r1.0-win22"
                 }
               ]
             },
@@ -287,24 +287,15 @@
           },
           {
             "name": "PurviewAccountName",
-            "type": "Microsoft.Solutions.ResourceSelector",
-            "label": "Select Purview Account",
-            "resourceType": "Microsoft.Purview/accounts",
-            "options": {
-              "filter": {
-                "subscription": "All",
-                "location": "All"
-              }
-            },
-            "visible": "[equals(steps('profisee').UseGovernance,'azurePurview')]"
-          },
-          {
-            "name": "GetPurviewUrlRestApiResponse",
-            "type": "Microsoft.Solutions.ArmApiControl",
-            "request": {
-              "method": "GET",
-              "path": "[concat(subscription().id,'/resourceGroups/',last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5)),'/providers/Microsoft.Purview/accounts/',steps('profisee').PurviewAccountName.name,'?api-version=2021-12-01')]",
-              "body": ""
+            "type": "Microsoft.Common.TextBox",
+            "label": "Purview Account Atlas endpoint",
+            "defaultValue": "",
+            "placeholder": "",
+            "toolTip": "Please provide the Purview Atlas endpoint. it can be found under Properties",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
             },
             "visible": "[equals(steps('profisee').UseGovernance,'azurePurview')]"
           },
@@ -315,6 +306,20 @@
             "defaultValue": "",
             "placeholder": "THiS iS CaSe SenSiTiVe!",
             "toolTip": "Please provide the Purview Collection Friendly Name that you see in your Purview account. Profisee will deploy to that collection. If you would like to deploy in the root collection, please specify its friendly name.",
+            "constraints": {
+              "required": true,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "visible": "[equals(steps('profisee').UseGovernance,'azurePurview')]"
+          },
+          {
+            "name": "PurviewTenantID",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Purview Tenant ID",
+            "defaultValue": "",
+            "placeholder": "",
+            "toolTip": "Please Provide Tenant ID for Purview specific application and paste its value here.",
             "constraints": {
               "required": true,
               "regex": "",
@@ -1119,11 +1124,11 @@
       "UseKeyVault": "[steps('profisee').UseKeyVault]",
       "KeyVault": "[steps('profisee').KeyVault.id]",
       "UseGovernance": "[steps('profisee').UseGovernance]",
-      "PurviewUrl": "[if(equals(steps('profisee').UseGovernance, 'azurePurview'), steps('profisee').GetPurviewUrlRestApiResponse.properties.endpoints.catalog, '')]",
+      "PurviewUrl": "[if(equals(steps('profisee').UseGovernance, 'azurePurview'), steps('profisee').PurviewAccountName, '')]",
       "PurviewClientId": "[if(equals(steps('profisee').UseGovernance, 'azurePurview'), steps('profisee').PurviewClientID, '')]",
       "PurviewCollectionFriendlyName": "[if(equals(steps('profisee').UseGovernance, 'azurePurview'), steps('profisee').PurviewCollectionFriendlyName, '')]",
       "PurviewClientSecret": "[if(equals(steps('profisee').UseGovernance, 'azurePurview'), steps('profisee').PurviewClientSecret, '')]",
-      "PurviewAccountResourceGroup": "[if(equals(steps('profisee').UseGovernance, 'azurePurview'), last(take(split(steps('profisee').PurviewAccountName.id, '/'), 5)), '')]",
+      "PurviewTenantID": "[if(equals(steps('profisee').UseGovernance, 'azurePurview'), steps('profisee').PurviewTenantID, '')]",
       "AlationUrl": "[if(equals(steps('profisee').UseGovernance, 'alation'), steps('profisee').AlationUrl, '')]",
       "AlationUsername": "[if(equals(steps('profisee').UseGovernance, 'alation'), steps('profisee').AlationUsername, '')]",
       "AlationPassword": "[if(equals(steps('profisee').UseGovernance, 'alation'), steps('profisee').AlationPassword, '')]",

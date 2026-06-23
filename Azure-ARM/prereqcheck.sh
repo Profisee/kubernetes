@@ -43,6 +43,7 @@ echo $"PURVIEWCLIENTID is $PURVIEWCLIENTID"
 echo $"ALATIONURL is $ALATIONURL"
 echo $"ALATIONUSERNAME is $ALATIONUSERNAME"
 echo $"TENANTID is $TENANTID"
+echo $"PURVIEWTENANTID is $PURVIEWTENANTID"
 
 IFS='/' read -r -a miparts <<< "$AZ_SCRIPTS_USER_ASSIGNED_IDENTITY" #splits the mi on slashes
 mirg=${miparts[4]}
@@ -113,41 +114,61 @@ fi
 # 1. Has the Purview Application Registration been added to the Data Curators role in the Purview account. If not, exit with error.
 # 2. Does the Purview Application Registartion have the proper permissions. If not, output warnings and continue.
 if [ "$USEGOVERNANCE" = "azurePurview" ]; then
+
+	echo "Governance is $USEGOVERNANCE"
+	if [ "$TENANTID" = "$PURVIEWTENANTID" ]; then
 	purviewClientPermissions=$(az ad app permission list --id $PURVIEWCLIENTID --output tsv --query [].resourceAccess[].id)
 
 	#Check if User.Read permission has been granted to the Purview specific Azure Application Registration.
-	if [[ $purviewClientPermissions != *"e1fe6dd8-ba31-4d61-89e7-88639da4683d"* ]]; then
-		echo "The Purview Azure AD application registration is missing the Microsoft Graph API User.Read delegated permission. Some governance features may not function until this permission is granted. This permission might require an Azure AD Global Admin consent. Please visit https://support.profisee.com/wikis/profiseeplatform/prerequisites_for_integrating_with_purview for more information. "
-	fi
+		if [[ $purviewClientPermissions != *"e1fe6dd8-ba31-4d61-89e7-88639da4683d"* ]]; then
+			echo "The Purview Azure AD application registration is missing the Microsoft Graph API User.Read delegated permission. Some governance features may not function until this permission is granted. This permission might require an Azure AD Global Admin consent. Please visit https://support.profisee.com/wikis/profiseeplatform/prerequisites_for_integrating_with_purview for more information. "
+		fi
 
-	#Check if User.Read.All permission has been granted to the Purview specific Azure Application Registration.
-	if [[ $purviewClientPermissions != *"df021288-bdef-4463-88db-98f22de89214"* ]]; then
-		echo "The Purview Azure AD application registration is missing the Microsoft Graph API User.Read.All application permission. Some governance features will not function until this permission is granted. This permission requires an Azure AD Global Admin consent. Please visit https://support.profisee.com/wikis/profiseeplatform/prerequisites_for_integrating_with_purview for more information."
-	fi
+		#Check if User.Read.All permission has been granted to the Purview specific Azure Application Registration.
+		if [[ $purviewClientPermissions != *"df021288-bdef-4463-88db-98f22de89214"* ]]; then
+			echo "The Purview Azure AD application registration is missing the Microsoft Graph API User.Read.All application permission. Some governance features will not function until this permission is granted. This permission requires an Azure AD Global Admin consent. Please visit https://support.profisee.com/wikis/profiseeplatform/prerequisites_for_integrating_with_purview for more information."
+		fi
 
-	#Check if Group.Read.All permission has been granted to the Purview specific Azure Application Registration.
-	if [[ $purviewClientPermissions != *"5b567255-7703-4780-807c-7be8301ae99b"* ]]; then
-		echo "The Purview Azure AD application registration is missing the Microsoft Graph API Group.Read.All application permission. Some governance features will not function until this permission is granted. This permission requires an Azure AD Global Admin consent. Please visit https://support.profisee.com/wikis/profiseeplatform/prerequisites_for_integrating_with_purview for more information."
-	fi
+		#Check if Group.Read.All permission has been granted to the Purview specific Azure Application Registration.
+		if [[ $purviewClientPermissions != *"5b567255-7703-4780-807c-7be8301ae99b"* ]]; then
+			echo "The Purview Azure AD application registration is missing the Microsoft Graph API Group.Read.All application permission. Some governance features will not function until this permission is granted. This permission requires an Azure AD Global Admin consent. Please visit https://support.profisee.com/wikis/profiseeplatform/prerequisites_for_integrating_with_purview for more information."
+		fi
 
-	#Check if GroupMember.Read.All permission has been granted to the Purview specific Azure Application Registration.
-	if [[ $purviewClientPermissions != *"98830695-27a2-44f7-8c18-0c3ebc9698f6"* ]]; then
-		echo "The Purview Azure AD application registration is missing the Microsoft Graph API GroupMember.Read.All application permission. Some governance features will not function until this permission is granted. This permission requires an Azure AD Global Admin consent. Please visit https://support.profisee.com/wikis/profiseeplatform/prerequisites_for_integrating_with_purview for more information."
-	fi
+		#Check if GroupMember.Read.All permission has been granted to the Purview specific Azure Application Registration.
+		if [[ $purviewClientPermissions != *"98830695-27a2-44f7-8c18-0c3ebc9698f6"* ]]; then
+			echo "The Purview Azure AD application registration is missing the Microsoft Graph API GroupMember.Read.All application permission. Some governance features will not function until this permission is granted. This permission requires an Azure AD Global Admin consent. Please visit https://support.profisee.com/wikis/profiseeplatform/prerequisites_for_integrating_with_purview for more information."
+		fi
+
 	#Check if the provided Purview Collection name exists.
 	#Acquire token
-	echo "Checking if provided Purview collection friendly name exists."
-	purviewtoken=$(curl --location --no-progress-meter --request GET "https://login.microsoftonline.com/$TENANTID/oauth2/token" --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "client_id=$PURVIEWCLIENTID" --data-urlencode "client_secret=$PURVIEWCLIENTSECRET" --data-urlencode 'grant_type=client_credentials' --data-urlencode 'resource=https://purview.azure.net' | jq --raw-output '.access_token');
-	#Strip /catalog from end of Purview URL
-	PURVIEWACCOUNTFQDN=${PURVIEWURL::-8}
-	collectionnamenotfound=$(curl --location --no-progress-meter --request GET "$PURVIEWACCOUNTFQDN/account/collections?api-version=2019-11-01-preview" --header "Authorization: Bearer $purviewtoken" | jq --raw-output '.value | .[] | select(.friendlyName=="'$PURVIEWCOLLECTIONID'") | .name');
-	if [ -z "$collectionnamenotfound" ]; then
-		err=$"The "$PURVIEWCOLLECTIONID" collection name provided could NOT be found. Exiting with error."
-		echo $err
-		set_resultAndReturn;
-	else
-		echo $"The "$PURVIEWCOLLECTIONID" collection name provided was found. Continuing checks."
+		echo "Checking if provided Purview collection friendly name exists."
+		purviewtoken=$(curl --location --no-progress-meter --request GET "https://login.microsoftonline.com/$TENANTID/oauth2/token" --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "client_id=$PURVIEWCLIENTID" --data-urlencode "client_secret=$PURVIEWCLIENTSECRET" --data-urlencode 'grant_type=client_credentials' --data-urlencode 'resource=https://purview.azure.net' | jq --raw-output '.access_token');
+		#Strip /catalog from end of Purview URL
+		PURVIEWACCOUNTFQDN=${PURVIEWURL::-8}
+		collectionnamenotfound=$(curl --location --no-progress-meter --request GET "$PURVIEWACCOUNTFQDN/account/collections?api-version=2019-11-01-preview" --header "Authorization: Bearer $purviewtoken" | jq --raw-output '.value | .[] | select(.friendlyName=="'$PURVIEWCOLLECTIONID'") | .name');
+		if [ -z "$collectionnamenotfound" ]; then
+			err=$"The "$PURVIEWCOLLECTIONID" collection name provided could NOT be found. Exiting with error."
+			echo $err
+			set_resultAndReturn;
+		else
+			echo $"The "$PURVIEWCOLLECTIONID" collection name provided was found. Continuing checks."
+			echo $"CollectionID is $collectionnamenotfound"
+		fi
 	fi
+		echo "Checking if provided Purview collection friendly name exists."
+		purviewtoken=$(curl --location --no-progress-meter --request GET "https://login.microsoftonline.com/$PURVIEWTENANTID/oauth2/token" --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "client_id=$PURVIEWCLIENTID" --data-urlencode "client_secret=$PURVIEWCLIENTSECRET" --data-urlencode 'grant_type=client_credentials' --data-urlencode 'resource=https://purview.azure.net' | jq --raw-output '.access_token');
+		#Strip /catalog from end of Purview URL
+		PURVIEWACCOUNTFQDN=${PURVIEWURL::-8}
+		collectionnamenotfound=$(curl --location --no-progress-meter --request GET "$PURVIEWACCOUNTFQDN/account/collections?api-version=2019-11-01-preview" --header "Authorization: Bearer $purviewtoken" | jq --raw-output '.value | .[] | select(.friendlyName=="'$PURVIEWCOLLECTIONID'") | .name');
+		if [ -z "$collectionnamenotfound" ]; then
+			err=$"The "$PURVIEWCOLLECTIONID" collection name provided could NOT be found. Exiting with error."
+			echo $err
+			set_resultAndReturn;
+		else
+			echo $"The "$PURVIEWCOLLECTIONID" collection name provided was found. Continuing checks."
+			echo $"CollectionID is $collectionnamenotfound"
+		fi
+
 fi
 
 #If using Key Vault, checks to make sure that the Deployment Managed Identity has been assigned the Managed Identity Contributor role AND User Access Administrator as Subscription level.

@@ -38,6 +38,9 @@
         "PurviewClientSecret": {
             "value": ""
         },
+        "PurviewTenantID": {
+            "value": ""
+        },
         "AlationUrl": {
             "value": ""
         },
@@ -152,7 +155,7 @@
         },
         "WindowsNodeVersion":{
             "value": ""
-        },    
+        },
         "AuthenticationType":{
             "value": ""
         },
