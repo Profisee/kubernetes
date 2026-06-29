@@ -364,8 +364,25 @@ echo $"WEBAPPNAME is $WEBAPPNAME";
 WEBAPPNAME="${WEBAPPNAME,,}"
 echo $"WEBAPPNAME is now lower $WEBAPPNAME";
 
+#PROFISEEVERSION looks like this profiseeplatform:2023R1.0
+#The repository name is profiseeplatform, it is everything to the left of the colon sign :
+#The label is everything to the right of the :
+
+IFS=':' read -r -a repostring <<< "$PROFISEEVERSION"
+
+#lowercase is the ,,
+ACRREPONAME="${repostring[0],,}";
+ACRREPOLABEL="${repostring[1],,}"
+
+if [[ "$ACRREPOLABEL" == *"2026r2"* ]]; then
+    azureAppReplyUrl="${EXTERNALDNSURL}/${WEBAPPNAME}/auth/federation/entra/signin"
+else
+    azureAppReplyUrl="${EXTERNALDNSURL}/${WEBAPPNAME}/auth/signin-microsoft"
+fi
+
+echo $azureAppReplyUrl
+
 #Create the Azure app id (clientid)
-azureAppReplyUrl="${EXTERNALDNSURL}/${WEBAPPNAME}/auth/signin-microsoft"
 if [ "$UPDATEAAD" = "Yes" ]; then
 	echo "Update of Azure Active Directory started. Now we will create the Azure AD Application registration.";
 	azureClientName="${RESOURCEGROUPNAME}_${CLUSTERNAME}";
@@ -502,15 +519,6 @@ echo "The variables will now be set in the Settings.yaml file"
 FILEREPOUSERNAME="Azure\\\\\\\\${STORAGEACCOUNTNAME}"
 FILEREPOURL="\\\\\\\\\\\\\\\\${STORAGEACCOUNTNAME}.file.core.windows.net\\\\\\\\${STORAGEACCOUNTFILESHARENAME}"
 
-#PROFISEEVERSION looks like this profiseeplatform:2023R1.0
-#The repository name is profiseeplatform, it is everything to the left of the colon sign :
-#The label is everything to the right of the :
-
-IFS=':' read -r -a repostring <<< "$PROFISEEVERSION"
-
-#lowercase is the ,,
-ACRREPONAME="${repostring[0],,}";
-ACRREPOLABEL="${repostring[1],,}"
 
 #Installation of Azure File CSI Driver
 WINDOWS_NODE_VERSION="$(az aks show -n $CLUSTERNAME -g $RESOURCEGROUPNAME --query "agentPoolProfiles[1].osSku" -o tsv)"
@@ -534,7 +542,7 @@ WINDOWS_NODE_VERSION="$(az aks show -n $CLUSTERNAME -g $RESOURCEGROUPNAME --quer
 # fi
 
 #Add AzureAD Claims and Pod Count
-OIDCNAME="Azure Active Directory"
+OIDCNAME="entra"
 OIDCCMUserName="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
 OIDCCMUserID="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
 OIDCCMFirstName="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
