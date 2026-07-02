@@ -374,11 +374,7 @@ IFS=':' read -r -a repostring <<< "$PROFISEEVERSION"
 ACRREPONAME="${repostring[0],,}";
 ACRREPOLABEL="${repostring[1],,}"
 
-if [[ "$ACRREPOLABEL" == *"2026r2"* ]]; then
-    azureAppReplyUrl="${EXTERNALDNSURL}/${WEBAPPNAME}/auth/federation/entra/signin"
-else
-    azureAppReplyUrl="${EXTERNALDNSURL}/${WEBAPPNAME}/auth/signin-microsoft"
-fi
+azureAppReplyUrl="${EXTERNALDNSURL}/${WEBAPPNAME}/auth/federation/Azure%20Active%20Directory/signin"
 
 echo $azureAppReplyUrl
 
@@ -542,7 +538,7 @@ WINDOWS_NODE_VERSION="$(az aks show -n $CLUSTERNAME -g $RESOURCEGROUPNAME --quer
 # fi
 
 #Add AzureAD Claims and Pod Count
-OIDCNAME="entra"
+OIDCNAME="Azure Active Directory"
 OIDCCMUserName="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
 OIDCCMUserID="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
 OIDCCMFirstName="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
