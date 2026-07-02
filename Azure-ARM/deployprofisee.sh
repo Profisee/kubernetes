@@ -364,16 +364,6 @@ echo $"WEBAPPNAME is $WEBAPPNAME";
 WEBAPPNAME="${WEBAPPNAME,,}"
 echo $"WEBAPPNAME is now lower $WEBAPPNAME";
 
-#PROFISEEVERSION looks like this profiseeplatform:2023R1.0
-#The repository name is profiseeplatform, it is everything to the left of the colon sign :
-#The label is everything to the right of the :
-
-IFS=':' read -r -a repostring <<< "$PROFISEEVERSION"
-
-#lowercase is the ,,
-ACRREPONAME="${repostring[0],,}";
-ACRREPOLABEL="${repostring[1],,}"
-
 azureAppReplyUrl="${EXTERNALDNSURL}/${WEBAPPNAME}/auth/federation/Azure%20Active%20Directory/signin"
 
 echo $azureAppReplyUrl
@@ -515,6 +505,15 @@ echo "The variables will now be set in the Settings.yaml file"
 FILEREPOUSERNAME="Azure\\\\\\\\${STORAGEACCOUNTNAME}"
 FILEREPOURL="\\\\\\\\\\\\\\\\${STORAGEACCOUNTNAME}.file.core.windows.net\\\\\\\\${STORAGEACCOUNTFILESHARENAME}"
 
+#PROFISEEVERSION looks like this profiseeplatform:2023R1.0
+#The repository name is profiseeplatform, it is everything to the left of the colon sign :
+#The label is everything to the right of the :
+
+IFS=':' read -r -a repostring <<< "$PROFISEEVERSION"
+
+#lowercase is the ,,
+ACRREPONAME="${repostring[0],,}";
+ACRREPOLABEL="${repostring[1],,}"
 
 #Installation of Azure File CSI Driver
 WINDOWS_NODE_VERSION="$(az aks show -n $CLUSTERNAME -g $RESOURCEGROUPNAME --query "agentPoolProfiles[1].osSku" -o tsv)"
