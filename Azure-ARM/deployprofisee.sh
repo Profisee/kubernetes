@@ -364,8 +364,11 @@ echo $"WEBAPPNAME is $WEBAPPNAME";
 WEBAPPNAME="${WEBAPPNAME,,}"
 echo $"WEBAPPNAME is now lower $WEBAPPNAME";
 
+azureAppReplyUrl="${EXTERNALDNSURL}/${WEBAPPNAME}/auth/federation/Azure%20Active%20Directory/signin"
+
+echo $azureAppReplyUrl
+
 #Create the Azure app id (clientid)
-azureAppReplyUrl="${EXTERNALDNSURL}/${WEBAPPNAME}/auth/signin-microsoft"
 if [ "$UPDATEAAD" = "Yes" ]; then
 	echo "Update of Azure Active Directory started. Now we will create the Azure AD Application registration.";
 	azureClientName="${RESOURCEGROUPNAME}_${CLUSTERNAME}";
