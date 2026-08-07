@@ -99,7 +99,7 @@ spec:
                 - powershell
                 - -Command
                 - |-
-                  Start-Sleep -Seconds 30; foreach ($script in @("forensics_log_pull.ps1", "Collect-ProfiseeDiagnostics.ps1")) {
+                  Start-Sleep -Seconds 30; foreach ($script in @("forensics_log_pull.ps1")) {
                     Remove-Item -Path ".\Fileshare\$script" -Force -ErrorAction SilentlyContinue;
                     $url = "https://raw.githubusercontent.com/profisee/kubernetes/master/Azure-ARM/$script";
                     $out = ".\Fileshare\$script";
@@ -127,7 +127,7 @@ spec:
                   try {
                     if (Test-Path $script) {
                       Write-Host "Running forensics_log_pull.ps1";
-                      & $script;
+                      & $script -InstallRoot 'C:\Profisee\' -PreStop;
                       Write-Host "forensics_log_pull.ps1 completed";
                     }
                     else {
