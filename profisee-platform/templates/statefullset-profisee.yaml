@@ -127,7 +127,7 @@ spec:
                   try {
                     if (Test-Path $script) {
                       Write-Host "Running forensics_log_pull.ps1";
-                      & $script;
+                      & $script -InstallRoot 'C:\Profisee\' -PreStop;
                       Write-Host "forensics_log_pull.ps1 completed";
                     }
                     else {
