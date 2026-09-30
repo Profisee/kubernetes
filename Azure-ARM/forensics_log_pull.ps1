@@ -16,15 +16,22 @@
     credentials are never written to disk (config files are copied with their values
     still encrypted).
 
+    Install layout is detected at runtime, so one script covers every current
+    release. Through release 26.2 the Master Data Maestro host runs as a standalone
+    Windows service; from release 26.3 that host is served by IIS out of the
+    '<site>-api' application pool and no host service exists. Discovery, process
+    scoping, health probing and the app-pool/service checks adapt to whichever
+    layout is present, and the one found is recorded in the bundle
+    (01_Processes\host_topology.txt and manifest.json).
+
 .PARAMETER OutputPath
-    Folder the final ZIP is written to. Default: C:\Fileshare\alllogs
-    (the same drop location forensics_log_pull.ps1 uses). Created if missing.
+    Folder the final ZIP is written to. Default: C:\Fileshare\alllogs. Created
+    if missing.
 
 .PARAMETER WebAppName
     Web-app / environment name used in the ZIP file name. Takes precedence over
     the ProfiseeWebAppName environment variable; falls back to 'Profisee'. The
-    ZIP is named <WebAppName>-<hostname>-All-Logs-<date>.zip to match
-    forensics_log_pull.ps1's convention.
+    ZIP is named <WebAppName>-<hostname>-All-Logs-<date>.zip.
 
 .PARAMETER InstallRoot
     Profisee install root (the folder containing Services, Gateway, Configuration).
@@ -41,9 +48,7 @@
 
 .PARAMETER RetentionDays
     After writing the new ZIP, delete *-All-Logs-*.zip bundles in -OutputPath
-    older than this many days. Default 30 (matches forensics_log_pull.ps1). Set
-    to 0 to disable pruning. Note: with the shared naming convention this also
-    prunes forensics_log_pull.ps1 bundles in the same folder, by design.
+    older than this many days. Default 30. Set to 0 to disable pruning.
 
 .PARAMETER ProcessScope
     Which processes the process/dump/IIS collectors capture on a host with more
@@ -107,21 +112,22 @@
     lowers it to 3000 unless you pass a value.
 
 .EXAMPLE
-    .\Collect-ProfiseeDiagnostics.ps1
+    .\forensics_log_pull.ps1
 
 .EXAMPLE
-    .\Collect-ProfiseeDiagnostics.ps1 -IncludeDumps -HoursBack 48
+    .\forensics_log_pull.ps1 -IncludeDumps -HoursBack 48
 
 .EXAMPLE
     # On-prem / Windows-auth install: connect to SQL as the current account.
-    .\Collect-ProfiseeDiagnostics.ps1 -SqlIntegratedSecurity -SqlServer '.\MSSQLSERVER16' -SqlDatabase 'Profisee26R2'
+    .\forensics_log_pull.ps1 -SqlIntegratedSecurity -SqlServer '.\MSSQLSERVER16' -SqlDatabase 'Profisee26R2'
 
 .EXAMPLE
     # Kubernetes preStop hook (60s grace period), run by an already-elevated identity:
-    powershell -NoProfile -ExecutionPolicy Bypass -File C:\Profisee\Collect-ProfiseeDiagnostics.ps1 -PreStop
+    powershell -NoProfile -ExecutionPolicy Bypass -File C:\Profisee\forensics_log_pull.ps1 -PreStop
 
 .NOTES
-    Version 1.0. Designed for Windows PowerShell 5.1 (also runs in PowerShell 7).
+    Version 1.1. Designed for Windows PowerShell 5.1 (also runs in PowerShell 7).
+    Covers Profisee releases through 26.3 (Windows-service and '-api' app pool hosts).
 #>
 
 [CmdletBinding()]
@@ -149,7 +155,7 @@ param(
     [int]    $HealthTimeoutMs   = 10000
 )
 
-$ScriptVersion = '1.0'
+$ScriptVersion = '1.1'
 $ErrorActionPreference = 'Stop'
 
 # ---------------------------------------------------------------------------
@@ -237,7 +243,89 @@ function Test-InstallRoot {
            (Test-Path (Join-Path $Path 'Configuration'))
 }
 
+function Get-InstallRootFromPath {
+    # Walk up from a file or folder path to the install root that contains it.
+    # Runs during discovery, before the collection log exists, so a malformed path
+    # from WMI/IIS must return "no match" rather than abort the whole run.
+    param([string]$Path)
+    if ([string]::IsNullOrWhiteSpace($Path)) { return $null }
+    try {
+        $dir = $Path
+        if (Test-Path $dir -PathType Leaf -ErrorAction SilentlyContinue) { $dir = Split-Path $dir -Parent }
+        while ($dir -and -not (Test-InstallRoot $dir)) { $dir = Split-Path $dir -Parent }
+        if (Test-InstallRoot $dir) { return $dir }
+    } catch {}
+    return $null
+}
+
+function Get-ServiceImagePath {
+    # Strip quoting/arguments off a Win32_Service PathName to get the bare image.
+    param([string]$PathName)
+    if ([string]::IsNullOrWhiteSpace($PathName)) { return $null }
+    if ($PathName -match '^\s*"([^"]+)"')   { return $Matches[1] }
+    if ($PathName -match '^\s*(\S+\.exe)')  { return $Matches[1] }
+    return $PathName.Trim()
+}
+
+function Find-InstallRootFromProcess {
+    # Cheapest signal: a running Profisee image names its own location.
+    # Profisee.MasterDataMaestro.Host.exe only exists through release 26.2 - from
+    # 26.3 that host runs inside w3wp, so the other images (and the service/IIS
+    # fallbacks below) are what find the install there.
+    foreach ($pname in @('Profisee.Platform.Gateway.Api',
+                         'Profisee.MasterDataMaestro.Host',
+                         'Profisee.MasterDataMaestro.WebPortal',
+                         'Profisee.MasterDataMaestro.Services.Configuration',
+                         'Profisee.Platform.Auth.Service.Api')) {
+        $p = Get-CimInstance Win32_Process -Filter "Name='$pname.exe'" -ErrorAction SilentlyContinue |
+             Select-Object -First 1
+        if ($p -and $p.ExecutablePath) {
+            $root = Get-InstallRootFromPath $p.ExecutablePath
+            if ($root) { return $root }
+        }
+    }
+    return $null
+}
+
+function Find-InstallRootFromService {
+    # A registered Profisee service knows its image path even while stopped - the
+    # likely state when this script is run during a fault, and the case the process
+    # scan above misses.
+    try {
+        foreach ($svc in @(Get-CimInstance Win32_Service -ErrorAction Stop |
+                           Where-Object { $_.PathName -match 'Profisee' })) {
+            $root = Get-InstallRootFromPath (Get-ServiceImagePath $svc.PathName)
+            if ($root) { return $root }
+        }
+    } catch {}
+    return $null
+}
+
+function Find-InstallRootFromIis {
+    # From release 26.3 the Maestro host is the '<site>-api' application pool rather
+    # than a Windows service, so on a stopped/failed install there may be no Profisee
+    # process or service left to discover from - but IIS still knows the physical
+    # path. Prefer the '/api' application, which is that host.
+    if (-not (Test-Path (Join-Path $env:windir 'system32\inetsrv\appcmd.exe'))) { return $null }
+    try {
+        $apiRoot = $null; $anyRoot = $null
+        foreach ($line in (Invoke-Appcmd 'list vdir')) {
+            if ($line -notmatch '^VDIR\s+"([^"]+)"\s+\(physicalPath:(.*)\)\s*$') { continue }
+            $appPath = $Matches[1].TrimEnd('/')
+            $phys    = [Environment]::ExpandEnvironmentVariables($Matches[2].Trim())
+            $root    = Get-InstallRootFromPath $phys
+            if (-not $root) { continue }
+            if (-not $anyRoot) { $anyRoot = $root }
+            if (-not $apiRoot -and $appPath -match '/api$') { $apiRoot = $root }
+        }
+        if ($apiRoot) { return $apiRoot }
+        if ($anyRoot) { return $anyRoot }
+    } catch {}
+    return $null
+}
+
 $explicitInstallRoot = $PSBoundParameters.ContainsKey('InstallRoot')
+$script:InstallRootSource = if ($explicitInstallRoot) { 'Parameter' } else { 'Script folder' }
 if (-not (Test-InstallRoot $InstallRoot)) {
     # An explicitly supplied -InstallRoot that fails validation is a hard error:
     # never silently collect from a different location than the operator asked for.
@@ -246,24 +334,23 @@ if (-not (Test-InstallRoot $InstallRoot)) {
                "(it must contain both 'Services' and 'Configuration' subfolders). " +
                "Aborting instead of falling back to a different location.")
     }
-    # Otherwise (defaulted from the script folder), discover the root from a
-    # running Profisee process image.
+    # Otherwise (defaulted from the script folder), discover the root: running
+    # process first, then registered service, then IIS. The last two matter from
+    # release 26.3, where the Maestro host has no process or service of its own.
     $discovered = $null
-    foreach ($pname in @('Profisee.Platform.Gateway.Api',
-                         'Profisee.MasterDataMaestro.Host')) {
-        $p = Get-CimInstance Win32_Process -Filter "Name='$pname.exe'" -ErrorAction SilentlyContinue |
-             Select-Object -First 1
-        if ($p -and $p.ExecutablePath) {
-            $dir = Split-Path $p.ExecutablePath -Parent
-            while ($dir -and -not (Test-InstallRoot $dir)) { $dir = Split-Path $dir -Parent }
-            if (Test-InstallRoot $dir) { $discovered = $dir; break }
-        }
+    foreach ($finder in @(
+        @{ Name = 'running process'; Find = { Find-InstallRootFromProcess } },
+        @{ Name = 'Windows service'; Find = { Find-InstallRootFromService } },
+        @{ Name = 'IIS application'; Find = { Find-InstallRootFromIis } })) {
+        $discovered = & $finder.Find
+        if ($discovered) { $script:InstallRootSource = $finder.Name; break }
     }
     if ($discovered) {
         $InstallRoot = $discovered
     } else {
-        throw ("Could not locate a Profisee install root (script folder is not an install root " +
-               "and no running Profisee process was found). Pass a valid -InstallRoot explicitly.")
+        throw ("Could not locate a Profisee install root (script folder is not an install root, " +
+               "and no running Profisee process, Profisee Windows service or Profisee IIS " +
+               "application was found). Pass a valid -InstallRoot explicitly.")
     }
 }
 $InstallRoot = (Resolve-Path $InstallRoot).Path
@@ -273,7 +360,7 @@ $InstallRoot = (Resolve-Path $InstallRoot).Path
 # ---------------------------------------------------------------------------
 $stamp    = Get-Date -Format 'yyyyMMdd_HHmmss'
 $hostName = $env:COMPUTERNAME
-# ZIP file name aligned with forensics_log_pull.ps1: <WebAppName>-<host>-All-Logs-<DT>.zip
+# ZIP file name aligned with old forensics_log_pull.ps1: <WebAppName>-<host>-All-Logs-<DT>.zip
 $webApp = if ($WebAppName) { $WebAppName } elseif ($env:ProfiseeWebAppName) { $env:ProfiseeWebAppName } else { 'Profisee' }
 if ($webApp.Length -ge 1) { $webApp = $webApp.Substring(0,1).ToUpper() + $webApp.Substring(1) }
 $dt        = Get-Date -UFormat '%m-%d-%Y-%H%M%S-UTC-%a'
@@ -345,7 +432,7 @@ function Invoke-Collector {
 function Save-Text { param([string]$Path, $Content) $Content | Out-File -FilePath $Path -Encoding UTF8 -Width 4096 }
 
 Write-Log "Profisee diagnostics collector v$ScriptVersion"
-Write-Log "InstallRoot   : $InstallRoot"
+Write-Log "InstallRoot   : $InstallRoot (found via $($script:InstallRootSource))"
 Write-Log "Staging       : $stageRoot"
 Write-Log "Output ZIP    : $zipPath"
 Write-Log "Options       : ProcessScope=$ProcessScope HoursBack=$HoursBack MaxLogAgeDays=$MaxLogAgeDays IncludeDumps=$IncludeDumps SkipSql=$SkipSql SkipConfigs=$SkipConfigs PreStop=$PreStop TimeBudgetSeconds=$TimeBudgetSeconds HealthTimeoutMs=$HealthTimeoutMs"
@@ -354,36 +441,9 @@ $overall = [System.Diagnostics.Stopwatch]::StartNew()
 $script:Deadline = if ($TimeBudgetSeconds -gt 0) { (Get-Date).AddSeconds($TimeBudgetSeconds) } else { $null }
 if ($script:Deadline) { Write-Log ("Time budget   : {0}s (reserve {1}s for packaging)" -f $TimeBudgetSeconds, $script:PackReserveSec) }
 
-# ===========================================================================
-# PHASE 0 - Run manifest / environment header
-# ===========================================================================
-Invoke-Collector 'Manifest' {
-    $os  = Get-CimInstance Win32_OperatingSystem
-    $cs  = Get-CimInstance Win32_ComputerSystem
-    $man = [ordered]@{
-        CollectedAtLocal = (Get-Date).ToString('o')
-        CollectedAtUtc   = (Get-Date).ToUniversalTime().ToString('o')
-        ScriptVersion    = $ScriptVersion
-        Operator         = "$env:USERDOMAIN\$env:USERNAME"
-        ComputerName     = $hostName
-        InstallRoot      = $InstallRoot
-        OS               = $os.Caption
-        OSVersion        = $os.Version
-        LastBootUpTime   = $os.LastBootUpTime.ToString('o')
-        UptimeHours      = [math]::Round(((Get-Date) - $os.LastBootUpTime).TotalHours,1)
-        TotalMemoryGB    = [math]::Round($cs.TotalPhysicalMemory/1GB,1)
-        LogicalProcessors= $cs.NumberOfLogicalProcessors
-        PSVersion        = $PSVersionTable.PSVersion.ToString()
-        TimeZone         = (Get-TimeZone).Id
-        Options          = @{ ProcessScope=$ProcessScope; HoursBack=$HoursBack; MaxLogAgeDays=$MaxLogAgeDays;
-                              IncludeDumps=[bool]$IncludeDumps; SkipSql=[bool]$SkipSql;
-                              SkipConfigs=[bool]$SkipConfigs; PreStop=[bool]$PreStop;
-                              TimeBudgetSeconds=$TimeBudgetSeconds; HealthTimeoutMs=$HealthTimeoutMs }
-    }
-    $man | ConvertTo-Json -Depth 5 | Out-File (Join-Path $stageRoot 'manifest.json') -Encoding UTF8
-}
-
-# Known Profisee process image names (without .exe) + the IIS worker.
+# Known Profisee process image names (without .exe) + the IIS worker. From release
+# 26.3 the Maestro host has no image of its own - it is served by IIS from the
+# '<site>-api' application pool - so there w3wp is what represents it.
 $profiseeProcNames = @(
     'Profisee.MasterDataMaestro.Host',
     'Profisee.MasterDataMaestro.WebPortal',
@@ -503,19 +563,123 @@ function Get-InstallSiteToken {
     # Fallback when IIS metadata is unavailable: derive the site path segment
     # (e.g. 'profisee26r2') from this install's config so w3wp pools that embed
     # the site name can still be matched by substring.
+    # Only one config in the install carries the health URLs, and it is not
+    # reliably the first one enumerated, so keep looking until one yields a token.
     param([string]$Root)
-    $cfg = Get-ChildItem $Root -Recurse -Filter 'appsettings.json' -ErrorAction SilentlyContinue |
-           Select-Object -First 1
-    if (-not $cfg) { return $null }
-    try {
-        $j = Get-Content $cfg.FullName -Raw | ConvertFrom-Json
-        foreach ($prop in $j.ProfiseeAppSettings.PSObject.Properties) {
-            if ($prop.Name -like '*HealthUrl' -and $prop.Value -match 'https?://[^/]+/([^/]+)/') {
-                return $Matches[1].ToLower()
+    foreach ($cfg in @(Get-ChildItem $Root -Recurse -Filter 'appsettings.json' -ErrorAction SilentlyContinue)) {
+        try {
+            $j = Get-Content $cfg.FullName -Raw | ConvertFrom-Json
+            if (-not $j.ProfiseeAppSettings) { continue }
+            foreach ($prop in $j.ProfiseeAppSettings.PSObject.Properties) {
+                if ($prop.Name -like '*HealthUrl' -and $prop.Value -match 'https?://[^/]+/([^/]+)/') {
+                    return $Matches[1].ToLower()
+                }
             }
-        }
-    } catch {}
+        } catch {}
+    }
     return $null
+}
+
+function Get-MaestroApiApplication {
+    # This install's '/api' IIS application. Every current release has one, so its
+    # existence proves nothing - what changed in 26.3 is what sits behind it:
+    #   through 26.2 : a thin web app at <root>\Web, fronting the Maestro host,
+    #                  which is a separate Windows service.
+    #   from 26.3    : the host itself is published here, so the physical path is
+    #                  the host's own folder under <root>\Services and no host
+    #                  service is registered.
+    param([string]$Root)
+    $apps = @(Get-IisApplications | Where-Object { $_.PhysicalPath -like "$Root*" })
+    if (-not $apps.Count) { return $null }
+    $api = @($apps | Where-Object { $_.AppPath -match '/api$' }) | Select-Object -First 1
+    if (-not $api) {
+        $api = @($apps | Where-Object { $_.Pool -match '(^|[-_])api$' }) | Select-Object -First 1
+    }
+    return $api
+}
+
+function Get-ProfiseeProductVersion {
+    # Product version of the install, so a bundle can be tied to a release without
+    # inferring it from the layout. Read from known binaries in a fixed order: a
+    # wildcard scan is not safe here, because it can land on a bundled component
+    # library or a hotfix baseline copy and report that component's version as the
+    # product's. Cached - more than one collector reports it.
+    #   Configuration\...Services.Configuration.exe carries the install version in
+    #   every current release; the Monolith binary is the per-release fallback
+    #   (named ...Host.dll through 26.2, ...Services.exe from 26.3).
+    param([string]$Root)
+    if ($script:ProductVersionResolved) { return $script:ProductVersion }
+    $script:ProductVersionResolved = $true
+    foreach ($rel in @('Configuration\Profisee.MasterDataMaestro.Services.Configuration.exe',
+                       'Services\Monolith\Profisee.MasterDataMaestro.Host.dll',
+                       'Services\Monolith\Profisee.MasterDataMaestro.Services.exe')) {
+        try {
+            $f = Join-Path $Root $rel
+            if (Test-Path $f -PathType Leaf) {
+                $v = (Get-Item $f).VersionInfo.ProductVersion
+                if ($v) { $script:ProductVersion = $v; return $script:ProductVersion }
+            }
+        } catch {}
+    }
+    # Side-by-side installs live in a version-named folder ('...\26.3.0'); use that
+    # rather than reporting nothing.
+    $leaf = Split-Path $Root -Leaf
+    if ($leaf -match '^\d+(\.\d+)+$') { $script:ProductVersion = $leaf }
+    return $script:ProductVersion
+}
+
+function Resolve-MaestroHostTopology {
+    # Where does this install keep the Maestro host - and therefore where is the
+    # evidence that it is up?
+    #   WindowsService - through 26.2: a registered Profisee.MasterDataMaestro.Host.exe
+    #                    service; a down host is a service fault.
+    #   IisAppPool     - from 26.3: that service is gone and the host is published as
+    #                    the '/api' application, so a down host is an app-pool fault.
+    # The '-api' pool exists in both layouts, so the test is whether that application
+    # is served out of <root>\Services (the host's own folder) rather than the thin
+    # <root>\Web app that fronted the service pre-26.3. A host caught mid-upgrade can
+    # show both; report that rather than forcing a single answer.
+    param([string]$Root)
+    $svc = $null
+    try {
+        $svc = @(Get-CimInstance Win32_Service -ErrorAction Stop |
+                 Where-Object { $_.PathName -match 'Profisee\.MasterDataMaestro\.Host\.exe' } |
+                 Where-Object { (Get-InstallRootFromPath (Get-ServiceImagePath $_.PathName)) -eq $Root }) |
+               Select-Object -First 1
+    } catch {}
+
+    $api = Get-MaestroApiApplication -Root $Root
+    $apiHostsMaestro = $false
+    if ($api -and $api.PhysicalPath) {
+        $servicesDir = (Join-Path $Root 'Services').TrimEnd('\')
+        $apiHostsMaestro = $api.PhysicalPath.TrimEnd('\').StartsWith($servicesDir, [StringComparison]::OrdinalIgnoreCase)
+    }
+
+    $mode = 'Unknown'
+    $release = 'undetermined - no Maestro host service, and no "/api" application serving the host'
+    if ($svc -and $apiHostsMaestro) {
+        $mode = 'Both'
+        $release = 'ambiguous - a host service exists AND "/api" serves the host (mid-upgrade?)'
+    } elseif ($svc) {
+        $mode = 'WindowsService'
+        $release = 'release 26.2 or earlier - Maestro host runs as a Windows service'
+    } elseif ($apiHostsMaestro) {
+        $mode = 'IisAppPool'
+        $release = 'release 26.3 or later - Maestro host runs in the "/api" IIS app pool'
+    }
+
+    [pscustomobject]@{
+        Mode             = $mode
+        Release          = $release
+        ServiceName      = if ($svc) { $svc.Name }      else { $null }
+        ServiceState     = if ($svc) { $svc.State }     else { $null }
+        ServiceStartMode = if ($svc) { $svc.StartMode } else { $null }
+        ApiPool          = if ($api) { $api.Pool }         else { $null }
+        ApiPath          = if ($api) { $api.PhysicalPath } else { $null }
+        # Set only when the '/api' pool IS the host - i.e. where a stopped pool means
+        # the host is down, not just its front end.
+        HostPool         = if ($apiHostsMaestro) { $api.Pool } else { $null }
+    }
 }
 
 function Get-ProcessAppPool {
@@ -556,9 +720,106 @@ if ($ProcessScope -eq 'InstallRoot') {
     Write-Log 'Scope         : Host - collecting all Profisee processes across every installed version.'
 }
 
+# Release layout of this install - decides where the "is the host up?" evidence
+# lives (a Windows service through 26.2, the '-api' app pool from 26.3).
+$script:HostTopology = $null
+try { $script:HostTopology = Resolve-MaestroHostTopology -Root $InstallRoot }
+catch { Write-Log "Host topology : detection failed: $($_.Exception.Message)" 'WARN' }
+if ($script:HostTopology) {
+    switch ($script:HostTopology.Mode) {
+        'WindowsService' {
+            Write-Log ("Host topology : Windows service '{0}' (state={1}) - {2}" -f `
+                $script:HostTopology.ServiceName, $script:HostTopology.ServiceState, $script:HostTopology.Release)
+        }
+        'IisAppPool' {
+            Write-Log ("Host topology : IIS app pool '{0}' - {1}" -f `
+                $script:HostTopology.HostPool, $script:HostTopology.Release)
+        }
+        'Both' {
+            Write-Log ("Host topology : service '{0}' AND app pool '{1}' - {2}" -f `
+                $script:HostTopology.ServiceName, $script:HostTopology.HostPool,
+                $script:HostTopology.Release) 'WARN'
+        }
+        default { Write-Log ("Host topology : {0}" -f $script:HostTopology.Release) 'WARN' }
+    }
+}
+
+# ===========================================================================
+# PHASE 0 - Run manifest / environment header
+# ===========================================================================
+Invoke-Collector 'Manifest' {
+    $os  = Get-CimInstance Win32_OperatingSystem
+    $cs  = Get-CimInstance Win32_ComputerSystem
+    $top = $script:HostTopology
+    $man = [ordered]@{
+        CollectedAtLocal = (Get-Date).ToString('o')
+        CollectedAtUtc   = (Get-Date).ToUniversalTime().ToString('o')
+        ScriptVersion    = $ScriptVersion
+        Operator         = "$env:USERDOMAIN\$env:USERNAME"
+        ComputerName     = $hostName
+        InstallRoot      = $InstallRoot
+        InstallRootVia   = $script:InstallRootSource
+        ProfiseeVersion  = Get-ProfiseeProductVersion -Root $InstallRoot
+        MaestroHostMode  = if ($top) { $top.Mode }    else { 'Unknown' }
+        ReleaseLayout    = if ($top) { $top.Release } else { $null }
+        MaestroHostService = if ($top) { $top.ServiceName } else { $null }
+        MaestroApiPool   = if ($top) { $top.ApiPool }  else { $null }
+        MaestroApiPath   = if ($top) { $top.ApiPath }  else { $null }
+        MaestroHostPool  = if ($top) { $top.HostPool } else { $null }
+        InstallAppPools  = @($script:OurPools)
+        SiteToken        = $script:SiteToken
+        OS               = $os.Caption
+        OSVersion        = $os.Version
+        LastBootUpTime   = $os.LastBootUpTime.ToString('o')
+        UptimeHours      = [math]::Round(((Get-Date) - $os.LastBootUpTime).TotalHours,1)
+        TotalMemoryGB    = [math]::Round($cs.TotalPhysicalMemory/1GB,1)
+        LogicalProcessors= $cs.NumberOfLogicalProcessors
+        PSVersion        = $PSVersionTable.PSVersion.ToString()
+        TimeZone         = (Get-TimeZone).Id
+        Options          = @{ ProcessScope=$ProcessScope; HoursBack=$HoursBack; MaxLogAgeDays=$MaxLogAgeDays;
+                              IncludeDumps=[bool]$IncludeDumps; SkipSql=[bool]$SkipSql;
+                              SkipConfigs=[bool]$SkipConfigs; PreStop=[bool]$PreStop;
+                              TimeBudgetSeconds=$TimeBudgetSeconds; HealthTimeoutMs=$HealthTimeoutMs }
+    }
+    $man | ConvertTo-Json -Depth 5 | Out-File (Join-Path $stageRoot 'manifest.json') -Encoding UTF8
+}
+
 # ===========================================================================
 # PHASE 1 - Volatile process, IIS runtime and (optional) memory dumps
 # ===========================================================================
+Invoke-Collector 'Host topology' {
+    # One file that answers "where does this release keep the host, and is it up?",
+    # so an analyst never has to know which layout produced the bundle.
+    $t = $script:HostTopology
+    $svcLine = if ($t -and $t.ServiceName) {
+                   "{0} (state={1}, startmode={2})" -f $t.ServiceName, $t.ServiceState, $t.ServiceStartMode
+               } else { '(none - expected from release 26.3)' }
+    $poolLine = if ($t -and $t.HostPool) { "{0} (serves {1})" -f $t.HostPool, $t.ApiPath }
+                else { '(the "/api" pool does not serve the host - expected through release 26.2)' }
+    $version  = Get-ProfiseeProductVersion -Root $InstallRoot
+    if (-not $version) { $version = '(not determined)' }
+    Save-Text (Join-Path $dirs.Proc 'host_topology.txt') @(
+        'Profisee host topology'
+        '======================'
+        ("InstallRoot         : {0}" -f $InstallRoot)
+        ("Discovered via      : {0}" -f $script:InstallRootSource)
+        ("Product version     : {0}" -f $version)
+        ("Maestro host mode   : {0}" -f $(if ($t) { $t.Mode } else { 'Unknown' }))
+        ("Release layout      : {0}" -f $(if ($t) { $t.Release } else { '(detection failed)' }))
+        ("Maestro host service: {0}" -f $svcLine)
+        ("'/api' application  : {0}" -f $(if ($t -and $t.ApiPool) { "{0} -> {1}" -f $t.ApiPool, $t.ApiPath } else { '(not resolved)' }))
+        ("Host-serving pool   : {0}" -f $poolLine)
+        ("Install app pools   : {0}" -f $(if ($script:OurPools.Count) { $script:OurPools -join ', ' } else { '(not resolved)' }))
+        ("Site token          : {0}" -f $(if ($script:SiteToken) { $script:SiteToken } else { '(not resolved)' }))
+        ''
+        'Through release 26.2 the Maestro host is a standalone Windows service, so a host'
+        'that is down shows up in 03_System\profisee_services.txt; the "-api" pool exists'
+        'too but only fronts it. From release 26.3 that service is gone and the host is'
+        'published as the "/api" application itself, so the equivalent evidence is that'
+        'pool in 01_Processes\iis_apppool_state.csv and its w3wp worker in processes.csv.'
+    )
+}
+
 Invoke-Collector 'Process snapshot' {
     $nameSet = @{}; foreach ($n in $profiseeProcNames) { $nameSet["$n.exe"] = $true }
     $cim = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue
@@ -661,6 +922,15 @@ Invoke-Collector 'IIS runtime state' {
             $notStarted = @($rows | Where-Object { -not $_.Started })
             if ($notStarted.Count) {
                 Write-Log ("  APP POOLS NOT STARTED: {0}" -f (($notStarted | ForEach-Object { "$($_.AppPool)=$($_.State)" }) -join ', ')) 'WARN'
+                # On 26.3+ the '-api' pool IS the Maestro host, so it stopping is the
+                # same class of fault as the host service being stopped pre-26.3.
+                if ($script:HostTopology -and $script:HostTopology.HostPool) {
+                    $hostDown = @($notStarted | Where-Object { $_.AppPool -eq $script:HostTopology.HostPool })
+                    if ($hostDown.Count) {
+                        Write-Log ("  MAESTRO HOST POOL NOT STARTED: {0}={1} - the host itself is down" -f `
+                            $hostDown[0].AppPool, $hostDown[0].State) 'ERROR'
+                    }
+                }
             } else {
                 Write-Log ("  all {0} app pool(s) Started" -f $rows.Count)
             }
@@ -730,6 +1000,12 @@ Invoke-Collector 'Live health endpoints' {
         } catch {}
     }
     if ($siteBase) { [void]$urls.Add("$siteBase/rest/health") }
+    # From release 26.3 the Maestro host answers under the site's '/api' application
+    # rather than as its own service; probe it directly so a dead host is visible
+    # even when config carries no health URL pointing at it.
+    if ($siteBase -and $script:HostTopology -and $script:HostTopology.HostPool) {
+        [void]$urls.Add("$siteBase/api/health")
+    }
     if ($urls.Count -eq 0) { Write-Log '  no localhost health URLs found in config' 'WARN'; return }
 
     # Probe all endpoints in parallel with a bounded per-endpoint timeout, so a
@@ -778,7 +1054,11 @@ Invoke-Collector 'Live health endpoints' {
     foreach ($j in $inflight) {
         $remain = [int][Math]::Max(0, $capMs - $capSw.ElapsedMilliseconds)
         if ($j.Handle.AsyncWaitHandle.WaitOne($remain)) {
-            try { $results.Add(($j.PS.EndInvoke($j.Handle))) } catch {}
+            # EndInvoke hands back a collection, not the single object the probe
+            # returned; add its items. Adding the collection itself leaves every
+            # property unbound - an empty summary table and an extra array level
+            # in the JSON.
+            try { foreach ($r in $j.PS.EndInvoke($j.Handle)) { $results.Add($r) } } catch {}
         } else {
             $pending++; try { $j.PS.Stop() } catch {}
         }
@@ -902,9 +1182,22 @@ Invoke-Collector 'System info' {
             Select-Object -First 25 HotFixID, Description, InstalledOn |
             Format-Table -AutoSize | Out-File (Join-Path $dirs.Sys 'recent_hotfixes.txt') -Encoding UTF8
     } catch {}
-    Get-Service | Where-Object { $_.DisplayName -like '*Profisee*' -or $_.Name -like '*Profisee*' } |
-        Select-Object Name, DisplayName, Status, StartType |
-        Format-Table -AutoSize | Out-File (Join-Path $dirs.Sys 'profisee_services.txt') -Encoding UTF8
+    $svcFile = Join-Path $dirs.Sys 'profisee_services.txt'
+    $profiseeSvcs = @(Get-Service | Where-Object { $_.DisplayName -like '*Profisee*' -or $_.Name -like '*Profisee*' })
+    if ($profiseeSvcs.Count) {
+        $profiseeSvcs | Select-Object Name, DisplayName, Status, StartType |
+            Format-Table -AutoSize | Out-File $svcFile -Encoding UTF8
+    } else {
+        # Expected from release 26.3 - say so, rather than leaving an empty file that
+        # reads like a collection failure.
+        Save-Text $svcFile @(
+            'No Profisee Windows services are registered on this host.'
+            ''
+            'From release 26.3 the Maestro host runs in IIS as the "<site>-api" application'
+            'pool instead of a Windows service. See 01_Processes\host_topology.txt for the'
+            'detected layout and 01_Processes\iis_apppool_state.csv for that pool''s state.'
+        )
+    }
 }
 
 # ===========================================================================
@@ -998,7 +1291,7 @@ function Initialize-DiagSqlClient {
 if (-not $SkipSql) {
     Invoke-Collector 'SQL live snapshot' {
         # Server/Database come from the ProfiseeSql* environment variables the platform
-        # injects (same source as forensics_log_pull.ps1); explicit -Sql* parameters
+        # injects (same source as old forensics_log_pull.ps1); explicit -Sql* parameters
         # take precedence. Auth is SQL login by default, or the Windows identity when
         # -SqlIntegratedSecurity is set. No connection-string decryption.
         $sqlServer   = if ($SqlServer)   { $SqlServer }   else { $env:ProfiseeSqlServer }
@@ -1027,7 +1320,7 @@ if (-not $SkipSql) {
             if ($missing.Count) {
                 Write-Log ("  SQL credentials unavailable ({0}); skipping SQL (use -SqlIntegratedSecurity for Windows auth)" -f ($missing -join '; ')) 'WARN'; return
             }
-            # SQL auth, mirroring forensics_log_pull.ps1's connection string.
+            # SQL auth, mirroring old forensics_log_pull.ps1's connection string.
             $connStr = 'Data Source={0};Initial Catalog={1};User ID={2};Password={3};Connect Timeout=5;Application Name=ProfiseeDiag' -f `
                        $sqlServer, $sqlDatabase, $sqlUser, $sqlPass
             Write-Log ("  SQL target: Data Source={0}; Initial Catalog={1}; User ID={2}" -f $sqlServer, $sqlDatabase, $sqlUser)
@@ -1208,7 +1501,7 @@ try {
 }
 
 # Retention: once the new ZIP exists, prune older *-All-Logs-*.zip bundles in the
-# output folder (the same pattern and 30-day default as forensics_log_pull.ps1, so
+# output folder (the same pattern and 30-day default as old forensics_log_pull.ps1, so
 # both tools' bundles in the shared folder get uniform cleanup).
 if ($RetentionDays -gt 0 -and (Test-Path $zipPath)) {
     try {
