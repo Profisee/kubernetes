@@ -83,12 +83,22 @@ spec:
         image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: Always
         livenessProbe:
+        {{- $version := regexFind "[0-9]{4}r[0-9]+" .Values.image.tag }}
+        {{- $year := regexFind "^[0-9]{4}" $version | int }}
+        {{- $release := regexFind "[0-9]+$" $version | int }}
+        {{- if or (gt $year 2026) (and (eq $year 2026) (ge $release 3)) }}
+          httpGet:
+              path: /{{.Values.profiseeRunTime.webAppName}}/api/health
+              port: 80
+              scheme: HTTP
+        {{- else }}
           exec:
             command:
               - powershell
               - >-
                 if((Get-Service profisee).Status -ne 'Stopped'){return
                 0}else{throw 'Profisee service is down'}
+        {{- end }}
           initialDelaySeconds: 600
           timeoutSeconds: 5
           periodSeconds: 60
