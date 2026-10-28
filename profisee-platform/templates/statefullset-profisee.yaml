@@ -188,6 +188,11 @@ spec:
             secretKeyRef:
                 name: profisee-filerepository-password
                 key: ProfiseeAttachmentRepositoryUserPassword
+        - name: firstUserClientID
+          valueFrom:
+            secretKeyRef:
+                name: profisee-firstuserclientid
+                key: firstUserClientID
         - name: ProfiseeOidcClientId
           valueFrom:
             secretKeyRef:

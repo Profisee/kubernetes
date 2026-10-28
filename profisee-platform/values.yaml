@@ -6,6 +6,7 @@ sqlServer:
 profiseeRunTime:
     useLetsEncrypt: $USELETSENCRYPT
     adminAccount: "$ADMINACCOUNTNAME"
+    firstUserClientID: ""
     fileRepository:
         accountName: "$FILEREPOACCOUNTNAME"
         userName: "$FILEREPOUSERNAME"
