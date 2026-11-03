@@ -9,6 +9,7 @@ data:
     #ProfiseeSqlUserName: {{.Values.sqlServer.userName|quote}} #in literal-secrets
     #ProfiseeSqlPassword: {{.Values.sqlServer.password|quote}} #in literal-secrets
     ProfiseeAdminAccount: {{.Values.profiseeRunTime.adminAccount|quote}}
+    #firstUserClientID - moved to secret profisee-firstuserclientid #in literal-secrets
     ProfiseeAttachmentRepositoryLocation: {{.Values.profiseeRunTime.fileRepository.location|quote}}
     #ProfiseeAttachmentRepositoryUserName: {{.Values.profiseeRunTime.fileRepository.userName|quote}} #in literal-secrets
     #ProfiseeAttachmentRepositoryUserPassword: {{.Values.profiseeRunTime.fileRepository.password|quote}} #in literal-secrets
